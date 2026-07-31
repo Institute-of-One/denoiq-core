@@ -1,0 +1,75 @@
+{
+  "n_folds": 5,
+  "provenance": {
+    "denoiq_core": "0.1.0",
+    "taskiq_core": "0.4.0"
+  },
+  "rows": [
+    {
+      "ceiling_d_prime": 9.802919066391512,
+      "cross_fit_d_prime": 9.840380252117109,
+      "cross_fit_recovery": 1.0038214317053815,
+      "kv": 120.0,
+      "mas": 200.0,
+      "split_d_prime": 9.87295997807612,
+      "split_recovery": 1.0071449035955766
+    },
+    {
+      "ceiling_d_prime": 6.931710547268338,
+      "cross_fit_d_prime": 6.898530722100626,
+      "cross_fit_recovery": 0.995213327945324,
+      "kv": 120.0,
+      "mas": 100.0,
+      "split_d_prime": 6.879898632028815,
+      "split_recovery": 0.9925253781319617
+    },
+    {
+      "ceiling_d_prime": 4.901459533195756,
+      "cross_fit_d_prime": 4.824167131582325,
+      "cross_fit_recovery": 0.984230737581335,
+      "kv": 120.0,
+      "mas": 50.0,
+      "split_d_prime": 4.8276804716033155,
+      "split_recovery": 0.9849475322416186
+    },
+    {
+      "ceiling_d_prime": 3.465855273634169,
+      "cross_fit_d_prime": 3.4066469098297634,
+      "cross_fit_recovery": 0.9829166658357543,
+      "kv": 120.0,
+      "mas": 25.0,
+      "split_d_prime": 3.310425335232673,
+      "split_recovery": 0.955153944371567
+    },
+    {
+      "ceiling_d_prime": 2.450729766597878,
+      "cross_fit_d_prime": 2.256393187630366,
+      "cross_fit_recovery": 0.9207025672041795,
+      "kv": 120.0,
+      "mas": 12.5,
+      "split_d_prime": 2.2159598703283594,
+      "split_recovery": 0.904204086689073
+    },
+    {
+      "ceiling_d_prime": 1.7329276368170845,
+      "cross_fit_d_prime": 1.5540251628832973,
+      "cross_fit_recovery": 0.896762871032294,
+      "kv": 120.0,
+      "mas": 6.25,
+      "split_d_prime": 1.3569635882214162,
+      "split_recovery": 0.7830468851623765
+    },
+    {
+      "ceiling_d_prime": 1.225364883298939,
+      "cross_fit_d_prime": 1.0537222663167145,
+      "cross_fit_recovery": 0.85992530117223,
+      "kv": 120.0,
+      "mas": 3.125,
+      "split_d_prime": 0.85030811348994,
+      "split_recovery": 0.6939223777987927
+    }
+  ],
+  "seed": 20260101,
+  "table": "estimator_sensitivity",
+  "train_fraction": 0.5
+}

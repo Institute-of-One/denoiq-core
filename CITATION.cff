@@ -1,0 +1,56 @@
+cff-version: 1.2.0
+title: "Denoising under a data-processing ceiling: observer-dependent benefits, fidelity–task divergence, and an information floor"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Yamamoto
+    given-names: Shuji
+    email: yamamoto@lisit.jp
+    affiliation: "Institute of One, LISIT Co., Ltd., Tokyo, Japan"
+    orcid: "https://orcid.org/0000-0001-9211-1071"
+repository-code: "https://github.com/Institute-of-One/denoiq-core"
+abstract: >-
+  A simulation study of when image denoising helps and when it hurts a detection task, under a
+  fixed data-processing ceiling. On synthetic signal-known-exactly phantoms spanning dose, noise
+  correlation length and lesion configuration, three deterministic denoisers are evaluated
+  against the analytic ideal-observer detectability of their own input with a leakage-controlled
+  cross-fitted prewhitening observer, over ten independent realisations. It quantifies how often
+  fidelity gains coincide with task losses, how the effect of denoising depends on observer
+  efficiency, and how failure patterns distribute relative to an operational information floor -
+  the contour at which the input's ideal-observer detectability falls below a prespecified task
+  requirement, which is a task requirement rather than a zero-information boundary. Everything is
+  synthetic, analytic and seeded; there is no patient data, no scanner calibration and no
+  absolute exposure threshold. Model observers come from taskiq-core.
+keywords:
+  - denoising
+  - task-based image quality
+  - model observer
+  - detectability
+  - data processing inequality
+  - fidelity-task divergence
+  - observer efficiency
+  - operational detectability floor
+  - medical imaging
+  - reproducible research
+license: MIT
+version: 0.1.0
+date-released: "2026-07-30"
+# Add the Zenodo *concept* DOI here after the first release is published (the concept DOI
+# resolves to the latest version; the manuscript cites the *version* DOI instead):
+# identifiers:
+#   - type: doi
+#     value: "10.5281/zenodo.XXXXXXXX"
+#     description: "Concept DOI (resolves to the latest version)"
+references:
+  - type: software
+    title: "taskiq-core: task-based image quality on synthetic phantoms"
+    authors:
+      - family-names: Yamamoto
+        given-names: Shuji
+        orcid: "https://orcid.org/0000-0001-9211-1071"
+        affiliation: "Institute of One, LISIT Co., Ltd., Tokyo, Japan"
+    repository-code: "https://github.com/Institute-of-One/taskiq-core"
+    identifiers:
+      - type: doi
+        value: "10.5281/zenodo.21422924"
+        description: "Concept DOI of the observer / task engine used by this work"

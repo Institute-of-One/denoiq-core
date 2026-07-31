@@ -1,0 +1,46 @@
+{
+  "arms_per_sweep": {
+    "atlas_demo": 8,
+    "dose": 28,
+    "signal": 24,
+    "texture": 16
+  },
+  "bound_holds_everywhere": true,
+  "cnn_in_primary_analysis": false,
+  "denoisers_in_primary_analysis": [
+    "NLM(0.6 sd)",
+    "TV(0.4 sd)",
+    "gaussian(1.5 px)"
+  ],
+  "levels": {
+    "amber": 10,
+    "green": 12,
+    "red": 54
+  },
+  "margin_at_max_excess": 6.944444444444445e-07,
+  "max_closed_form_relative_error": 1.3175278906118547e-16,
+  "max_excess_is_auc_saturated": true,
+  "max_excess_over_ceiling": 4.756362325109009e-07,
+  "max_excess_over_ceiling_processed_only": 4.756362325109009e-07,
+  "max_npwe_gain_from_denoising": 1.3844171066225526,
+  "mean_excess_over_ceiling": -0.03090011582538661,
+  "mean_excess_over_ceiling_processed_only": -0.03756421212524878,
+  "min_estimator_d_prime_ratio": 0.7074793760585258,
+  "n_auc_saturated_arms": 18,
+  "n_bound_violations": 0,
+  "n_conditions": 76,
+  "n_processed_conditions": 55,
+  "n_unprocessed_conditions": 21,
+  "provenance": {
+    "available_denoisers": [
+      "none",
+      "gaussian",
+      "tv",
+      "nlm"
+    ],
+    "denoiq_core": "0.1.0",
+    "quick": false,
+    "taskiq_core": "0.4.0"
+  },
+  "violations": []
+}

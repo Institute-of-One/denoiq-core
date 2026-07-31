@@ -1,0 +1,37 @@
+{
+  "title": "Denoising under a data-processing ceiling: observer-dependent benefits, fidelity–task divergence, and an information floor",
+  "description": "<p>A simulation study of when image denoising helps and when it hurts a detection task, under a fixed data-processing ceiling.</p><p>On synthetic signal-known-exactly phantoms spanning dose, noise correlation length and lesion configuration, three deterministic denoisers are evaluated against the analytic ideal-observer detectability of their own input (the ceiling) with a leakage-controlled, cross-fitted prewhitening observer, over ten independent realisations. The study quantifies three things: how often gains in reference-based fidelity (SSIM) coincide with losses in task detectability; how the effect of denoising depends on observer efficiency, comparing a prewhitening observer, a channelised Hotelling observer and a non-prewhitening observer; and how failure patterns — contrast erasure, excess lesion-like responses, task degradation — are distributed relative to an <em>operational information floor</em>, the acquisition contour at which the input's ideal-observer detectability falls below a prespecified task requirement (Rose, d'&nbsp;=&nbsp;5). That floor is a task requirement, not a zero-information boundary.</p><p>Everything is synthetic, analytic and seeded; no patient data, no scanner calibration, and no absolute exposure thresholds are included. Model observers and the detection-task machinery are reused from taskiq-core.</p>",
+  "upload_type": "software",
+  "license": "MIT",
+  "version": "0.1.0",
+  "language": "eng",
+  "creators": [
+    {
+      "name": "Yamamoto, Shuji",
+      "affiliation": "Institute of One, LISIT Co., Ltd., Tokyo, Japan",
+      "orcid": "0000-0001-9211-1071"
+    }
+  ],
+  "keywords": [
+    "denoising",
+    "task-based image quality",
+    "model observer",
+    "detectability",
+    "data processing inequality",
+    "fidelity-task divergence",
+    "observer efficiency",
+    "operational detectability floor",
+    "medical imaging",
+    "reproducible research"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.21422924",
+      "relation": "isSupplementedBy",
+      "resource_type": "software",
+      "scheme": "doi"
+    }
+  ],
+  "access_right": "open",
+  "notes": "The concept DOI of this record is deliberately not set as a top-level \"doi\": setting it there stops Zenodo's own versioning. Once the first release is archived, add the concept DOI to related_identifiers with relation \"isVersionOf\"."
+}

@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The reasons and the figures contain typographic characters (d', chi^2, minus signs).
+  # Without this, a Windows runner's cp1252 default turns them into UnicodeEncodeError.
+  PYTHONUTF8: "1"
+  # The observer / task engine is not on PyPI: pin the archived release by tag.
+  TASKIQ_CORE: "taskiq-core @ git+https://github.com/Institute-of-One/taskiq-core@v0.4.0"
+
+jobs:
+  lint:
+    name: Lint and type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "$TASKIQ_CORE"
+          python -m pip install -e ".[dev]"
+      - name: Ruff (lint + format)
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Type-check
+        run: mypy denoiq_core
+
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install (no deep-learning extra)
+        # Deliberately without [dl]: the classical results, the ceiling and the red lamp
+        # must stand on their own, and the DL tests skip themselves when torch is absent.
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "$TASKIQ_CORE"
+          python -m pip install -e ".[dev]"
+      - name: Run tests
+        run: python -m pytest -q
+
+  test-dl:
+    name: Test with the [dl] extra (Python 3.12)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install (CPU torch)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "$TASKIQ_CORE"
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,dl]"
+      - name: Run tests
+        run: python -m pytest -q
+
+  hard-rules:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No binaries, runtimes or patient data
+        run: |
+          set -e
+          if git ls-files | grep -Ei '\.(exe|dll|dcm|ima|mat|mexw64|p)$'; then
+            echo "::error::binary/runtime/patient-data file types must not be committed"
+            exit 1
+          fi
+          # The pattern is excluded from its own file, which necessarily contains it.
+          if git ls-files -z ':!.github/workflows/ci.yml' \
+              | xargs -0 grep -lI -E 'National Cancer Center|国立がん研究センター|Tohoku University|東北大学'; then
+            echo "::error::affiliation policy: only 'Institute of One, LISIT Co., Ltd.' may appear"
+            exit 1
+          fi
+          echo "clean"

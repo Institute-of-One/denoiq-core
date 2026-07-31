@@ -1,0 +1,118 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "denoiq-core"
+version = "0.1.0"
+description = "Information limits of image denoising: the data-processing ceiling and the information floor, on synthetic phantoms."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Shuji Yamamoto", email = "yamamoto@lisit.jp" }]
+keywords = [
+  "denoising",
+  "data processing inequality",
+  "information limit",
+  "task-based image quality",
+  "model observer",
+  "detectability",
+  "medical imaging",
+  "phantom",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+  "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "scikit-image>=0.20",
+  "matplotlib>=3.7",
+  # The observer / task engine. Not on PyPI: install the pinned release first with
+  #   pip install "taskiq-core @ git+https://github.com/Institute-of-One/taskiq-core@v0.4.0"
+  # (see requirements.txt). The version range here is what this package is written
+  # against; the git tag is what a reproduction should install.
+  "taskiq-core>=0.4,<0.5",
+]
+
+[project.optional-dependencies]
+# Deep learning is strictly optional: the classical denoisers, every observer, the
+# data-processing ceiling and the red-lamp gauge all run without torch.
+dl = ["torch>=2.0"]
+# The review PDF (paper/build_pdf.py). Also optional, and deliberately not a CI dependency:
+# a PDF is a derivative of build/manuscript.md, results/ and figures/, and requiring a TeX or
+# pango/cairo stack to produce one is not a trade this repository makes. reportlab is pure
+# Python and uses the DejaVu faces matplotlib already ships.
+pdf = ["reportlab>=4.0"]
+dev = [
+  "pytest>=7.0",
+  "pytest-cov>=4.1",
+  "ruff>=0.4",
+  "mypy>=1.8",
+  # Figure determinism is tested, so matplotlib is a *test* dependency too and must
+  # not be left implicit — a missing matplotlib turns the figure tests red in CI only.
+  "matplotlib>=3.7",
+  # tomllib is 3.11+; the manuscript-consistency test reads pyproject.toml.
+  "tomli>=2.0; python_version<'3.11'",
+]
+
+[project.urls]
+Homepage = "https://github.com/Institute-of-One/denoiq-core"
+Repository = "https://github.com/Institute-of-One/denoiq-core"
+Issues = "https://github.com/Institute-of-One/denoiq-core/issues"
+
+[tool.setuptools.packages.find]
+include = ["denoiq_core*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+  "error::DeprecationWarning",
+  "ignore::DeprecationWarning:skimage",
+  "ignore::DeprecationWarning:numpy",
+  "ignore::DeprecationWarning:scipy",
+  "ignore::DeprecationWarning:matplotlib",
+  "ignore::DeprecationWarning:torch",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "NPY", "D"]
+# D203/D213: mutually exclusive docstring layouts (we use D211/D212).
+# D401/D404: imperative-mood/wording checks that misfire on descriptive docstrings.
+ignore = ["D203", "D213", "D401", "D404"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["D100", "D101", "D102", "D103", "D104", "D105", "D107"]
+"examples/*" = ["D100", "D103"]
+"paper/*" = ["D100", "D103"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = false
+
+[[tool.mypy.overrides]]
+module = [
+  "scipy.*",
+  "skimage.*",
+  "matplotlib.*",
+  "taskiq_core.*",
+  "torch.*",
+  "bm3d.*",
+]
+ignore_missing_imports = true
+follow_imports = "skip"

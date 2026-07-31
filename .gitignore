@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+# Anchored: the packaging build directory only. paper/build/ holds the rendered
+# manuscript and *is* tracked — tests/test_manuscript_consistency.py compares against it.
+/build/
+dist/
+.eggs/
+.venv/
+venv/
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Model checkpoints are regenerable by train.py and are not tracked; their sha256
+# is recorded in results/ instead.
+checkpoints/
+*.pt
+*.pth
+
+# Never in this repository (hard rule): no binaries, no runtimes, no patient data.
+*.exe
+*.dll
+*.dcm
+*.ima
+
+# The review PDF is a derivative of build/manuscript.md + results/ + figures/, rebuilt by one
+# command (`python paper/build_pdf.py`) and ~1.4 MB per rebuild. The built Markdown is the
+# readable record in git; committing a binary on every proof-reading cycle is not.
+paper/build/*.pdf
+
+# results/ is deliberately NOT ignored: every number in the manuscript is read
+# back from it by tests/test_manuscript_consistency.py.
+
+# The internal briefs stay local. They are working documents, they name the commercial scope
+# this open core deliberately excludes, and they quote the affiliation policy verbatim —
+# including the institution names that must not appear anywhere in the public repository.
+*_PROPOSAL.md

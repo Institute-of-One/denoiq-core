@@ -1,0 +1,10 @@
+{
+  "archive": "Zenodo",
+  "comment": "The archived release that the manuscript cites. version_doi is null until the release is minted; paper/build_manuscript.py --submission refuses to render while it is null, so a submission PDF cannot be produced without a real DOI. See docs/RELEASE.md for the steps.",
+  "concept_doi": null,
+  "license": "MIT",
+  "repository": "https://github.com/Institute-of-One/denoiq-core",
+  "tag": "v0.1.0",
+  "version": "0.1.0",
+  "version_doi": null
+}
