@@ -223,3 +223,45 @@ def test_each_document_builds_to_its_own_files():
     assert s_built.name == "supplementary.md"
     assert s_output.name == "supplementary.pdf"
     assert {source, built, output}.isdisjoint({s_source, s_built, s_output})
+
+
+def test_a_number_inside_a_paragraph_is_not_a_list_item():
+    """A resolved value can land at the start of a wrapped line and look like "5. ".
+
+    It happened: the Rose criterion resolved to "5." at a line start and the sentence was
+    broken into three flowables, one of them numbered. A list may only begin where a list can
+    begin — after a blank line, or inside a list already.
+    """
+    source = "\n".join(
+        [
+            "# T",
+            "",
+            "An Author",
+            "",
+            "## 1. Section",
+            "",
+            "The requirement is d' =",
+            "5. It is used as a stratifying variable.",
+            "",
+            "1. A real item",
+            "   wrapped over two lines",
+            "2. Another real item",
+            "",
+        ]
+    )
+    document = build_pdf.parse_manuscript(source)
+    kinds = [kind for kind, _ in document.blocks]
+    assert kinds.count("li") == 2, document.blocks
+    paragraphs = [payload for kind, payload in document.blocks if kind == "p"]
+    assert "The requirement is d' = 5. It is used as a stratifying variable." in paragraphs
+
+
+@requires_inputs
+def test_the_manuscript_has_only_the_three_lists_it_writes():
+    """The contributions, the observers and the four commands — and nothing accidental."""
+    document = build_pdf.parse_manuscript(BUILT.read_text(encoding="utf-8"))
+    items = [payload for kind, payload in document.blocks if kind == "li"]
+    assert len(items) == 12, [item[:40] for item in items]
+    # Each list restarts at 1 and runs without a gap.
+    numbers = [int(item.split(".", 1)[0]) for item in items]
+    assert numbers == [1, 2, 3, 4, 5, 1, 2, 3, 1, 2, 3, 4], numbers

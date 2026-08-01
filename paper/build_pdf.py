@@ -305,9 +305,11 @@ def parse_manuscript(text: str) -> Document:
                 else:
                     blocks.append(("table", [cells]))
             continue
-        if re.match(r"^\d+\.\s", stripped):
+        # A numbered item, but only where one can start. Inside a paragraph a line may begin
+        # with a resolved number — "5. It is used in this paper as ..." — and treating that as
+        # a list item would silently break the sentence into three flowables.
+        if re.match(r"^\d+\.\s", stripped) and not para:
             flush_item()
-            flush_para()
             item.append(stripped)
             continue
         if not stripped:
@@ -947,6 +949,84 @@ def build_jmi_styles(serif: str) -> Styles:
     )
 
 
+@dataclass
+class LineNumbering:
+    """A running line counter, and the drawing of it in the left margin.
+
+    Reviewers cite line numbers, so a submitted manuscript carries one number per line of
+    running text, continuous from the first page to the last. reportlab has no line-numbering
+    machinery: a paragraph knows how many lines it broke into only after it has been wrapped,
+    and it draws them itself. :class:`NumberedParagraph` therefore asks this object to number
+    its lines at the moment it draws them, which is also the moment their order is the order
+    they appear in the document.
+
+    Figures, tables and their captions are left out. A caption is one flowable that a reviewer
+    refers to by its number ("Table 2"), and numbering the lines inside it would push the body
+    count out of step with the text it is meant to index.
+    """
+
+    font: str
+    size: float = 7.0
+    #: Distance from the text block to the right edge of the number.
+    offset: float = 9.0
+    colour: colors.Color = colors.HexColor("#888888")
+    counter: int = 0
+
+    def reset(self) -> None:
+        """Start again from one. A build must not inherit the previous build's count."""
+        self.counter = 0
+
+    def draw(self, canvas: Any, height: float, style: ParagraphStyle, n_lines: int) -> None:
+        """Number ``n_lines`` lines of a paragraph whose origin the canvas is sitting on.
+
+        The baseline of line *i* follows reportlab's own layout: the first sits one ascent
+        below the top of the paragraph, and each subsequent line one leading below the last.
+        """
+        if n_lines <= 0:
+            return
+        face = pdfmetrics.getFont(style.fontName).face
+        ascent = face.ascent / 1000.0 * style.fontSize
+        canvas.saveState()
+        canvas.setFont(self.font, self.size)
+        canvas.setFillColor(self.colour)
+        for index in range(n_lines):
+            self.counter += 1
+            baseline = height - ascent - index * style.leading
+            canvas.drawRightString(-self.offset, baseline, str(self.counter))
+        canvas.restoreState()
+
+
+class NumberedParagraph(Paragraph):
+    """A paragraph that numbers its own lines as it draws them.
+
+    The numbering object is shared by every paragraph in the document, so the count runs
+    continuously. It is carried across a page break too: when reportlab splits a paragraph it
+    builds the halves with ``self.__class__``, which loses the numbering unless it is put back,
+    and a lost numbering would silently skip the lines that spill onto the next page.
+    """
+
+    def __init__(
+        self, text: str | None, style: ParagraphStyle, numbering: LineNumbering | None = None, **kw
+    ) -> None:
+        """Take the shared numbering alongside the usual paragraph arguments."""
+        super().__init__(text, style, **kw)
+        self.numbering = numbering
+
+    def split(self, availWidth: float, availHeight: float) -> list[Any]:  # noqa: N803
+        """Split as usual, then hand the numbering to the halves."""
+        parts = super().split(availWidth, availHeight)
+        for part in parts:
+            if isinstance(part, NumberedParagraph):
+                part.numbering = self.numbering
+        return parts
+
+    def draw(self) -> None:
+        """Draw the text, then its line numbers."""
+        super().draw()
+        if self.numbering is not None:
+            self.numbering.draw(self.canv, self.height, self.style, len(self.blPara.lines))
+
+
 def _fits(rows: list[list[str]], serif: str, width: float) -> bool:
     """Whether a table at its natural column widths stays inside the text block."""
     probe = Table(rows, hAlign="LEFT")
@@ -1042,6 +1122,7 @@ def build_story(
     text_width: float,
     document_kind: str = "manuscript",
     style: str = "preprint",
+    numbering: LineNumbering | None = None,
 ) -> list[Any]:
     """Turn the parsed manuscript into a reportlab story, inserting the tables and figures.
 
@@ -1049,6 +1130,13 @@ def build_story(
     rather than into an appendix, because a reviewer reading section 3.1 should not have to
     go looking for Table 1.
     """
+
+    def numbered(text: str, paragraph_style: ParagraphStyle) -> Paragraph:
+        """Running text, which is numbered; captions and the title block are not."""
+        return NumberedParagraph(text, paragraph_style, numbering)
+
+    if numbering is not None:
+        numbering.reset()
     story: list[Any] = [Paragraph(document.title, styles.title)]
     for index, line in enumerate(document.authors):
         story.append(Paragraph(inline(line, style=style), styles.author))
@@ -1069,11 +1157,11 @@ def build_story(
     for kind, payload in document.blocks:
         if kind == "h1":
             in_abstract = payload.strip().lower() == "abstract"
-            story.append(Paragraph(section_heading(payload, style), styles.h1))
+            story.append(numbered(section_heading(payload, style), styles.h1))
             continue
         if kind == "h2":
             heading = payload
-            story.append(Paragraph(section_heading(heading, style), styles.h2))
+            story.append(numbered(section_heading(heading, style), styles.h2))
             lowered = heading.lower()
             # The heading may name several artefacts — "(Figure 5, Table 2)" — so the
             # anchor is the table's name anywhere in it, not a parenthesis of its own.
@@ -1081,7 +1169,7 @@ def build_story(
             continue
         if kind == "p":
             story.append(
-                Paragraph(
+                numbered(
                     inline(payload, style=style), styles.abstract if in_abstract else styles.body
                 )
             )
@@ -1117,10 +1205,10 @@ def build_story(
             )
             continue
         if kind == "li":
-            story.append(Paragraph(inline(payload, style=style), styles.listitem))
+            story.append(numbered(inline(payload, style=style), styles.listitem))
             continue
         if kind == "ref":
-            story.append(Paragraph(inline(payload, style=style), styles.reference))
+            story.append(numbered(inline(payload, style=style), styles.reference))
             continue
         raise BuildError(f"unhandled block type {kind!r}")  # pragma: no cover - defensive
 
@@ -1197,6 +1285,7 @@ def build_pdf(
     document_kind: str = "manuscript",
     style: str = "jmi",
     submission: bool = False,
+    line_numbers: bool | None = None,
 ) -> Path:
     """Verify freshness, assemble, and write the PDF. Returns the output path."""
     text = check_freshness(source, built, results, submission=submission)
@@ -1207,6 +1296,11 @@ def build_pdf(
     if style == "jmi":
         serif = JMI_SERIF
     styles = build_styles(serif, sans, style=style)
+    # Line numbers belong to a manuscript under review; they are on by default exactly when
+    # the document is being built for submission, and can be forced either way from the CLI.
+    if line_numbers is None:
+        line_numbers = submission and style == "jmi"
+    numbering = LineNumbering(font=serif) if line_numbers else None
     document = parse_manuscript(text)
     if not document.title:
         raise BuildError(f"{built} has no '# ' title line")
@@ -1222,6 +1316,7 @@ def build_pdf(
         text_width=text_width,
         document_kind=document_kind,
         style=style,
+        numbering=numbering,
     )
 
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -1284,6 +1379,13 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="build for submission: fail unless the archived release DOI has been minted",
     )
+    parser.add_argument(
+        "--line-numbers",
+        dest="line_numbers",
+        default=None,
+        action=argparse.BooleanOptionalAction,
+        help="number the lines of running text in the margin (default: on with --submission)",
+    )
     args = parser.parse_args(argv)
     source, built, output = document_paths(args.document)
     args.source = args.source or source
@@ -1304,6 +1406,7 @@ def main(argv: list[str] | None = None) -> int:
             document_kind=args.document,
             style=args.style,
             submission=args.submission,
+            line_numbers=args.line_numbers,
         )
     except BuildError as exc:
         print(exc, file=sys.stderr)

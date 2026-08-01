@@ -389,9 +389,9 @@ the analysis module and written to `results/statistics.json`; none is typed.
 ### 2.8 The operational floor and the gauge
 
 The floor is the contour where the input's analytic ceiling `d'` crosses a prespecified
-requirement, here the Rose criterion [7] at `d'` =
-5. It is used in this paper
-as a stratifying variable, and it is not a zero-information boundary.
+requirement, here the Rose criterion [7] at
+`d'` = 5. It is used in this
+paper as a stratifying variable, and it is not a zero-information boundary.
 
 The study also carries an auditable rule-based translation of the measured quantities into a
 green / amber / red verdict with the rule that fired attached. Its thresholds are task-specific

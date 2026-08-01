@@ -71,5 +71,6 @@ Check that the built PDF contains no `PENDING`, `TODO` or `XXX` — `pytest` ass
 
 `paper/build/manuscript.pdf` is set in the JMI submission style: Times-metric serif at 12 pt on a
 wide leading, superscript citations, `Fig. N` references, SPIE section numbering, page numbers,
-and the required Disclosures / Code and Data Availability / Acknowledgments back matter.
+continuous line numbers in the margin for the reviewers to cite, and the required Disclosures /
+Code and Data Availability / Acknowledgments back matter.
 `paper/build/supplementary.pdf` is the supplement (Tables S1–S4, Fig. S1).

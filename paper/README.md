@@ -29,6 +29,7 @@ python paper/build_manuscript.py --check                            # fails if a
 python paper/build_pdf.py                                           # paper/build/manuscript.pdf
 python paper/build_pdf.py --document supplementary                  # paper/build/supplementary.pdf
 python paper/build_pdf.py --submission                              # refuses until the DOI is minted
+python paper/build_pdf.py --no-line-numbers --submission           # same, without line numbers
 python paper/build_pdf.py --style preprint                          # the working single-column setting
 ```
 
@@ -48,7 +49,12 @@ Unicode exponents into real superscript runs and `tests/test_jmi_style.py` check
 character reaching the page exists in the font.
 
 `--submission` refuses to build until `paper/release.json` carries the archived release's version
-DOI; see `docs/RELEASE.md`. That is what keeps a placeholder out of a submitted PDF. It is
+DOI; see `docs/RELEASE.md`. That is what keeps a placeholder out of a submitted PDF. It also turns
+on continuous line numbers in the left margin — one per line of running text, from the first page
+to the last, so a reviewer can cite "line 214" — which `--no-line-numbers` suppresses and
+`--line-numbers` forces on a non-submission build. Figures, tables and their captions are not
+numbered: a caption is cited by its own number, and numbering inside one would put the body count
+out of step with the text it indexes. It is
 **not** part of CI: a PDF is a derivative, and requiring a TeX or pango/cairo stack for one is
 not a trade this repository makes. If pandoc and a LaTeX engine are installed, `pandoc
 paper/build/manuscript.md -o manuscript.pdf` is an equivalent route.

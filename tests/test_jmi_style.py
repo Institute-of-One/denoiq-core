@@ -15,6 +15,7 @@ from pathlib import Path
 
 import matplotlib
 import pytest
+from reportlab.platypus import KeepTogether, Paragraph
 
 REPO = Path(__file__).resolve().parents[1]
 PAPER = REPO / "paper"
@@ -190,3 +191,160 @@ def test_no_citation_sits_against_a_numeral():
         text = text.split("## References")[0]
         offenders = re.findall(r"\d\s*\[\d{1,2}[,–\d\s-]*\]", text)
         assert not offenders, f"{name}: citation against a numeral: {offenders}"
+
+
+# --------------------------------------------------------------------------------------
+# line numbers
+# --------------------------------------------------------------------------------------
+
+
+class _RecordingCanvas:
+    """Just enough canvas to record what the numbering would draw."""
+
+    def __init__(self):
+        self.calls = []
+        self.font = None
+        self.colour = None
+
+    def saveState(self):  # noqa: N802 - reportlab's spelling
+        pass
+
+    def restoreState(self):  # noqa: N802
+        pass
+
+    def setFont(self, name, size):  # noqa: N802
+        self.font = (name, size)
+
+    def setFillColor(self, colour):  # noqa: N802
+        self.colour = colour
+
+    def drawRightString(self, x, y, text):  # noqa: N802
+        self.calls.append((x, y, text))
+
+
+def _style(leading=22.8, size=12.0):
+    from reportlab.lib.styles import ParagraphStyle
+
+    return ParagraphStyle("probe", fontName=build_pdf.JMI_SERIF, fontSize=size, leading=leading)
+
+
+def test_line_numbers_run_continuously_and_sit_in_the_left_margin():
+    build_pdf.register_fonts()
+    numbering = build_pdf.LineNumbering(font=build_pdf.JMI_SERIF)
+    canvas = _RecordingCanvas()
+    style = _style()
+
+    numbering.draw(canvas, height=3 * style.leading, style=style, n_lines=3)
+    numbering.draw(canvas, height=2 * style.leading, style=style, n_lines=2)
+
+    assert [text for _, _, text in canvas.calls] == ["1", "2", "3", "4", "5"]
+    # Left of the text block, so the numbers land in the margin rather than on the words.
+    assert all(x < 0 for x, _, _ in canvas.calls)
+    # One leading apart, descending down the paragraph.
+    first = [y for _, y, _ in canvas.calls[:3]]
+    assert first[0] > first[1] > first[2]
+    assert abs((first[0] - first[1]) - style.leading) < 1e-6
+    assert canvas.font == (build_pdf.JMI_SERIF, numbering.size)
+
+
+def test_a_build_starts_its_numbering_at_one():
+    numbering = build_pdf.LineNumbering(font=build_pdf.JMI_SERIF, counter=417)
+    numbering.reset()
+    assert numbering.counter == 0
+
+
+def test_a_split_paragraph_keeps_numbering_its_lines():
+    """A paragraph broken over a page break must not stop counting."""
+    build_pdf.register_fonts()
+    numbering = build_pdf.LineNumbering(font=build_pdf.JMI_SERIF)
+    style = _style()
+    paragraph = build_pdf.NumberedParagraph(" ".join(["word"] * 200), style, numbering)
+    paragraph.wrap(300, 60)
+    parts = paragraph.split(300, 60)
+    assert parts, "the probe paragraph should be long enough to split"
+    assert all(part.numbering is numbering for part in parts)
+
+
+@requires_build
+def test_the_story_numbers_running_text_and_not_captions():
+    numbering = build_pdf.LineNumbering(font=build_pdf.JMI_SERIF)
+    story = build_pdf.build_story(
+        build_pdf.parse_manuscript((PAPER / "build" / "manuscript.md").read_text(encoding="utf-8")),
+        styles=build_pdf.build_styles(*build_pdf.register_fonts(), style="jmi"),
+        serif=build_pdf.JMI_SERIF,
+        results=RESULTS,
+        figures=PAPER / "figures",
+        readme=PAPER / "README.md",
+        text_width=400.0,
+        style="jmi",
+        numbering=numbering,
+    )
+    numbered = [item for item in story if isinstance(item, build_pdf.NumberedParagraph)]
+    plain = [
+        item
+        for item in story
+        if type(item).__name__ == "Paragraph" and not isinstance(item, build_pdf.NumberedParagraph)
+    ]
+    assert len(numbered) > 100, "the body of the manuscript should be numbered"
+    # The title block is unnumbered.
+    assert any("Address all correspondence" in item.text for item in plain)
+    # So are the figure captions, which travel with their image inside a KeepTogether.
+    captions = [
+        item
+        for group in story
+        if isinstance(group, KeepTogether)
+        for item in group._content
+        if isinstance(item, Paragraph)
+    ]
+    assert captions, "the figures should carry captions"
+    assert all(not isinstance(item, build_pdf.NumberedParagraph) for item in captions)
+    assert any(item.text.startswith("<b>Fig. ") for item in captions)
+
+
+@requires_build
+def test_the_submission_pdf_carries_one_continuous_sequence(tmp_path):
+    """Every text page numbered, no gaps, no restarts — a reviewer cites "line 214"."""
+    pypdf = pytest.importorskip("pypdfium2")
+    path = build_pdf.build_pdf(output=tmp_path / "numbered.pdf", style="jmi", line_numbers=True)
+    document = pypdf.PdfDocument(str(path))
+
+    expected = 1
+    pages_with_numbers = 0
+    for index in range(len(document)):
+        page = document[index]
+        # Read the left margin only: the footer page number is drawn in the same face and would
+        # otherwise be indistinguishable from a line number that happens to share its value.
+        found = [
+            int(token)
+            for token in re.findall(
+                r"\d{1,4}",
+                page.get_textpage().get_text_bounded(
+                    left=0,
+                    bottom=build_pdf.MARGIN_BOTTOM + 2,
+                    right=build_pdf.MARGIN_SIDE,
+                    top=float(page.get_height()),
+                ),
+            )
+        ]
+        if not found:
+            continue  # a figure page: captions are deliberately not numbered
+        pages_with_numbers += 1
+        assert found == list(range(expected, expected + len(found))), (
+            f"page {index + 1} numbers {found[:3]}... do not continue from {expected}"
+        )
+        expected += len(found)
+    assert pages_with_numbers >= 15
+    assert expected > 400, "the manuscript should number several hundred lines"
+
+    # And the plain build has none of them: page three carries its page number and nothing else
+    # that stands alone on a line.
+    plain = build_pdf.build_pdf(output=tmp_path / "plain.pdf", style="jmi", line_numbers=False)
+    plain_document = pypdf.PdfDocument(str(plain))
+    page = plain_document[2]
+    margin = page.get_textpage().get_text_bounded(
+        left=0,
+        bottom=build_pdf.MARGIN_BOTTOM + 2,
+        right=build_pdf.MARGIN_SIDE,
+        top=float(page.get_height()),
+    )
+    assert not re.findall(r"\d", margin), margin
