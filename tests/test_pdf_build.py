@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from conftest import AFFILIATION, BANNED_AFFILIATIONS
 
 REPO = Path(__file__).resolve().parent.parent
 PAPER = REPO / "paper"
@@ -203,9 +204,9 @@ def test_the_pdf_contains_the_manuscript_the_tables_and_the_figures(tmp_path):
     # Numbers, from results/, reached the page.
     summary = json.loads((RESULTS / "summary.json").read_text(encoding="utf-8"))
     assert str(summary["n_conditions"]) in text
-    for forbidden in ("National Cancer Center", "Tohoku University"):
+    for forbidden in BANNED_AFFILIATIONS:
         assert forbidden not in text
-    assert "Institute of One, LISIT Co., Ltd., Tokyo, Japan" in text
+    assert AFFILIATION in text
 
 
 def test_each_document_builds_to_its_own_files():

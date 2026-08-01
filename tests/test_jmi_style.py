@@ -19,9 +19,12 @@ import pytest
 REPO = Path(__file__).resolve().parents[1]
 PAPER = REPO / "paper"
 RESULTS = REPO / "results"
-sys.path.insert(0, str(PAPER))
 
-import build_pdf  # noqa: E402
+# The PDF builder needs the [pdf] extra, which CI deliberately does not install: a PDF is a
+# derivative, not a dependency. Skip the module rather than fail collection without it.
+sys.path.insert(0, str(PAPER))
+pytest.importorskip("reportlab")
+build_pdf = pytest.importorskip("build_pdf")
 
 #: Code points that STIXGeneral maps to a glyph that is not the character. The capital forms
 #: "Ŝ" (U+015C) and "Ŵ" (U+0174) draw correctly and are what the manuscript uses.

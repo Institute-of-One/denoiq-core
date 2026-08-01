@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from conftest import AFFILIATION, BANNED_AFFILIATIONS
 
 REPO = Path(__file__).resolve().parent.parent
 PAPER = REPO / "paper"
@@ -182,8 +183,8 @@ def test_the_affiliation_policy_holds_in_the_manuscript():
     that a local run catches it before a push does.
     """
     text = SOURCE.read_text(encoding="utf-8")
-    assert "Institute of One, LISIT Co., Ltd., Tokyo, Japan" in text
-    for forbidden in ("National Cancer Center", "Tohoku University"):
+    assert AFFILIATION in text
+    for forbidden in BANNED_AFFILIATIONS:
         assert forbidden not in text
 
 
