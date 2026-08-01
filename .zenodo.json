@@ -30,8 +30,14 @@
       "relation": "isSupplementedBy",
       "resource_type": "software",
       "scheme": "doi"
+    },
+    {
+      "identifier": "10.5281/zenodo.21733388",
+      "relation": "isVersionOf",
+      "resource_type": "software",
+      "scheme": "doi"
     }
   ],
   "access_right": "open",
-  "notes": "The concept DOI of this record is deliberately not set as a top-level \"doi\": setting it there stops Zenodo's own versioning. Once the first release is archived, add the concept DOI to related_identifiers with relation \"isVersionOf\"."
+  "notes": "The concept DOI of this record is deliberately not set as a top-level \"doi\": setting it there stops Zenodo's own versioning. It is recorded in related_identifiers with relation \"isVersionOf\" instead."
 }

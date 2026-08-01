@@ -35,12 +35,15 @@ keywords:
 license: MIT
 version: 0.1.0
 date-released: "2026-07-30"
-# Add the Zenodo *concept* DOI here after the first release is published (the concept DOI
-# resolves to the latest version; the manuscript cites the *version* DOI instead):
-# identifiers:
-#   - type: doi
-#     value: "10.5281/zenodo.XXXXXXXX"
-#     description: "Concept DOI (resolves to the latest version)"
+# The concept DOI resolves to the latest version; the manuscript cites the *version* DOI of
+# the release it was built from, which is recorded in paper/release.json.
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.21733388"
+    description: "Concept DOI (resolves to the latest version)"
+  - type: doi
+    value: "10.5281/zenodo.21733389"
+    description: "Version DOI of the 0.1.0 release"
 references:
   - type: software
     title: "taskiq-core: task-based image quality on synthetic phantoms"

@@ -753,7 +753,7 @@ rather than transcribed. The software is `denoiq-core`
 0.4.0, MIT licensed, Python `3.10` to `3.12`. The
 repository — source, tests, generated results, figures and this manuscript's build — is public at
 https://github.com/Institute-of-One/denoiq-core and is available at review time; the exact version reported here is
-archived at Zenodo as version 0.1.0 on release; the version DOI is inserted at submission.
+archived at Zenodo as version 0.1.0, doi:10.5281/zenodo.21733389.
 
 Realisation seeds are the 10 values recorded in
 `results/statistics.json`; the bootstrap seed is
