@@ -15,14 +15,15 @@ from pathlib import Path
 
 import matplotlib
 import pytest
-from reportlab.platypus import KeepTogether, Paragraph
 
 REPO = Path(__file__).resolve().parents[1]
 PAPER = REPO / "paper"
 RESULTS = REPO / "results"
 
 # The PDF builder needs the [pdf] extra, which CI deliberately does not install: a PDF is a
-# derivative, not a dependency. Skip the module rather than fail collection without it.
+# derivative, not a dependency. Skip the module rather than fail collection without it — and
+# note that nothing from reportlab may be imported at the top of this file, since those imports
+# run before the skip and would fail collection anyway. Import it inside the test that needs it.
 sys.path.insert(0, str(PAPER))
 pytest.importorskip("reportlab")
 build_pdf = pytest.importorskip("build_pdf")
@@ -289,6 +290,10 @@ def test_the_story_numbers_running_text_and_not_captions():
     # The title block is unnumbered.
     assert any("Address all correspondence" in item.text for item in plain)
     # So are the figure captions, which travel with their image inside a KeepTogether.
+    # Imported here rather than at the top of the module: reportlab is an optional extra, and
+    # a module-level import would fail collection on a runner that does not have it.
+    from reportlab.platypus import KeepTogether, Paragraph
+
     captions = [
         item
         for group in story
