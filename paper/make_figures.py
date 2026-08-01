@@ -15,6 +15,7 @@ still drawn if a previous record is present, and omitted if it is not.
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from denoiq_core.figures import make_all_figures
@@ -45,6 +46,30 @@ def refresh_console(results: Path, figures: Path) -> bool:
     return True
 
 
+def render_stack() -> dict[str, str]:
+    """The versions that decide the bytes of a PNG.
+
+    matplotlib and FreeType lay out and rasterise the text; a different version of either
+    produces a visually identical figure with different bytes. Recording them is what lets a
+    byte comparison against a committed figure mean "this figure is stale" rather than "this
+    machine is not the machine that drew it".
+    """
+    import matplotlib
+    from matplotlib import ft2font
+
+    return {
+        "matplotlib": matplotlib.__version__,
+        "freetype": ft2font.__freetype_version__,
+    }
+
+
+def write_provenance(figures: Path) -> Path:
+    """Write ``PROVENANCE.json`` next to the committed figures."""
+    path = figures / "PROVENANCE.json"
+    path.write_text(json.dumps(render_stack(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--results", type=Path, default=PAPER_DIR.parent / "results")
@@ -60,6 +85,7 @@ def main(argv: list[str] | None = None) -> int:
         refresh_console(args.results, args.figures)
 
     written = make_all_figures(results=args.results, figures=args.figures)
+    written["provenance"] = write_provenance(args.figures)
     for name, path in written.items():
         print(f"{name}: {path}")
     if "fig8" not in written:

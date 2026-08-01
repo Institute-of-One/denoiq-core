@@ -8,6 +8,7 @@ figures, and (with the ``[dl]`` extra) the training of the network.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -110,12 +111,35 @@ def test_the_console_figure_is_reproducible_from_its_record(tmp_path):
     first = figureS1_console_panel(tmp_path / "a.png", console, tiles)
     second = figureS1_console_panel(tmp_path / "b.png", console, tiles)
     assert first.read_bytes() == second.read_bytes()
+
     committed = repo / "paper" / "figures" / "figS1_redlamp_console.png"
-    if committed.exists():
+    if committed.exists() and _same_render_stack(repo):
         assert committed.read_bytes() == first.read_bytes(), (
-            "paper/figures/fig8_redlamp_console.png is out of date with the console record — "
+            "paper/figures/figS1_redlamp_console.png is out of date with the console record — "
             "rebuild it with python paper/make_figures.py"
         )
+
+
+def _same_render_stack(repo: Path) -> bool:
+    """Whether this machine draws the same bytes as the machine that committed the figures.
+
+    A PNG's bytes depend on the matplotlib and FreeType versions that drew it, so a byte
+    comparison across environments tests the environment, not the figure. The versions used are
+    recorded in paper/figures/PROVENANCE.json when the figures are generated; where they differ,
+    the comparison is skipped and run-to-run determinism — the property that actually matters —
+    is still asserted above.
+    """
+    sys.path.insert(0, str(repo / "paper"))
+    import make_figures
+
+    provenance = repo / "paper" / "figures" / "PROVENANCE.json"
+    if not provenance.exists():
+        return False
+    recorded = json.loads(provenance.read_text(encoding="utf-8"))
+    current = make_figures.render_stack()
+    if recorded == current:
+        return True
+    pytest.skip(f"figures were drawn with {recorded}; this environment has {current}")
 
 
 def test_cnn_training_is_reproducible(tmp_path):
