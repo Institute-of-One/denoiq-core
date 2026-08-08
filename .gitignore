@@ -37,8 +37,11 @@ checkpoints/
 
 # The review PDF is a derivative of build/manuscript.md + results/ + figures/, rebuilt by one
 # command (`python paper/build_pdf.py`) and ~1.4 MB per rebuild. The built Markdown is the
-# readable record in git; committing a binary on every proof-reading cycle is not.
+# readable record in git; committing a binary on every proof-reading cycle is not. The .docx is
+# the same derivative by another renderer (`python paper/build_docx.py`), and stays out for the
+# same reason.
 paper/build/*.pdf
+paper/build/*.docx
 
 # results/ is deliberately NOT ignored: every number in the manuscript is read
 # back from it by tests/test_manuscript_consistency.py.

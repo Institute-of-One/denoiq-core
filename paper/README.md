@@ -9,6 +9,7 @@ supplementary.md       supplementary methods, tables S1-S4 and Figure S1
 build_manuscript.py    resolves the markers from results/ into build/manuscript.md
 build/manuscript.md    the built manuscript (committed, so a reviewer can read it directly)
 build_pdf.py           renders build/manuscript.md + Tables 1-2 + Figures 1-8 to a PDF
+build_docx.py          renders the same content to an editable .docx (needs pandoc via pypandoc)
 build/manuscript.pdf   the submission PDF (a derivative; not committed)
 make_figures.py        draws Figures 1-8 from results/ into figures/
 redlamp_console.py     re-measures the console record (results/redlamp_console.json), its
@@ -31,7 +32,16 @@ python paper/build_pdf.py --document supplementary                  # paper/buil
 python paper/build_pdf.py --submission                              # refuses until the DOI is minted
 python paper/build_pdf.py --no-line-numbers --submission           # same, without line numbers
 python paper/build_pdf.py --style preprint                          # the working single-column setting
+python paper/build_docx.py                                          # paper/build/manuscript_v2.docx (needs pandoc)
+python paper/build_docx.py --document supplementary                 # paper/build/supplementary_v2.docx
 ```
+
+Figures are placed **immediately after the paragraph that first cites them** (SPIE JMI, single
+column, near first mention) rather than collected at the end; a figure the prose never cites is
+gathered into a trailing `Figures` block, which is the signal that a citation was lost. The
+submission line numbers are the manuscript's alone — the supplementary material is not
+line-numbered, since SPIE numbers the reviewed manuscript and its tables and methods are cited by
+their own labels.
 
 ## The PDF
 

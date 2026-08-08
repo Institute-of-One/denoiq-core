@@ -296,7 +296,8 @@ We report [[results:statistics.json:design.unique_arms]] unique arms evaluated a
 [[results:statistics.json:design.n_seeds]] independent realisations —
 [[results:statistics.json:design.arm_seed_evaluations]] arm–realisation evaluations — and never
 as a single inflated condition count. The representative realisation used for the example
-images is the first seed.
+images is the first seed; Figure 1 shows the signal-present and signal-absent images at one
+setting, for the unprocessed input and each classical denoiser on a common display window.
 
 ### 2.5 Cross-fitted estimation, and the ceiling comparison
 
@@ -412,6 +413,11 @@ Table 1 gives the matrix. The primary analysis comprises
 [[results:statistics.json:design.scored_image_trials|,]] scored image trials. Endpoints are
 computed on the [[results:statistics.json:n_arm_seed_evaluations]] processed evaluations, each
 paired with the unprocessed arm of its own condition and realisation.
+
+Figures 2 and 3 give the dose response of the representative realisation: Figure 2 the
+reference-based fidelity (SSIM and PSNR) against relative dose, and Figure 3 the task `d'` of the
+three estimated observers against relative dose, with the analytic ideal-observer ceiling of the
+unprocessed input.
 
 ### 3.2 Fidelity gains frequently diverge from task performance (Figure 4)
 

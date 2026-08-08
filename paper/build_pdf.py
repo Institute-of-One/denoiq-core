@@ -743,6 +743,40 @@ def scaled_image(path: Path, max_width: float) -> Image:
     return Image(str(path), width=width, height=height)
 
 
+#: A figure reference in the prose: ``Figure 4``, ``Fig. 4``, ``Figures 7–8``, ``Figure S1``.
+#: SPIE asks that a figure be placed near the paragraph that first cites it, so the reference
+#: itself is what anchors the figure — this finds the numbers a paragraph names.
+_FIG_GROUP = re.compile(
+    r"\bFig(?:ures?|s?\.)?\s*(S?\d+(?:\s*(?:–|-|and|,)\s*S?\d+)*)", re.IGNORECASE
+)
+_FIG_NUM = re.compile(r"S?\d+", re.IGNORECASE)
+
+
+def referenced_figures(text: str) -> list[str]:
+    """The figure tokens a paragraph cites, in the order they appear.
+
+    Tokens are the same form the filenames carry after their ``fig`` prefix: ``"4"`` for a
+    main figure, ``"S1"`` for a supplementary one. A dashed span of two plain numbers —
+    ``Figures 7–8`` — is expanded to every figure in it, so both land after the paragraph that
+    introduces them; a comma- or "and"-separated list names its members directly.
+    """
+    tokens: list[str] = []
+    for match in _FIG_GROUP.finditer(text):
+        group = match.group(1)
+        found = [token.upper() for token in _FIG_NUM.findall(group)]
+        is_span = (
+            len(found) == 2
+            and re.search(r"\d\s*[–-]\s*\d", group) is not None
+            and not any(token.startswith("S") for token in found)
+        )
+        if is_span:
+            low, high = int(found[0]), int(found[1])
+            tokens.extend(str(number) for number in range(low, high + 1))
+        else:
+            tokens.extend(found)
+    return tokens
+
+
 # --------------------------------------------------------------------------------------
 # styles
 # --------------------------------------------------------------------------------------
@@ -1150,7 +1184,57 @@ def build_story(
     generators = DOCUMENT_TABLES[document_kind]
     tables = {name: builder(results) for name, builder in generators.items()}
     figure_files = SUPPLEMENTARY_FIGURE_FILES if document_kind == "supplementary" else FIGURE_FILES
-    figure_prefix = "Figure S" if document_kind == "supplementary" else "Figure "
+    captions = figure_captions(readme, supplementary=document_kind == "supplementary")
+    # Keyed by the token the prose cites ("4", "S1"), so a paragraph that names a figure can be
+    # matched to it without re-parsing the filename each time.
+    figure_entries: dict[str, tuple[str, str]] = {}
+    for filename, caption in zip(figure_files, captions, strict=True):
+        token = filename.split("_")[0].removeprefix("fig").upper()
+        figure_entries[token] = (filename, caption)
+    placed: set[str] = set()
+
+    def figure_flowable(token: str) -> KeepTogether:
+        """One figure with its caption, labelled in the convention of the chosen layout."""
+        filename, caption = figure_entries[token]
+        path = figures / filename
+        if not path.exists():
+            raise BuildError(
+                f"{path} is missing: run `python paper/make_figures.py` before building the PDF"
+            )
+        supplementary = token.startswith("S")
+        number = token[1:] if supplementary else token
+        if style == "jmi":
+            # SPIE style: "Fig. 4 Caption." — abbreviated, no bold run-in, no period after
+            # the number.
+            prefix = "Fig. S" if supplementary else "Fig. "
+            text = f"**{prefix}{number}** {caption[0].upper()}{caption[1:]}"
+        else:
+            prefix = "Figure S" if supplementary else "Figure "
+            text = f"**{prefix}{number}.** {caption[0].upper()}{caption[1:]}"
+        if not text.rstrip().endswith("."):
+            text = f"{text}."
+        return KeepTogether(
+            [
+                scaled_image(path, text_width),
+                Paragraph(inline(text, style=style), styles.figure_caption),
+            ]
+        )
+
+    def place_referenced_figures(payload: str) -> None:
+        """Emit, after the paragraph just written, every figure it is the first to cite.
+
+        A figure is placed once, at its first mention, and figures named together in one
+        paragraph go out in ascending numeric order so the page reads 7 before 8.
+        """
+        wanted = [
+            token
+            for token in dict.fromkeys(referenced_figures(payload))
+            if token in figure_entries and token not in placed
+        ]
+        for token in sorted(wanted, key=lambda name: int(name.lstrip("S"))):
+            story.append(figure_flowable(token))
+            placed.add(token)
+
     pending: str | None = None
     in_abstract = False
 
@@ -1186,6 +1270,9 @@ def build_story(
                     parts = [Spacer(1, 4), table, label]
                 story.append(KeepTogether(parts))
                 pending = None
+            # SPIE places a figure near the paragraph that first cites it, not in an appendix,
+            # so the figure follows the paragraph that names it.
+            place_referenced_figures(payload)
             continue
         if kind == "table":
             # A table written in the manuscript itself (the decision rules of Section 2.6);
@@ -1212,37 +1299,20 @@ def build_story(
             continue
         raise BuildError(f"unhandled block type {kind!r}")  # pragma: no cover - defensive
 
-    story.append(PageBreak())
-    story.append(
-        Paragraph(
-            "Supplementary figures" if document_kind == "supplementary" else "Figures", styles.h1
-        )
-    )
-    captions = figure_captions(readme, supplementary=document_kind == "supplementary")
-    for filename, caption in zip(figure_files, captions, strict=True):
-        path = figures / filename
-        if not path.exists():
-            raise BuildError(
-                f"{path} is missing: run `python paper/make_figures.py` before building the PDF"
-            )
-        number = filename.split("_")[0].removeprefix("fig").removeprefix("S")
-        if style == "jmi":
-            # SPIE style: "Fig. 4 Caption." — abbreviated, no bold run-in, no period after
-            # the number.
-            prefix = "Fig. S" if document_kind == "supplementary" else "Fig. "
-            text = f"**{prefix}{number}** {caption[0].upper()}{caption[1:]}"
-        else:
-            text = f"**{figure_prefix}{number}.** {caption[0].upper()}{caption[1:]}"
-        if not text.rstrip().endswith("."):
-            text = f"{text}."
+    # Every figure the prose cites has already been placed at its first mention. Anything the
+    # text never names has nowhere to go inline, so it is collected at the end rather than
+    # dropped — and its presence here is a signal that a figure lost its citation.
+    remaining = [token for token in figure_entries if token not in placed]
+    if remaining:
+        story.append(PageBreak())
         story.append(
-            KeepTogether(
-                [
-                    scaled_image(path, text_width),
-                    Paragraph(inline(text, style=style), styles.figure_caption),
-                ]
+            Paragraph(
+                "Supplementary figures" if document_kind == "supplementary" else "Figures",
+                styles.h1,
             )
         )
+        for token in sorted(remaining, key=lambda name: int(name.lstrip("S"))):
+            story.append(figure_flowable(token))
     return story
 
 
@@ -1296,10 +1366,12 @@ def build_pdf(
     if style == "jmi":
         serif = JMI_SERIF
     styles = build_styles(serif, sans, style=style)
-    # Line numbers belong to a manuscript under review; they are on by default exactly when
-    # the document is being built for submission, and can be forced either way from the CLI.
+    # Line numbers belong to the manuscript under review; they are on by default exactly when
+    # the manuscript is being built for submission, and can be forced either way from the CLI.
+    # The supplementary material is not line-numbered — SPIE numbers the reviewed manuscript,
+    # and its tables and methods are cited by their own labels — so it is excluded by default.
     if line_numbers is None:
-        line_numbers = submission and style == "jmi"
+        line_numbers = submission and style == "jmi" and document_kind == "manuscript"
     numbering = LineNumbering(font=serif) if line_numbers else None
     document = parse_manuscript(text)
     if not document.title:
