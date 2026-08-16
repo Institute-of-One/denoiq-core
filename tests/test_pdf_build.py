@@ -258,10 +258,11 @@ def test_a_number_inside_a_paragraph_is_not_a_list_item():
 
 @requires_inputs
 def test_the_manuscript_has_only_the_three_lists_it_writes():
-    """The contributions, the observers and the four commands — and nothing accidental."""
+    """The contributions, the observers and the five commands — and nothing accidental."""
     document = build_pdf.parse_manuscript(BUILT.read_text(encoding="utf-8"))
     items = [payload for kind, payload in document.blocks if kind == "li"]
-    assert len(items) == 12, [item[:40] for item in items]
+    # six contributions, three observers, five regeneration commands
+    assert len(items) == 14, [item[:40] for item in items]
     # Each list restarts at 1 and runs without a gap.
     numbers = [int(item.split(".", 1)[0]) for item in items]
-    assert numbers == [1, 2, 3, 4, 5, 1, 2, 3, 1, 2, 3, 4], numbers
+    assert numbers == [1, 2, 3, 4, 5, 6, 1, 2, 3, 1, 2, 3, 4, 5], numbers

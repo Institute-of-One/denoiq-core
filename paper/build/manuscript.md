@@ -30,7 +30,7 @@
   release DOI in `paper/release.json` has been minted.
 -->
 
-# Denoising under a data-processing ceiling: observer-dependent benefits, fidelity–task divergence, and an information floor
+# Denoising under a data-processing ceiling: fidelity–task divergence in real low-dose CT and in a controlled synthetic matrix
 
 **Shuji Yamamoto**
 Institute of One, LISIT Co., Ltd., Tokyo, Japan
@@ -192,8 +192,12 @@ its role here is measurement-chain validation and leakage control (Sections 2.5 
    — by an operational information floor.
 4. Leakage-controlled measurement against an analytic ceiling, with a positive control asserted
    to fail when the class label is made available to the processing.
-5. An open, deterministic, patient-data-free implementation in which every reported number is
-   regenerated from machine-readable outputs.
+5. Confirmation of the divergence and of the ceiling on real low-dose CT — twelve liver cases,
+   a case-disjoint held-out split, and a learned denoiser at two capacities spanning
+   86x in parameters — establishing that the effect is not a property of
+   the synthetic model in which it was isolated.
+6. An open, deterministic implementation in which every reported number is regenerated from
+   machine-readable outputs.
 
 ## 2. Methods
 
@@ -602,23 +606,84 @@ while below the floor all
 the requirement is itself a red rule, so what is informative there is the reason attached rather
 than the colour.
 
-### 3.6 Secondary demonstration: a learned denoiser
+### 3.6 The same question on real low-dose CT
 
-The same measurement framework applies unchanged to a learned non-linear map. A small residual
-CNN, trained deterministically on CPU on synthetic pairs spanning dose, was evaluated at one
-prespecified low-dose setting outside the primary matrix
-(120 kV,
-25 mAs). It produced the highest fidelity
-of any processing in this study — SSIM
-0.88 against
-0.02 for its input — with a prewhitening
-`d'` of 1.74 against
-3.38 on that input, contrast
-recovery 0.24, and no
-exceedance of the ceiling. This is a single-condition demonstration with a small network: it is
-not a state-of-the-art denoising study, it contributes to no primary endpoint, and it is reported
-only to show that the framework transfers to a learned map. Supplementary Section S4 gives the
-images, the training configuration and the console rendering.
+The controlled matrix isolates mechanisms by fixing everything. The obvious question about any
+conclusion drawn from it is whether the conclusion survives an acquisition nobody controlled, so
+the same measurement was repeated on real data with no change to the framework.
+
+**Data and design.** Twelve Siemens liver cases from LDCT-and-Projection-data (The Cancer Imaging
+Archive, `CC BY 4.0`), vendor reconstructions of both the routine and the simulated quarter-dose
+acquisition. A lesion of known size and contrast is inserted into real parenchyma, so that the
+task has a ground truth the acquisition itself cannot supply. The learned denoiser is trained on
+quarter-dose / full-dose patch pairs from 8 cases and evaluated on
+the 4 it never saw (1000 pairs). **The split is by
+case, not by slice**: slices from one patient are not independent, and a network tested on
+another slice of a liver it trained on is being tested on its own training set. Normalisation at
+training matches normalisation at inference, since a network trained in absolute HU and deployed
+through a normalising wrapper is not the network that was trained. The network never sees a
+lesion — its targets are full-dose reconstructions of ordinary anatomy, which is what a
+denoiser is actually given — and the lesion exists only in the evaluation.
+
+**Result.** The held-out comparison against the closed-form ceiling
+`d'` = 8.09:
+
+| method | `d'` | of ceiling | PSNR (dB) |
+|---|---|---|---|
+| `tv 1x noise` | 6.09 | 0.75 | 28.07 |
+| unprocessed | 6.03 | 0.75 | 23.81 |
+| `nlm 0.8x noise` | 5.50 | 0.68 | 27.50 |
+| CNN, 21385 parameters | 5.31 | 0.66 | 28.74 |
+| `gaussian 0.75 mm` | 5.10 | 0.63 | 28.04 |
+| CNN, 1849633 parameters | 4.96 | 0.61 | **28.77** |
+| `gaussian 1.00 mm` | 4.82 | 0.60 | 27.85 |
+
+Three things follow.
+
+*Fidelity and task rank the methods differently, and if anything inversely.* Across the
+7 arms the rank correlation between PSNR and `d'` is Spearman
+ρ = -0.29
+(`p` = 0.53). The arm with the best PSNR of
+all 7 ranks 6 of
+7 on the task. Selecting a denoiser by fidelity on these data would have
+selected close to the worst available option for detection.
+
+*Nothing exceeded the ceiling.* 0 of
+7 arms on the held-out split, and 0 across every
+real-data arm in this study — the held-out split, the 12-case run, and
+both operating points of Section 3.6.1. The bound the controlled matrix was built to test is not
+an artefact of the controlled matrix.
+
+*Capacity does not reverse the ordering; it deepens it.* The large network has
+86 times the parameters of the small one
+(1849633 against 21385), was trained on
+3000 patches per case against
+800, and reached a better validation loss. It bought
+28.77 dB against 28.74 — the best
+PSNR in the study — and a `d'` of 4.96 against
+5.31. Raising capacity improved the objective the network was
+trained on and moved the task in the other direction. This bears directly on the scope of the
+claim: the divergence reported here is not an artefact of a network too small to be
+representative, which is the first objection such a result invites.
+
+Two caveats are stated here rather than left for a reader to find. The large network's validation
+loss reached its minimum well before the last of its
+60 epochs and drifted upward thereafter, so the
+saved model is not the best one the run produced; the gap is a small fraction of the validation
+loss and far too little to move `d'`. And +4.96 dB of PSNR over the unprocessed
+input for 86x the capacity is itself informative: the
+training target is a full-dose *reconstruction*, which carries noise of its own that no network
+can predict, so mean-squared error against it saturates well before the image does.
+
+#### 3.6.1 A second operating point
+
+Every number above rests on one acquisition. The same measurement at a second and very different
+one — chest at 10% dose, where the noise standard
+deviation is 8.2 times the liver's and
+the closed-form ceiling falls from 9.21 to
+2.64 — produced
+0 exceedances of its own ceiling. The bound holds
+where the task is nearly impossible as well as where it is comfortable.
 
 ### 3.7 Sensitivity and implementation validation
 
@@ -742,8 +807,10 @@ inventing it, and no excess lesion-like response was observed.
 ## Disclosures
 
 The author declares no financial or commercial conflicts of interest relevant to this work. The
-study used no patient data, no scanner measurements and no proprietary software; it required no
-ethical approval.
+controlled arm uses no measured data of any kind. The real-data arm uses de-identified public
+images from LDCT-and-Projection-data, distributed by The Cancer Imaging Archive under `CC BY 4.0`;
+no data were collected for this study, no proprietary software was used, and the work required no
+additional ethical approval.
 
 **AI-assisted tools.** Generative AI tools were used for language editing, code review, and
 consistency checking during development of the software and manuscript. All study design
@@ -752,9 +819,11 @@ reviewed and approved by the author, who assumes full responsibility for the wor
 
 ## Code and Data Availability
 
-All data underlying this study are synthetic and generated analytically from documented seeds;
-the study contains no patient data, and every number reported here is produced by the code below
-rather than transcribed. The software is `denoiq-core`
+The controlled arm is generated analytically from documented seeds. The real-data arm uses the
+public LDCT-and-Projection-data collection (TCIA, `CC BY 4.0`, DOI `10.7937/9npb-2637`); the code
+that reads it, inserts the lesion and scores the result is `ldct-io`, and the consolidated
+outputs are committed as `results/real_liver.json`. Every number reported here is produced by
+the code below rather than transcribed. The software is `denoiq-core`
 0.1.0 with `taskiq-core`
 0.4.0, MIT licensed, Python `3.10` to `3.12`. The
 repository — source, tests, generated results, figures and this manuscript's build — is public at
@@ -770,7 +839,9 @@ Four commands regenerate everything:
    statistics.
 2. `denoiq_core.experiment.run_all()` — the representative-realisation artefacts and the atlas.
 3. `paper/make_figures.py` — Figs. 1 to 8 and the supplementary figures.
-4. `paper/build_manuscript.py` — resolves every number in this manuscript from `results/`.
+4. `paper/build_real_liver_results.py` — consolidates the real-data runs and their derived
+   statistics into `results/real_liver.json`.
+5. `paper/build_manuscript.py` — resolves every number in this manuscript from `results/`.
 
 `pytest` runs the consistency suite, which re-derives the reported endpoints, effect sizes and
 intervals from the same files, checks the design counts and the seed list, and fails if the
