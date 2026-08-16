@@ -20,7 +20,6 @@ the study or the tests; it is required only to produce this one editable artefac
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
