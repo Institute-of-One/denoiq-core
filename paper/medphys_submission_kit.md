@@ -29,10 +29,13 @@ has no funder mandating open access, so no charge applies unless OnlineOpen is c
 - **Structured abstract**, Background / Purpose / Methods / Results / Conclusions,
   maximum 500 words — **ours: 464**.
 - **References numbered in order of first citation**, AMA 10th style; up to six authors
-  listed in full, seven or more give the first three and *et al.* — **ours: 18, verified
+  listed in full, seven or more give the first three and *et al.* — **ours: 23, verified
   in order, all cited, none listed uncited**.
 - Title in **sentence case** — ours already is.
-- Figures: **9 main + 1 supplementary**. Each is registered in `build_pdf.FIGURE_FILES`,
+- Figures: **9 main + 1 supplementary**, each captioned beneath the figure and again in a
+  list after the references, as the form requires.
+- Generative AI declared in the **Methods** (Section 2.9), which is where Wiley asks for
+  it, as well as in Disclosures. The form's first radio option is the correct answer. Each is registered in `build_pdf.FIGURE_FILES`,
   captioned once in `paper/README.md`, and named in the prose, which is what anchors its
   placement.
 
