@@ -38,77 +38,54 @@ yamamoto@lisit.jp · ORCID 0000-0001-9211-1071
 
 ## Abstract
 
-**Purpose.** To quantify when reference-based improvements in denoised images correspond to
-gains or losses in task detectability, and to determine how those effects depend on observer
-efficiency and on the detectability available in the input image.
+**Background.** Denoising is widely held to improve image quality, evidenced by
+reference-based fidelity metrics, and thereby to permit dose reduction. The second claim does
+not follow from the first: processing is a function of the image it is given and cannot add
+task information to it.
 
-**Approach.** Signal-known-exactly / background-known-exactly detection of a low-contrast disk
-on synthetic phantoms, over a matrix of dose, noise correlation length and lesion
-configuration, with three deterministic denoisers (Gaussian, total variation, non-local means)
-and three observers: a held-out prewhitening linear observer (PW), a channelised Hotelling
-observer (CHO) and a non-prewhitening observer with an eye filter (NPWE), the last used as a
-stylized surrogate for limited noise-prewhitening efficiency rather than as a human-reader
-model. Each processed arm is referenced to the unprocessed arm of its own condition, and to
-that input's **analytic** ideal-observer detectability — the ceiling that the data-processing
-inequality and the Neyman–Pearson lemma place on any processing of it. Observer estimates are
-cross-fitted, so no trial is scored by a template fitted to it. The matrix was run over
-10 independent realisations
-(76 unique arms,
-760 arm–realisation evaluations,
-1,696,000 scored image trials). Prespecified
-endpoints were the Spearman correlation between ΔSSIM and Δ`d'`(PW), the fraction of divergent
-arms (ΔSSIM > 0 with Δ`d'`(PW) < 0), the observer-dependent benefit `B` = Δ`d'`(NPWE) −
-Δ`d'`(PW), and failure patterns stratified by an *operational information floor*: the contour
-where the input's analytic detectability falls below a prespecified task requirement (Rose,
-`d'` = 5). Uncertainty is by
-bootstrap resampling of whole realisations; comparisons across denoisers are Holm-adjusted.
+**Purpose.** To quantify when fidelity gains correspond to gains or losses in task
+detectability, how those effects depend on observer efficiency and on the detectability
+available in the input, and whether they survive an acquisition nobody controlled.
 
-**Results.** ΔSSIM and Δ`d'`(PW) were correlated at Spearman ρ =
--0.62 (`95 %` CI
--0.63 to
--0.60), and
-88.2%
-(86.7% to
-89.6%) of processed evaluations
-were divergent. Denoising helped the inefficient observer more than the efficient one: `B` =
-+1.13
-(+1.12 to
-+1.14), with mean
-Δ`d'`(NPWE) = +0.30
-against Δ`d'`(PW) =
--0.83, and
-77.8% of
-evaluations improved NPWE while not improving PW. The third hypothesis was **partially
-refuted**: below the floor, fidelity rose while the task estimate fell, but the failure
-*patterns* did not concentrate below the floor. Mean task degradation was
-30.3% above the
-floor against 14.7%
-below it, because a low-detectability input has less for processing to remove; contrast erasure
-did not differ appreciably
-(+1.3%,
--1.0%
-to
-+3.6%),
-and excess lesion-like responses were absent throughout. Below the floor, fidelity nonetheless
-rose by +0.210 in
-SSIM while the task estimate fell, so visually plausible output coexisted with failure to meet
-the requirement. The floor is therefore a boundary of attainable required performance, not a
-predictor of denoiser-specific erasure or lesion-like responses. As validation rather than as a
-finding, no processed arm exceeded the simultaneous ceiling margin
-(0 of
-550 at a family-wise level
-of `0.05`); the single exceedance
-(6.75×10⁻⁶ in AUC) was an unprocessed
-self-comparison in the AUC-saturated regime, where the closed-form margin degenerates at perfect
-separation. The analytic observer matched its closed form to
-1.32×10⁻¹⁶.
+**Methods.** Two arms. *Controlled*: signal-known-exactly / background-known-exactly detection
+of a low-contrast disk on synthetic phantoms over a matrix of dose, noise correlation length
+and lesion configuration, with three deterministic denoisers (Gaussian, total variation,
+non-local means) and three observers — a prewhitening linear observer (PW), a channelised
+Hotelling observer (CHO), and a non-prewhitening observer with an eye filter (NPWE) used as a
+stylized surrogate for limited prewhitening efficiency. Each processed arm is referenced to the
+unprocessed arm of its own condition and to that input's **analytic** ideal-observer
+detectability — the ceiling the data-processing inequality [1] and the Neyman–Pearson lemma [2]
+place on any processing of it. Observer estimates are cross-fitted; uncertainty is by bootstrap
+over whole realisations; comparisons are Holm-adjusted. The matrix ran over
+10 realisations
+(1,696,000 scored trials).
+*Real data*: 12 Siemens liver cases from LDCT-and-Projection-data,
+vendor reconstructions of the routine and quarter-dose acquisitions, a lesion of known size and
+contrast inserted into real parenchyma, and a residual CNN trained on
+8 cases and evaluated on the 4 it
+never saw, at two capacities spanning 86× in parameters.
+
+**Results.** *Controlled*: ΔSSIM and Δ`d'`(PW) correlated at Spearman ρ =
+-0.62
+(88.2% of processed evaluations divergent, with ΔSSIM >
+0 and Δ`d'`(PW) < 0). Denoising helped the inefficient observer more than the efficient one:
+`B` = Δ`d'`(NPWE) − Δ`d'`(PW) = +1.13. The
+information-floor hypothesis was **partially refuted**: below the floor fidelity rose while the
+task estimate fell, but failure patterns did not concentrate there, and excess lesion-like
+responses were absent throughout. *Real data*: across 7 methods the
+rank correlation between PSNR and `d'` was ρ =
+-0.29; the method with the best PSNR ranked
+6 of 7 on the task; and
+0 arms exceeded the closed-form ceiling in any real-data comparison.
+Raising network capacity 86-fold improved validation loss and
+gave the best PSNR in the study, 28.77 dB, while lowering
+detectability from 5.31 to 4.96.
 
 **Conclusions.** Denoising effects are observer-dependent: processing may improve performance
 for an inefficient observer without increasing the task information available in the input.
-Fidelity gains alone do not establish task preservation, particularly when input detectability
-is below a prespecified operational requirement — a requirement that bounds what any processing
-can attain, and that has to be evaluated on the input rather than inferred from the appearance
-of the output.
+Fidelity gains alone do not establish task preservation, and on real low-dose CT they rank
+methods close to inversely to the task. The divergence is not an artefact of the controlled
+model in which it was isolated, nor of a network too small to be representative.
 
 **Keywords:** denoising; task-based image quality; model observer; detectability;
 fidelity–task divergence; observer efficiency; operational information floor.
@@ -153,18 +130,18 @@ visual plausibility there does not establish that the required detectability sur
 ### 1.1 Relation to previous work
 
 That denoising can degrade task performance while improving fidelity is established
-empirically. Li et al. [10] assessed deep denoising on binary signal detection with model
-observers and connected the result to the data-processing inequality; Yu et al. [11] reported
+empirically. Li et al. [3] assessed deep denoising on binary signal detection with model
+observers and connected the result to the data-processing inequality; Yu et al. [4] reported
 for myocardial perfusion SPECT that denoising improved RMSE and SSIM while frequently
-degrading detection performance; Li et al. [12] proposed a framework for mapping the nonlinear
-system and noise response of such algorithms; and task-informed training [13] shows the
+degrading detection performance; Li et al. [5] proposed a framework for mapping the nonlinear
+system and noise response of such algorithms; and task-informed training [6] shows the
 trade-off can be shifted but not escaped. Hallucination in reconstruction has been
-characterised in terms of a task-relevant null space [14]. In CT specifically, Eulig et al.
-[17] benchmarked deep low-dose CT denoisers on the downstream detection and diagnosis of
-lesions rather than on fidelity alone, and Nelson et al. [18] found that a network trained on
+characterised in terms of a task-relevant null space [7]. In CT specifically, Eulig et al.
+[8] benchmarked deep low-dose CT denoisers on the downstream detection and diagnosis of
+lesions rather than on fidelity alone, and Nelson et al. [9] found that a network trained on
 adult images changes low-contrast detectability differently on paediatric-sized phantoms. The
 relation between task-based image quality and dose is treated comprehensively by Barrett et
-al. [8].
+al. [10].
 
 What is not established quantitatively is *how* these effects vary: how strongly fidelity
 gains predict task changes across imaging conditions, how the effect depends on the efficiency
@@ -212,8 +189,8 @@ its role here is measurement-chain validation and leakage control (Sections 2.5 
 
 The task is signal-known-exactly / background-known-exactly (SKE/BKE) detection of a
 low-contrast disk on a uniform background, the standard paradigm of objective, task-based
-assessment [3,4]. Trials, phantoms, model observers and the ROC
-machinery are reused from `taskiq-core` [16] (version
+assessment [11,12]. Trials, phantoms, model observers and the ROC
+machinery are reused from `taskiq-core` [13] (version
 0.4.0) rather than reimplemented; the trial
 generator returns, with the image stacks, the **analytic** noise power spectrum (NPS) of the
 noise it generated, which is what allows an observer to be evaluated in closed form with
@@ -235,10 +212,10 @@ Three observers are estimated from images and scored out of fold (Section 2.5):
 1. The **held-out prewhitening linear observer** (PW): the class-mean difference prewhitened by
    the measured NPS. This is the efficient observer of the study, and the one every
    processed-image comparison uses.
-2. A **channelised Hotelling observer** (CHO) on Laguerre–Gauss channels [5], an intermediate
+2. A **channelised Hotelling observer** (CHO) on Laguerre–Gauss channels [14], an intermediate
    observer: tractable because a channel covariance can be estimated where a pixel covariance
    cannot.
-3. A **non-prewhitening observer with a Burgess eye filter** (NPWE) [6], used as a stylized
+3. A **non-prewhitening observer with a Burgess eye filter** (NPWE) [15], used as a stylized
    surrogate for limited noise-prewhitening efficiency. No human observer study was performed
    here, and NPWE is not offered as a validated model of a human reader.
 
@@ -273,7 +250,7 @@ variation with weight
 0.4 × the noise
 standard deviation, and non-local means with `h` =
 0.6 × the noise standard
-deviation. A small residual convolutional network in the style of DnCNN [15] is evaluated
+deviation. A small residual convolutional network in the style of DnCNN [16] is evaluated
 separately (Section 3.6) and is not part of the primary matrix.
 
 **Where the noise level comes from, and why it does not break the bound.** For total variation
@@ -338,7 +315,7 @@ The ceiling comparison, reported as validation in Section 3.4, tests
 
 `AUC_PW(g(X)) ≤ AUC_ceiling(X) + m`, with `m = z·SE + 1/(n₁n₀)`,
 
-`z` = `1.96`, `SE` the Hanley–McNeil standard error [9] of the scored AUC, and the second term
+`z` = `1.96`, `SE` the Hanley–McNeil standard error [17] of the scored AUC, and the second term
 one quantisation step of the Mann–Whitney statistic. The comparison is made at every arm, and it
 is reported twice: at the armwise margin above, and at a *simultaneous* margin in which `z` is
 widened by Bonferroni to a family-wise level of `0.05` over all arm–realisation comparisons. The
@@ -402,7 +379,7 @@ the analysis module and written to `results/statistics.json`; none is typed.
 ### 2.8 The operational floor and the gauge
 
 The floor is the contour where the input's analytic ceiling `d'` crosses a prespecified
-requirement, here the Rose criterion [7] at
+requirement, here the Rose criterion [18] at
 `d'` = 5. It is used in this
 paper as a stratifying variable, and it is not a zero-information boundary.
 
@@ -867,19 +844,19 @@ This work received no external funding.
 
 1. T. M. Cover and J. A. Thomas, *Elements of Information Theory*, 2nd ed., Wiley, Hoboken, New Jersey (2006). (Data-processing inequality, Ch. 2.)
 2. J. Neyman and E. S. Pearson, "On the problem of the most efficient tests of statistical hypotheses," *Philos. Trans. R. Soc. Lond. A* **231**, 289–337 (1933) [doi:10.1098/rsta.1933.0009].
-3. H. H. Barrett and K. J. Myers, *Foundations of Image Science*, Wiley, Hoboken, New Jersey (2004).
-4. H. H. Barrett, "Objective assessment of image quality: effects of quantum noise and object variability," *J. Opt. Soc. Am. A* **7**(7), 1266–1278 (1990) [doi:10.1364/JOSAA.7.001266].
-5. K. J. Myers and H. H. Barrett, "Addition of a channel mechanism to the ideal-observer model," *J. Opt. Soc. Am. A* **4**(12), 2447–2457 (1987) [doi:10.1364/JOSAA.4.002447].
-6. A. E. Burgess, "Visual signal detection with two-component noise: low-pass spectrum effects," *J. Opt. Soc. Am. A* **16**(3), 694–704 (1999) [doi:10.1364/JOSAA.16.000694].
-7. A. Rose, "The sensitivity performance of the human eye on an absolute scale," *J. Opt. Soc. Am.* **38**(2), 196–208 (1948) [doi:10.1364/JOSA.38.000196].
-8. H. H. Barrett, K. J. Myers, C. Hoeschen, M. A. Kupinski, and M. P. Little, "Task-based measures of image quality and their relation to radiation dose and patient risk," *Phys. Med. Biol.* **60**(2), R1–R75 (2015) [doi:10.1088/0031-9155/60/2/R1].
-9. J. A. Hanley and B. J. McNeil, "The meaning and use of the area under a receiver operating characteristic (ROC) curve," *Radiology* **143**(1), 29–36 (1982) [doi:10.1148/radiology.143.1.7063747].
-10. K. Li, W. Zhou, H. Li, and M. A. Anastasio, "Assessing the impact of deep neural network-based image denoising on binary signal detection tasks," *IEEE Trans. Med. Imaging* **40**(9), 2295–2305 (2021) [doi:10.1109/TMI.2021.3076810].
-11. Z. Yu, M. A. Rahman, R. Laforest, T. H. Schindler, R. J. Gropler, R. L. Wahl, B. A. Siegel, and A. K. Jha, "Need for objective task-based evaluation of deep learning-based denoising methods: a study in the context of myocardial perfusion SPECT," *Med. Phys.* **50**(7), 4122–4137 (2023) [doi:10.1002/mp.16407].
-12. J. Li, W. Wang, M. Tivnan, J. W. Stayman, and G. J. Gang, "Performance assessment framework for neural network denoising," *Proc. SPIE* **12031**, 1203114 (2022) [doi:10.1117/12.2612732].
-13. K. Li, H. Li, and M. A. Anastasio, "Investigating the use of signal detection information in supervised learning-based image denoising with consideration of task-shift," *J. Med. Imaging* **11**(5), 055501 (2024) [doi:10.1117/1.JMI.11.5.055501].
-14. S. Bhadra, V. A. Kelkar, F. J. Brooks, and M. A. Anastasio, "On hallucinations in tomographic image reconstruction," *IEEE Trans. Med. Imaging* **40**(11), 3249–3260 (2021) [doi:10.1109/TMI.2021.3077857].
-15. K. Zhang, W. Zuo, Y. Chen, D. Meng, and L. Zhang, "Beyond a Gaussian denoiser: residual learning of deep CNN for image denoising," *IEEE Trans. Image Process.* **26**(7), 3142–3155 (2017) [doi:10.1109/TIP.2017.2662206].
-16. S. Yamamoto, "taskiq-core: task-based image quality on synthetic phantoms," Zenodo (2026) [doi:10.5281/zenodo.21422924].
-17. E. Eulig, B. Ommer, and M. Kachelrieß, "Benchmarking deep learning-based low-dose CT image denoising algorithms," *Med. Phys.* **51**(12), 8776–8788 (2024) [doi:10.1002/mp.17379].
-18. B. J. Nelson, P. Kc, A. Badal, L. Jiang, et al., "Pediatric evaluations for deep learning CT denoising," *Med. Phys.* **51**(2), 978–990 (2024) [doi:10.1002/mp.16901].
+3. K. Li, W. Zhou, H. Li, and M. A. Anastasio, "Assessing the impact of deep neural network-based image denoising on binary signal detection tasks," *IEEE Trans. Med. Imaging* **40**(9), 2295–2305 (2021) [doi:10.1109/TMI.2021.3076810].
+4. Z. Yu, M. A. Rahman, R. Laforest, T. H. Schindler, R. J. Gropler, R. L. Wahl, B. A. Siegel, and A. K. Jha, "Need for objective task-based evaluation of deep learning-based denoising methods: a study in the context of myocardial perfusion SPECT," *Med. Phys.* **50**(7), 4122–4137 (2023) [doi:10.1002/mp.16407].
+5. J. Li, W. Wang, M. Tivnan, J. W. Stayman, and G. J. Gang, "Performance assessment framework for neural network denoising," *Proc. SPIE* **12031**, 1203114 (2022) [doi:10.1117/12.2612732].
+6. K. Li, H. Li, and M. A. Anastasio, "Investigating the use of signal detection information in supervised learning-based image denoising with consideration of task-shift," *J. Med. Imaging* **11**(5), 055501 (2024) [doi:10.1117/1.JMI.11.5.055501].
+7. S. Bhadra, V. A. Kelkar, F. J. Brooks, and M. A. Anastasio, "On hallucinations in tomographic image reconstruction," *IEEE Trans. Med. Imaging* **40**(11), 3249–3260 (2021) [doi:10.1109/TMI.2021.3077857].
+8. E. Eulig, B. Ommer, and M. Kachelrieß, "Benchmarking deep learning-based low-dose CT image denoising algorithms," *Med. Phys.* **51**(12), 8776–8788 (2024) [doi:10.1002/mp.17379].
+9. B. J. Nelson, P. Kc, A. Badal, L. Jiang, et al., "Pediatric evaluations for deep learning CT denoising," *Med. Phys.* **51**(2), 978–990 (2024) [doi:10.1002/mp.16901].
+10. H. H. Barrett, K. J. Myers, C. Hoeschen, M. A. Kupinski, and M. P. Little, "Task-based measures of image quality and their relation to radiation dose and patient risk," *Phys. Med. Biol.* **60**(2), R1–R75 (2015) [doi:10.1088/0031-9155/60/2/R1].
+11. H. H. Barrett and K. J. Myers, *Foundations of Image Science*, Wiley, Hoboken, New Jersey (2004).
+12. H. H. Barrett, "Objective assessment of image quality: effects of quantum noise and object variability," *J. Opt. Soc. Am. A* **7**(7), 1266–1278 (1990) [doi:10.1364/JOSAA.7.001266].
+13. S. Yamamoto, "taskiq-core: task-based image quality on synthetic phantoms," Zenodo (2026) [doi:10.5281/zenodo.21422924].
+14. K. J. Myers and H. H. Barrett, "Addition of a channel mechanism to the ideal-observer model," *J. Opt. Soc. Am. A* **4**(12), 2447–2457 (1987) [doi:10.1364/JOSAA.4.002447].
+15. A. E. Burgess, "Visual signal detection with two-component noise: low-pass spectrum effects," *J. Opt. Soc. Am. A* **16**(3), 694–704 (1999) [doi:10.1364/JOSAA.16.000694].
+16. K. Zhang, W. Zuo, Y. Chen, D. Meng, and L. Zhang, "Beyond a Gaussian denoiser: residual learning of deep CNN for image denoising," *IEEE Trans. Image Process.* **26**(7), 3142–3155 (2017) [doi:10.1109/TIP.2017.2662206].
+17. J. A. Hanley and B. J. McNeil, "The meaning and use of the area under a receiver operating characteristic (ROC) curve," *Radiology* **143**(1), 29–36 (1982) [doi:10.1148/radiology.143.1.7063747].
+18. A. Rose, "The sensitivity performance of the human eye on an absolute scale," *J. Opt. Soc. Am.* **38**(2), 196–208 (1948) [doi:10.1364/JOSA.38.000196].
