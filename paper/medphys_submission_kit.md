@@ -27,17 +27,17 @@ has no funder mandating open access, so no charge applies unless OnlineOpen is c
 ## Requirements verified
 
 - **Structured abstract**, Background / Purpose / Methods / Results / Conclusions,
-  maximum 500 words — **ours: 464**.
+  maximum 500 words — **ours: 479**.
 - **References numbered in order of first citation**, AMA 10th style; up to six authors
   listed in full, seven or more give the first three and *et al.* — **ours: 23, verified
   in order, all cited, none listed uncited**.
 - Title in **sentence case** — ours already is.
-- Figures: **9 main + 1 supplementary**, each captioned beneath the figure and again in a
-  list after the references, as the form requires.
-- Generative AI declared in the **Methods** (Section 2.9), which is where Wiley asks for
-  it, as well as in Disclosures. The form's first radio option is the correct answer. Each is registered in `build_pdf.FIGURE_FILES`,
+- Figures: **9 main + 1 supplementary**. Each is registered in `build_pdf.FIGURE_FILES`,
   captioned once in `paper/README.md`, and named in the prose, which is what anchors its
-  placement.
+  placement. Each caption appears beneath its figure **and** in a list after the
+  references, as the form requires.
+- Generative AI is declared in the **Methods** (Section 2.9), which is where Wiley asks
+  for it, as well as in Disclosures. The form's first radio option is the correct answer.
 
 ## Form fields (copy–paste)
 
@@ -53,7 +53,7 @@ low-dose CT and in a controlled synthetic matrix
 **Keywords:** low-dose CT; image denoising; deep learning; task-based image quality;
 model observer; detectability; fidelity–task divergence
 
-**Abstract:** paste from `paper/build/manuscript.md` (464 words, resolved). **Not** from
+**Abstract:** paste from `paper/build/manuscript.md` (479 words, resolved). **Not** from
 `paper/manuscript.md`, which still carries the `[[results:...]]` markers.
 
 ## Suggested reviewers
@@ -106,23 +106,29 @@ nobody controlled.
 
 We measure it on two arms. In a controlled synthetic matrix with an analytic ceiling,
 fidelity change and task change were correlated at Spearman rho = -0.62, 88 per cent of
-processed evaluations were divergent, and denoising helped an inefficient observer while
-leaving an efficient one no better - redistribution of existing information rather than
-creation of new information. One of three prespecified hypotheses was partially refuted
+processed evaluations were divergent, and the effect differed systematically between
+observers: the same processing improved the non-prewhitening estimate while leaving the
+prewhitening one no better, which is consistent with redistribution of existing
+information rather than creation of new information. One of three prespecified hypotheses was partially refuted
 and is reported as such. On twelve Siemens liver cases from LDCT-and-Projection-data,
-with a lesion of known size and contrast inserted into real parenchyma and a case-disjoint
-held-out split, the rank correlation between PSNR and detectability across seven methods
+with a synthetic lesion of known size and contrast inserted into real parenchyma and a
+case-disjoint held-out split, the rank correlation between PSNR and detectability across seven methods
 was -0.29, and the method with the best PSNR of all seven ranked sixth on the task.
-Raising a residual CNN's capacity 86-fold improved its validation loss and gave the best
-PSNR in the study while lowering detectability, so the divergence is not an artefact of a
-network too small to be representative. Nothing exceeded the closed-form ceiling in any
+A larger configuration of the same residual CNN - 86 times the parameters, trained on more
+patches for more epochs - improved its validation loss and gave the best PSNR in the study
+while lowering detectability. Capacity was not varied alone, so what that shows is that
+the divergence persisted under a substantially larger and longer-trained network of this
+architecture, which weakens the first objection such a result invites without excluding
+it. Nothing exceeded the closed-form ceiling in any
 real-data comparison.
 
 We believe this belongs in Medical Physics because the journal asked for it. Yu et al.
 (Med Phys 2023;50:4122) argued the need for objective task-based evaluation of
 deep-learning denoising, in SPECT; this is the CT answer, measured against a bound rather
 than against other methods. Eulig et al. (2024;51:8776) and Nelson et al. (2024;51:978)
-established the genre here recently. What this study adds to a benchmark is the ceiling: a
+established the genre here recently, and Greffier et al., Fan et al., Tivnan et al. and Toia
+et al. show that CT deep-learning reconstruction has been evaluated task-based already and can
+raise detectability under some conditions - which is what makes the claim here a narrow one. What this study adds to a benchmark is the ceiling: a
 benchmark ranks methods against each other, while an analytic bound turns the question
 into how much of the information already present survives.
 
