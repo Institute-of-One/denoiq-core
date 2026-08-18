@@ -81,7 +81,10 @@ ceiling of the same input; recovery slightly above `100 %` at the highest doses 
 in the `d'` estimate, not a breached bound, since the ceiling test is armwise, in AUC, and carries
 its own margin (Section 3.4).
 
-## S4. The learned denoiser
+## S4. The learned denoiser used in the synthetic demonstration
+
+This network is the synthetic-arm demonstration network and is distinct from the real-data CNNs
+described in Section 2.10.
 
 The convolutional network is a small residual (DnCNN-style) model trained deterministically on
 CPU on synthetic pairs spanning dose, with a checkpoint whose parameter hash is recorded in

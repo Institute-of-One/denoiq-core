@@ -209,6 +209,16 @@ def check_built(built: str) -> None:
     for lineno, line in enumerate(built.splitlines(), 1):
         if "\t" in line or "\x0b" in line or "\x0c" in line:
             fail(f"built manuscript line {lineno} contains a control character")
+    # Any "[[results:" that does not close with "]]" is a marker broken in the source,
+    # which the build passes through as literal text. Looking only for well-formed
+    # markers misses exactly the failures worth catching.
+    opened = [m.start() for m in re.finditer(r"\[\[results:", built)]
+    closed = [m.start() for m in re.finditer(r"\[\[results:[^\]]*\]\]", built)]
+    if len(opened) != len(closed):
+        fail(
+            f"{len(opened) - len(closed)} malformed [[results:...]] marker(s) "
+            "in the built manuscript"
+        )
     unresolved = [m for m in re.findall(r"\[\[results:[^\]]*\]\]", built) if "<" not in m]
     if unresolved:
         fail(f"built manuscript still contains unresolved markers: {unresolved[:3]}")

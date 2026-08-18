@@ -187,9 +187,9 @@ its role here is measurement-chain validation and leakage control (Sections 2.5 
 4. Leakage-controlled measurement against an analytic ceiling, with a positive control asserted
    to fail when the class label is made available to the processing.
 5. Confirmation of the divergence and of the ceiling on real low-dose CT — twelve liver cases,
-   a case-disjoint held-out split, and a learned denoiser at two capacities spanning
-   86x in parameters — establishing that the effect is not a property of
-   the synthetic model in which it was isolated.
+   a case-disjoint held-out split, and a learned denoiser at two configurations spanning
+   86x in parameters — showing that the same divergence was also
+   observed with synthetic lesions inserted into real low-dose CT backgrounds.
 6. An open, deterministic implementation in which every reported number is regenerated from
    machine-readable outputs.
 
@@ -541,7 +541,7 @@ over all evaluations, Δ`d'`(PW) was
 +0.30
 (+0.29 to
 +0.30) — an ordering
-that follows observer efficiency, with the intermediate observer in between.
+consistent with differences in observer efficiency, with the intermediate observer in between.
 
 The observer-dependent benefit was `B` =
 +1.13
