@@ -706,7 +706,11 @@ def caption_list_block(readme: Path, *, supplementary: bool = False) -> str:
     captions = figure_captions(readme, supplementary=supplementary)
     prefix = "Figure S" if supplementary else "Figure "
     lines = ["## Figure captions", ""]
-    lines += [f"**{prefix}{i}.** {c}" for i, c in enumerate(captions, 1)]
+    # Capitalised the same way the caption beneath the figure is, so the two
+    # renderings of one caption do not differ by a letter.
+    lines += [
+        f"**{prefix}{i}.** {c[0].upper()}{c[1:]}" for i, c in enumerate(captions, 1)
+    ]
     return "\n\n".join(lines) + "\n"
 
 
