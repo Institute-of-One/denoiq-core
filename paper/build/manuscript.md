@@ -50,17 +50,16 @@ available in the input, and whether they survive an acquisition nobody controlle
 **Methods.** Two arms. *Controlled*: signal-known-exactly / background-known-exactly detection
 of a low-contrast disk on synthetic phantoms over a matrix of dose, noise correlation length
 and lesion configuration, with three deterministic denoisers (Gaussian, total variation,
-non-local means) and three observers — a prewhitening linear observer (PW), a channelised
-Hotelling observer (CHO), and a non-prewhitening observer with an eye filter (NPWE) used as a
-stylized surrogate for limited prewhitening efficiency. Each processed arm is referenced to the
+non-local means) and three observers: prewhitening linear (PW), channelised Hotelling
+(CHO), and non-prewhitening with an eye filter (NPWE). Each processed arm is referenced to the
 unprocessed arm of its own condition and to that input's **analytic** ideal-observer
 detectability — the ceiling the data-processing inequality [1] and the Neyman–Pearson lemma [2]
-place on any processing of it. Observer estimates are cross-fitted; uncertainty is by bootstrap
-over whole realisations; comparisons are Holm-adjusted. The matrix ran over
+place on any processing of it. Estimates are cross-fitted, uncertainty is by bootstrap over
+realisations, and comparisons are Holm-adjusted. The matrix ran over
 10 realisations
 (1,696,000 scored trials).
 *Real data*: 12 Siemens liver cases from LDCT-and-Projection-data,
-vendor reconstructions of the routine and quarter-dose acquisitions, a lesion of known size and
+vendor reconstructions of the routine and quarter-dose acquisitions, a synthetic lesion of known size and
 contrast inserted into real parenchyma, and a residual CNN trained on
 8 cases and evaluated on the 4 it
 never saw, at two capacities spanning 86× in parameters.
@@ -77,15 +76,9 @@ rank correlation between PSNR and `d'` was ρ =
 -0.29; the method with the best PSNR ranked
 6 of 7 on the task; and
 0 arms exceeded the closed-form ceiling in any real-data comparison.
-Raising network capacity 86-fold improved validation loss and
-gave the best PSNR in the study, 28.77 dB, while lowering
-detectability from 5.31 to 4.96.
+A larger configuration of the same architecture -- 86x the parameters, trained on more patches for more epochs -- improved validation loss and gave the best PSNR in the study, 28.77 dB, while lowering detectability from 5.31 to 4.96.
 
-**Conclusions.** Denoising effects are observer-dependent: processing may improve performance
-for an inefficient observer without increasing the task information available in the input.
-Fidelity gains alone do not establish task preservation, and on real low-dose CT they rank
-methods close to inversely to the task. The divergence is not an artefact of the controlled
-model in which it was isolated, nor of a network too small to be representative.
+**Conclusions.** Denoising effects differed by observer, in a direction consistent with differences in prewhitening efficiency: processing improved the estimate for the non-prewhitening observer while leaving the prewhitening observer no better, which would be redistribution of existing information rather than creation of new information. Fidelity gains alone do not establish task preservation, and on real low-dose CT they ranked methods close to inversely to the task. The divergence appeared in both arms and persisted under a substantially larger and longer-trained network of the same architecture.
 
 **Keywords:** low-dose CT; image denoising; deep learning; task-based image quality;
 model observer; detectability; fidelity–task divergence.
@@ -215,9 +208,9 @@ Three observers are estimated from images and scored out of fold (Section 2.5):
 2. A **channelised Hotelling observer** (CHO) on Laguerre–Gauss channels [14], an intermediate
    observer: tractable because a channel covariance can be estimated where a pixel covariance
    cannot.
-3. A **non-prewhitening observer with a Burgess eye filter** (NPWE) [15], used as a stylized
-   surrogate for limited noise-prewhitening efficiency. No human observer study was performed
-   here, and NPWE is not offered as a validated model of a human reader.
+3. A **non-prewhitening observer with a Burgess eye filter** (NPWE) [15], used as a
+   stylized surrogate for limited noise-prewhitening efficiency. No human observer study
+   was performed here, and NPWE is not offered as a validated model of a human reader.
 
 Separately, and only for the unprocessed input, we compute the **analytic ideal linear
 (prewhitening) observer** from the true signal and the analytic NPS. That quantity is exact for
@@ -630,7 +623,7 @@ denoiser is actually given — and the lesion exists only in the evaluation.
 **Result.** Figure 9 and Table 3 give the held-out comparison against the closed-form ceiling
 `d'` = 8.09:
 
-**Table 3.** The seven arms on the held-out real low-dose CT split, ordered by task detectability. `d'` is against the closed-form ceiling of the unprocessed input; PSNR is against the full-dose reconstruction. The two networks differ only in capacity.
+**Table 3.** The seven arms on the held-out real low-dose CT split, ordered by task detectability. `d'` is against the closed-form ceiling of the unprocessed input; PSNR is against the full-dose reconstruction. The two networks share an architecture, a training split and a seed. The larger differs in three respects at once -- parameters, training patches per case and epochs -- so this is not a controlled comparison of capacity alone.
 
 | method | `d'` | of ceiling | PSNR (dB) |
 |---|---|---|---|
@@ -658,17 +651,14 @@ real-data arm in this study — the held-out split, the 12-case run, and
 both operating points of Section 3.6.1. The bound the controlled matrix was built to test is not
 an artefact of the controlled matrix.
 
-*Capacity does not reverse the ordering; it deepens it.* The large network has
+*A larger network, trained longer on more data, does not reverse the ordering.* The large network has
 86 times the parameters of the small one
 (1849633 against 21385), was trained on
 3000 patches per case against
 800, and reached a better validation loss. It bought
 28.77 dB against 28.74 — the best
 PSNR in the study — and a `d'` of 4.96 against
-5.31. Raising capacity improved the objective the network was
-trained on and moved the task in the other direction. This bears directly on the scope of the
-claim: the divergence reported here is not an artefact of a network too small to be
-representative, which is the first objection such a result invites.
+5.31. The configuration that scored better on the objective it was trained against scored worse on the task. This bears on the scope of the claim, though less strongly than it may look. Capacity was not varied alone: the larger configuration also saw 3000 training patches per case against 800, and ran for 60 epochs against 16, so parameters, training data and training length moved together. What the comparison shows is that the divergence persisted when the network was made substantially larger and trained longer within this architecture. That weakens the first objection such a result invites -- that the network was too small to be representative -- without excluding it, and it says nothing about architectures not tried here.
 
 Two caveats are stated here rather than left for a reader to find. The large network's validation
 loss reached its minimum well before the last of its
@@ -734,10 +724,7 @@ measuring different things.
 
 The second is that the effect of denoising is observer-dependent in a systematic, quantifiable
 way. The same processing on the same images improved the non-prewhitening observer while leaving
-the prewhitening observer no better, with the channelised observer in between. That ordering
-follows observer efficiency, and it is the mechanism behind an apparent paradox in the
-literature: a denoiser can genuinely raise a reader's performance without any information being
-added, because the reader was not using all of it. The corollary is that a reported task
+the prewhitening observer no better, with the channelised observer in between. That ordering is consistent with differences in prewhitening efficiency, and offers a reading of an apparent paradox in the literature: a denoiser could genuinely raise a reader's performance without information being added, if the reader was not using all of it. The three observers differ in template, channel model and noise handling as well as in prewhitening efficiency, so this is a reading of the ordering rather than a controlled attribution. The corollary is that a reported task
 improvement is a statement about the observer as much as about the algorithm, and a study that
 does not say which observer it used has not reported an effect size.
 
@@ -784,8 +771,8 @@ processed data; the CHO is estimated by a different held-out scheme than the oth
 criterion `d'` = 5 is one chosen
 operational criterion, not a universal information boundary, and every gauge threshold is
 task-specific: clinical deployment would require re-specifying and validating all of them. No
-human observer study was performed, so the non-prewhitening observer stands only as a stylized
-surrogate for limited prewhitening efficiency. The classical denoisers are parameterized with the
+human observer study was performed, so the non-prewhitening observer stands only as a
+stylized surrogate for limited prewhitening efficiency. The classical denoisers are parameterized with the
 true noise level of the acquisition setting, which is more than a blind method would know. The
 learned denoiser is small, CPU-trained, evaluated at one setting, and does not represent the
 state of the art. The acquisition model is relative and analytic: it locates conditions on an
@@ -796,10 +783,7 @@ map, subject to its own bound, and is not studied here.
 
 ## 5. Conclusion
 
-Under a fixed data-processing ceiling, denoising produced measurable and systematic
-observer-dependent benefits: the same processing improved an inefficient observer while leaving
-an efficient one no better, which is redistribution of existing information rather than creation
-of new information. Reference-based fidelity gains frequently diverged from task performance, and
+Under a fixed data-processing ceiling, the effect of denoising differed systematically between observers: the same processing improved the non-prewhitening estimate while leaving the prewhitening one no better. That is consistent with redistribution of existing information rather than creation of new information, which the ceiling forbids in any case. Reference-based fidelity gains frequently diverged from task performance, and
 the divergence was not confined to extreme conditions. An operational information floor — a
 prespecified requirement on the input's detectability, not a boundary of zero information —
 identified the regime in which visual plausibility cannot establish that the required
