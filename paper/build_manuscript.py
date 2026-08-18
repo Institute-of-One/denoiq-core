@@ -228,6 +228,15 @@ def render(
         raise ResolutionError(
             "the manuscript cites values that cannot be resolved:\n  " + "\n  ".join(problems)
         )
+    # Medical Physics asks for figure captions beneath each figure and listed again
+    # after the references. build_pdf places the first; this appends the second,
+    # generated from paper/README.md so they are written in exactly one place. Only
+    # the document that has a reference list gets a caption list after it.
+    if "## References" in rendered:
+        import build_pdf  # noqa: PLC0415
+
+        captions = build_pdf.caption_list_block(PAPER_DIR / "README.md")
+        rendered = rendered.rstrip("\n") + "\n\n" + captions
     return rendered
 
 

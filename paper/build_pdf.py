@@ -696,6 +696,20 @@ DOCUMENT_TABLES = {
 # --------------------------------------------------------------------------------------
 
 
+def caption_list_block(readme: Path, *, supplementary: bool = False) -> str:
+    """The captions again, as a list after the references.
+
+    Medical Physics asks for captions beneath each figure *and* listed at the end. They
+    are still written once, in ``paper/README.md``; this renders that same list a second
+    time rather than letting anyone maintain two copies.
+    """
+    captions = figure_captions(readme, supplementary=supplementary)
+    prefix = "Figure S" if supplementary else "Figure "
+    lines = ["## Figure captions", ""]
+    lines += [f"**{prefix}{i}.** {c}" for i, c in enumerate(captions, 1)]
+    return "\n\n".join(lines) + "\n"
+
+
 def figure_captions(readme: Path, *, supplementary: bool = False) -> list[str]:
     """Figure captions, read from the table in ``paper/README.md``.
 

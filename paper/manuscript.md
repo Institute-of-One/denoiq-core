@@ -388,6 +388,23 @@ green / amber / red verdict with the rule that fired attached. Its thresholds ar
 author-set values, not clinically validated criteria; the complete rule set is given in
 Supplementary Methods, and verdict counts per stratum are reported in Section 3.5.
 
+### 2.9 Use of generative AI
+
+Generative AI (Claude, Anthropic, through the Claude Code command-line tool) was used as
+a tool in preparing this work: scaffolding and refactoring the released software,
+drafting unit tests, writing the figure and analysis scripts, and drafting and revising
+manuscript prose. It was not used to design the study, to choose the endpoints, or to
+decide what the results mean.
+
+No numerical result came from the model. Every number, table and figure in this
+manuscript is emitted by executed code into machine-readable files under `results/`, and
+the text resolves against those files at build time; the test suite fails if the two
+disagree, so a value cannot be typed into the prose. Every reference was checked against
+its Crossref record before being cited. The author designed the study, re-executed every
+result and verified all figures, equations and claims against the code, and is solely
+accountable for the content. No AI system is an author. This disclosure follows ICMJE and
+COPE guidance and is repeated under Disclosures.
+
 ## 3. Results
 
 ### 3.1 Study design and evaluated conditions (Table 1)

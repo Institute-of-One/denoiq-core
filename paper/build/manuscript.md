@@ -388,6 +388,23 @@ green / amber / red verdict with the rule that fired attached. Its thresholds ar
 author-set values, not clinically validated criteria; the complete rule set is given in
 Supplementary Methods, and verdict counts per stratum are reported in Section 3.5.
 
+### 2.9 Use of generative AI
+
+Generative AI (Claude, Anthropic, through the Claude Code command-line tool) was used as
+a tool in preparing this work: scaffolding and refactoring the released software,
+drafting unit tests, writing the figure and analysis scripts, and drafting and revising
+manuscript prose. It was not used to design the study, to choose the endpoints, or to
+decide what the results mean.
+
+No numerical result came from the model. Every number, table and figure in this
+manuscript is emitted by executed code into machine-readable files under `results/`, and
+the text resolves against those files at build time; the test suite fails if the two
+disagree, so a value cannot be typed into the prose. Every reference was checked against
+its Crossref record before being cited. The author designed the study, re-executed every
+result and verified all figures, equations and claims against the code, and is solely
+accountable for the content. No AI system is an author. This disclosure follows ICMJE and
+COPE guidance and is repeated under Disclosures.
+
 ## 3. Results
 
 ### 3.1 Study design and evaluated conditions (Table 1)
@@ -862,3 +879,25 @@ This work received no external funding.
 16. K. Zhang, W. Zuo, Y. Chen, D. Meng, and L. Zhang, "Beyond a Gaussian denoiser: residual learning of deep CNN for image denoising," *IEEE Trans. Image Process.* **26**(7), 3142–3155 (2017) [doi:10.1109/TIP.2017.2662206].
 17. J. A. Hanley and B. J. McNeil, "The meaning and use of the area under a receiver operating characteristic (ROC) curve," *Radiology* **143**(1), 29–36 (1982) [doi:10.1148/radiology.143.1.7063747].
 18. A. Rose, "The sensitivity performance of the human eye on an absolute scale," *J. Opt. Soc. Am.* **38**(2), 196–208 (1948) [doi:10.1364/JOSA.38.000196].
+
+## Figure captions
+
+
+
+**Figure 1.** signal-present and signal-absent images at one setting, for the unprocessed input and each classical denoiser, on a common display window
+
+**Figure 2.** SSIM and PSNR against relative dose in the representative realisation — the fidelity view
+
+**Figure 3.** task `d'` against relative dose for the three estimated observers, with the analytic ideal-observer ceiling of the unprocessed input
+
+**Figure 4.** fidelity–task divergence: ΔSSIM against Δ`d'`(PW), processed minus unprocessed, for every arm–realisation evaluation, with the divergent quadrant shaded and the per-realisation divergence rates beside it
+
+**Figure 5.** observer-dependent benefit: Δ`d'` for the prewhitening, channelised Hotelling and non-prewhitening observers, and their difference B, per denoiser with clustered 95 % intervals
+
+**Figure 6.** cross-fitted prewhitening AUC after processing against the analytic ceiling of the unprocessed input, with the identity line and an inset over the unsaturated range
+
+**Figure 7.** the kV–mAs detectability atlas and the operational floor, the contour where the input's ideal `d'` crosses the prespecified criterion
+
+**Figure 8.** failure patterns by floor stratum: divergence, contrast erasure, excess lesion-like responses and mean task degradation, with clustered 95 % intervals
+
+**Figure 9.** the real low-dose CT arm: task `d'` against PSNR for the seven held-out methods with the closed-form ceiling marked, and what raising network capacity 86-fold did to each
