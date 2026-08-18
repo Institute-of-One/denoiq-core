@@ -51,3 +51,4 @@ paper/build/*.docx
 # including the institution names that must not appear anywhere in the public repository.
 *_PROPOSAL.md
 paper/cover_letter_medphys.txt
+paper/susy_medphys_fields.txt
