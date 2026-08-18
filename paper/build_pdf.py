@@ -119,6 +119,7 @@ FIGURE_FILES = (
     "fig6_dpi_ceiling.png",
     "fig7_redlamp_atlas.png",
     "fig8_floor_strata.png",
+    "fig9_real_liver.png",
 )
 SUPPLEMENTARY_FIGURE_FILES = ("figS1_redlamp_console.png",)
 

@@ -225,7 +225,8 @@ def figure3_task_vs_dose(path: Path, dose: dict[str, Any]) -> Path:
     rows = dose["rows"]
     order = _denoiser_order(rows)
     with plt.rc_context(_STYLE):
-        fig, axes = plt.subplots(1, 3, figsize=(9.6, 3.1), constrained_layout=True, sharey=True)
+        # 9.6 in reduces to 0.67 in a text column and takes the tick labels with it.
+        fig, axes = plt.subplots(1, 3, figsize=(7.4, 2.9), constrained_layout=True, sharey=True)
         for ax, observer, title in zip(
             axes,
             ("ideal", "cho", "npwe"),

@@ -92,9 +92,7 @@ def main() -> int:
         "held_out": {
             # Keyed by slug as well as listed, because the manuscript's marker syntax
             # cannot address a list element by a label containing spaces and brackets.
-            "by_method": {
-                SLUGS[r["label"]]: r for r in rows if r["label"] in SLUGS
-            },
+            "by_method": {SLUGS[r["label"]]: r for r in rows if r["label"] in SLUGS},
             "ceiling": ceiling,
             "train_cases": small["train"],
             "test_cases": sorted(small["test"]),
@@ -177,8 +175,10 @@ def main() -> int:
         )
     s = h["spearman_psnr_vs_d_prime"]
     print(f"\nSpearman(PSNR, d') = {s['rho']:+.3f} (p = {s['p_value']:.2f}, n = {s['n']})")
-    print(f"best PSNR is {h['best_psnr']['label']}, ranked {h['psnr_winner_task_rank']} of "
-          f"{h['n_methods']} on the task")
+    print(
+        f"best PSNR is {h['best_psnr']['label']}, ranked {h['psnr_winner_task_rank']} of "
+        f"{h['n_methods']} on the task"
+    )
     print(f"capacity ratio {payload['capacity']['parameter_ratio']:.1f}x")
     print(f"exceedances of the ceiling, all arms: {payload['all_exceedances']}")
     print(f"\nwrote {OUT}")

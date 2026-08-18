@@ -119,6 +119,7 @@ not is a test failure rather than a reviewer's discovery.
 | Fig 6 | cross-fitted prewhitening AUC after processing against the analytic ceiling of the unprocessed input, with the identity line and an inset over the unsaturated range |
 | Fig 7 | the kV–mAs detectability atlas and the operational floor, the contour where the input's ideal `d'` crosses the prespecified criterion |
 | Fig 8 | failure patterns by floor stratum: divergence, contrast erasure, excess lesion-like responses and mean task degradation, with clustered 95 % intervals |
+| Fig 9 | the real low-dose CT arm: task `d'` against PSNR for the seven held-out methods with the closed-form ceiling marked, and what raising network capacity 86-fold did to each |
 | Fig S1 | the red-lamp console for the learned denoiser: the input's detectability against the floor, unprocessed and processed tiles, and each verdict with its reason |
 
 Tables 1 and 2 are `results/closed_form.*` and `results/task_gains.*`; format them to the

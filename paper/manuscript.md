@@ -610,8 +610,10 @@ through a normalising wrapper is not the network that was trained. The network n
 lesion — its targets are full-dose reconstructions of ordinary anatomy, which is what a
 denoiser is actually given — and the lesion exists only in the evaluation.
 
-**Result.** The held-out comparison against the closed-form ceiling
+**Result.** Figure 9 and Table 3 give the held-out comparison against the closed-form ceiling
 `d'` = [[results:real_liver.json:held_out.ceiling|.2f]]:
+
+**Table 3.** The seven arms on the held-out real low-dose CT split, ordered by task detectability. `d'` is against the closed-form ceiling of the unprocessed input; PSNR is against the full-dose reconstruction. The two networks differ only in capacity.
 
 | method | `d'` | of ceiling | PSNR (dB) |
 |---|---|---|---|
@@ -845,12 +847,12 @@ This work received no external funding.
 1. T. M. Cover and J. A. Thomas, *Elements of Information Theory*, 2nd ed., Wiley, Hoboken, New Jersey (2006). (Data-processing inequality, Ch. 2.)
 2. J. Neyman and E. S. Pearson, "On the problem of the most efficient tests of statistical hypotheses," *Philos. Trans. R. Soc. Lond. A* **231**, 289–337 (1933) [doi:10.1098/rsta.1933.0009].
 3. K. Li, W. Zhou, H. Li, and M. A. Anastasio, "Assessing the impact of deep neural network-based image denoising on binary signal detection tasks," *IEEE Trans. Med. Imaging* **40**(9), 2295–2305 (2021) [doi:10.1109/TMI.2021.3076810].
-4. Z. Yu, M. A. Rahman, R. Laforest, T. H. Schindler, R. J. Gropler, R. L. Wahl, B. A. Siegel, and A. K. Jha, "Need for objective task-based evaluation of deep learning-based denoising methods: a study in the context of myocardial perfusion SPECT," *Med. Phys.* **50**(7), 4122–4137 (2023) [doi:10.1002/mp.16407].
+4. Z. Yu, M. A. Rahman, R. Laforest, et al., "Need for objective task-based evaluation of deep learning-based denoising methods: a study in the context of myocardial perfusion SPECT," *Med. Phys.* **50**(7), 4122–4137 (2023) [doi:10.1002/mp.16407].
 5. J. Li, W. Wang, M. Tivnan, J. W. Stayman, and G. J. Gang, "Performance assessment framework for neural network denoising," *Proc. SPIE* **12031**, 1203114 (2022) [doi:10.1117/12.2612732].
 6. K. Li, H. Li, and M. A. Anastasio, "Investigating the use of signal detection information in supervised learning-based image denoising with consideration of task-shift," *J. Med. Imaging* **11**(5), 055501 (2024) [doi:10.1117/1.JMI.11.5.055501].
 7. S. Bhadra, V. A. Kelkar, F. J. Brooks, and M. A. Anastasio, "On hallucinations in tomographic image reconstruction," *IEEE Trans. Med. Imaging* **40**(11), 3249–3260 (2021) [doi:10.1109/TMI.2021.3077857].
 8. E. Eulig, B. Ommer, and M. Kachelrieß, "Benchmarking deep learning-based low-dose CT image denoising algorithms," *Med. Phys.* **51**(12), 8776–8788 (2024) [doi:10.1002/mp.17379].
-9. B. J. Nelson, P. Kc, A. Badal, L. Jiang, et al., "Pediatric evaluations for deep learning CT denoising," *Med. Phys.* **51**(2), 978–990 (2024) [doi:10.1002/mp.16901].
+9. B. J. Nelson, P. Kc, A. Badal, L. Jiang, S. C. Masters, and R. Zeng, "Pediatric evaluations for deep learning CT denoising," *Med. Phys.* **51**(2), 978–990 (2024) [doi:10.1002/mp.16901].
 10. H. H. Barrett, K. J. Myers, C. Hoeschen, M. A. Kupinski, and M. P. Little, "Task-based measures of image quality and their relation to radiation dose and patient risk," *Phys. Med. Biol.* **60**(2), R1–R75 (2015) [doi:10.1088/0031-9155/60/2/R1].
 11. H. H. Barrett and K. J. Myers, *Foundations of Image Science*, Wiley, Hoboken, New Jersey (2004).
 12. H. H. Barrett, "Objective assessment of image quality: effects of quantum noise and object variability," *J. Opt. Soc. Am. A* **7**(7), 1266–1278 (1990) [doi:10.1364/JOSAA.7.001266].
