@@ -87,8 +87,8 @@ Fidelity gains alone do not establish task preservation, and on real low-dose CT
 methods close to inversely to the task. The divergence is not an artefact of the controlled
 model in which it was isolated, nor of a network too small to be representative.
 
-**Keywords:** denoising; task-based image quality; model observer; detectability;
-fidelity–task divergence; observer efficiency; operational information floor.
+**Keywords:** low-dose CT; image denoising; deep learning; task-based image quality;
+model observer; detectability; fidelity–task divergence.
 
 ## 1. Introduction
 

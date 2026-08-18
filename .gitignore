@@ -50,3 +50,4 @@ paper/build/*.docx
 # this open core deliberately excludes, and they quote the affiliation policy verbatim —
 # including the institution names that must not appear anywhere in the public repository.
 *_PROPOSAL.md
+paper/cover_letter_medphys.txt
