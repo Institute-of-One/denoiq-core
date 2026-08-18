@@ -139,7 +139,24 @@ al. [10].
 What is not established quantitatively is *how* these effects vary: how strongly fidelity
 gains predict task changes across imaging conditions, how the effect depends on the efficiency
 of the observer doing the looking, and how failure patterns distribute relative to the
-detectability available in the input. A benchmark also answers a different question from the one asked here: it ranks methods
+detectability available in the input.
+
+Task-based evaluation of CT denoising and deep-learning reconstruction is neither new nor
+uniformly negative, and the scope of what follows is set by that. Greffier et al. characterised
+two generations of a deep-learning reconstruction against noise power spectrum, task transfer
+function and a detectability index across dose [11,12]; Fan et al. evaluated a deep-CNN
+reconstruction with a channelised Hotelling observer on the ACR phantom [13]; and Tivnan et al.
+optimised a tunable network against low-contrast lesion detectability directly, rather than
+against fidelity [14]. These report conditions under which such methods raise detectability, not
+merely fidelity. Toia et al. put the two kinds of observer side by side on one algorithm: dose
+reductions of up to ninety per cent were judged non-inferior by twenty-four human readers,
+and up to seventy per cent by a task-based model observer [15].
+
+The question here is therefore not whether denoising can help a task — it can — but how far the
+answer depends on which observer is asked and on how much detectability the input carried, and
+whether an improvement in fidelity is evidence of either.
+
+A benchmark also answers a different question from the one asked here: it ranks methods
 against each other, whereas an analytic ceiling bounds what *any* processing of a given input
 can attain, so the question becomes how much of the information already present survives.
 This study measures all three on one controlled matrix,
@@ -182,8 +199,8 @@ its role here is measurement-chain validation and leakage control (Sections 2.5 
 
 The task is signal-known-exactly / background-known-exactly (SKE/BKE) detection of a
 low-contrast disk on a uniform background, the standard paradigm of objective, task-based
-assessment [11,12]. Trials, phantoms, model observers and the ROC
-machinery are reused from `taskiq-core` [13] (version
+assessment [16,17]. Trials, phantoms, model observers and the ROC
+machinery are reused from `taskiq-core` [18] (version
 0.4.0) rather than reimplemented; the trial
 generator returns, with the image stacks, the **analytic** noise power spectrum (NPS) of the
 noise it generated, which is what allows an observer to be evaluated in closed form with
@@ -205,10 +222,10 @@ Three observers are estimated from images and scored out of fold (Section 2.5):
 1. The **held-out prewhitening linear observer** (PW): the class-mean difference prewhitened by
    the measured NPS. This is the efficient observer of the study, and the one every
    processed-image comparison uses.
-2. A **channelised Hotelling observer** (CHO) on Laguerre–Gauss channels [14], an intermediate
+2. A **channelised Hotelling observer** (CHO) on Laguerre–Gauss channels [19], an intermediate
    observer: tractable because a channel covariance can be estimated where a pixel covariance
    cannot.
-3. A **non-prewhitening observer with a Burgess eye filter** (NPWE) [15], used as a
+3. A **non-prewhitening observer with a Burgess eye filter** (NPWE) [20], used as a
    stylized surrogate for limited noise-prewhitening efficiency. No human observer study
    was performed here, and NPWE is not offered as a validated model of a human reader.
 
@@ -243,7 +260,7 @@ variation with weight
 0.4 × the noise
 standard deviation, and non-local means with `h` =
 0.6 × the noise standard
-deviation. A small residual convolutional network in the style of DnCNN [16] is evaluated
+deviation. A small residual convolutional network in the style of DnCNN [21] is evaluated
 separately (Section 3.6) and is not part of the primary matrix.
 
 The Gaussian filter is `scipy.ndimage.gaussian_filter` with `mode=scipy.ndimage.gaussian_filter, mode='nearest'`; total variation is `skimage.restoration.denoise_tv_chambolle` applied as skimage.restoration.denoise_tv_chambolle, channel_axis=None, applied to the mean-removed plane and the mean restored, so the filter is shift-invariant; non-local means is `skimage.restoration.denoise_nl_means` with skimage.restoration.denoise_nl_means, fast_mode=True, patch_size=5, patch_distance=6, sigma=h. Library versions are recorded with the provenance of every run.
@@ -310,7 +327,7 @@ The ceiling comparison, reported as validation in Section 3.4, tests
 
 `AUC_PW(g(X)) ≤ AUC_ceiling(X) + m`, with `m = z·SE + 1/(n₁n₀)`,
 
-`z` = `1.96`, `SE` the Hanley–McNeil standard error [17] of the scored AUC, and the second term
+`z` = `1.96`, `SE` the Hanley–McNeil standard error [22] of the scored AUC, and the second term
 one quantisation step of the Mann–Whitney statistic. The comparison is made at every arm, and it
 is reported twice: at the armwise margin above, and at a *simultaneous* margin in which `z` is
 widened by Bonferroni to a family-wise level of `0.05` over all arm–realisation comparisons. The
@@ -374,7 +391,7 @@ the analysis module and written to `results/statistics.json`; none is typed.
 ### 2.8 The operational floor and the gauge
 
 The floor is the contour where the input's analytic ceiling `d'` crosses a prespecified
-requirement, here the Rose criterion [18] at
+requirement, here the Rose criterion [23] at
 `d'` = 5. It is used in this
 paper as a stratifying variable, and it is not a zero-information boundary.
 
@@ -919,14 +936,19 @@ This work received no external funding.
 8. E. Eulig, B. Ommer, and M. Kachelrieß, "Benchmarking deep learning-based low-dose CT image denoising algorithms," *Med. Phys.* **51**(12), 8776–8788 (2024) [doi:10.1002/mp.17379].
 9. B. J. Nelson, P. Kc, A. Badal, L. Jiang, S. C. Masters, and R. Zeng, "Pediatric evaluations for deep learning CT denoising," *Med. Phys.* **51**(2), 978–990 (2024) [doi:10.1002/mp.16901].
 10. H. H. Barrett, K. J. Myers, C. Hoeschen, M. A. Kupinski, and M. P. Little, "Task-based measures of image quality and their relation to radiation dose and patient risk," *Phys. Med. Biol.* **60**(2), R1–R75 (2015) [doi:10.1088/0031-9155/60/2/R1].
-11. H. H. Barrett and K. J. Myers, *Foundations of Image Science*, Wiley, Hoboken, New Jersey (2004).
-12. H. H. Barrett, "Objective assessment of image quality: effects of quantum noise and object variability," *J. Opt. Soc. Am. A* **7**(7), 1266–1278 (1990) [doi:10.1364/JOSAA.7.001266].
-13. S. Yamamoto, "taskiq-core: task-based image quality on synthetic phantoms," Zenodo (2026) [doi:10.5281/zenodo.21422924].
-14. K. J. Myers and H. H. Barrett, "Addition of a channel mechanism to the ideal-observer model," *J. Opt. Soc. Am. A* **4**(12), 2447–2457 (1987) [doi:10.1364/JOSAA.4.002447].
-15. A. E. Burgess, "Visual signal detection with two-component noise: low-pass spectrum effects," *J. Opt. Soc. Am. A* **16**(3), 694–704 (1999) [doi:10.1364/JOSAA.16.000694].
-16. K. Zhang, W. Zuo, Y. Chen, D. Meng, and L. Zhang, "Beyond a Gaussian denoiser: residual learning of deep CNN for image denoising," *IEEE Trans. Image Process.* **26**(7), 3142–3155 (2017) [doi:10.1109/TIP.2017.2662206].
-17. J. A. Hanley and B. J. McNeil, "The meaning and use of the area under a receiver operating characteristic (ROC) curve," *Radiology* **143**(1), 29–36 (1982) [doi:10.1148/radiology.143.1.7063747].
-18. A. Rose, "The sensitivity performance of the human eye on an absolute scale," *J. Opt. Soc. Am.* **38**(2), 196–208 (1948) [doi:10.1364/JOSA.38.000196].
+11. J. Greffier, D. Dabli, J. Frandon, et al., "Comparison of two versions of a deep learning image reconstruction algorithm on CT image quality and dose reduction: a phantom study," *Med. Phys.* **48**(10), 5743–5755 (2021) [doi:10.1002/mp.15180].
+12. J. Greffier, S. Si-Mohamed, J. Frandon, et al., "Impact of an artificial intelligence deep-learning reconstruction algorithm for CT on image quality and potential dose reduction: a phantom study," *Med. Phys.* **49**(8), 5052–5063 (2022) [doi:10.1002/mp.15807].
+13. M. Fan, Z. Zhou, T. Vrieze, et al., "Efficient evaluation of low-contrast detectability of deep-CNN-based CT reconstruction using channelized Hotelling observer on the ACR accreditation phantom," in *Medical Imaging 2022: Physics of Medical Imaging*, Proc. SPIE (2022) [doi:10.1117/12.2612414].
+14. M. Tivnan, T. Lee, R. Zhang, et al., "Task-driven CT image quality optimization for low-contrast lesion detectability with tunable neural networks," in *Medical Imaging 2023: Physics of Medical Imaging*, Proc. SPIE (2023) [doi:10.1117/12.2653936].
+15. G. Toia, D. Zamora, M. Singleton, et al., "Detectability of small low-attenuation lesions with deep learning CT image reconstruction: a 24-reader phantom study," *AJR Am. J. Roentgenol.* **220**(2), 283–295 (2023) [doi:10.2214/AJR.22.28407].
+16. H. H. Barrett and K. J. Myers, *Foundations of Image Science*, Wiley, Hoboken, New Jersey (2004).
+17. H. H. Barrett, "Objective assessment of image quality: effects of quantum noise and object variability," *J. Opt. Soc. Am. A* **7**(7), 1266–1278 (1990) [doi:10.1364/JOSAA.7.001266].
+18. S. Yamamoto, "taskiq-core: task-based image quality on synthetic phantoms," Zenodo (2026) [doi:10.5281/zenodo.21422924].
+19. K. J. Myers and H. H. Barrett, "Addition of a channel mechanism to the ideal-observer model," *J. Opt. Soc. Am. A* **4**(12), 2447–2457 (1987) [doi:10.1364/JOSAA.4.002447].
+20. A. E. Burgess, "Visual signal detection with two-component noise: low-pass spectrum effects," *J. Opt. Soc. Am. A* **16**(3), 694–704 (1999) [doi:10.1364/JOSAA.16.000694].
+21. K. Zhang, W. Zuo, Y. Chen, D. Meng, and L. Zhang, "Beyond a Gaussian denoiser: residual learning of deep CNN for image denoising," *IEEE Trans. Image Process.* **26**(7), 3142–3155 (2017) [doi:10.1109/TIP.2017.2662206].
+22. J. A. Hanley and B. J. McNeil, "The meaning and use of the area under a receiver operating characteristic (ROC) curve," *Radiology* **143**(1), 29–36 (1982) [doi:10.1148/radiology.143.1.7063747].
+23. A. Rose, "The sensitivity performance of the human eye on an absolute scale," *J. Opt. Soc. Am.* **38**(2), 196–208 (1948) [doi:10.1364/JOSA.38.000196].
 
 ## Figure captions
 
