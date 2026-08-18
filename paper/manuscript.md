@@ -123,9 +123,9 @@ not follow from it, and this paper is about the gap between them.
 The gap has a precise shape. Denoising is a function of the image it is given, so hypothesis
 `H`, input image `X` and processed image `Y = g(X)` form a Markov chain `H → X → Y`. Two
 consequences follow, and they should be distinguished rather than merged. First, the
-data-processing inequality gives `I(H;Y) ≤ I(H;X)`: processing cannot increase the mutual
+data-processing inequality [1] gives `I(H;Y) ≤ I(H;X)`: processing cannot increase the mutual
 information between the image and the truth. Second, for binary detection, the Neyman–Pearson
-lemma implies that the likelihood-ratio test on `X` attains an ROC curve that no test based
+lemma [2] implies that the likelihood-ratio test on `X` attains an ROC curve that no test based
 only on `Y` can dominate; in particular its AUC is an upper bound. Mutual information and AUC
 are not interchangeable, and no monotone map between them is assumed here: they are two
 distinct consequences of the same Markov structure, and it is the second that this study
@@ -159,13 +159,20 @@ for myocardial perfusion SPECT that denoising improved RMSE and SSIM while frequ
 degrading detection performance; Li et al. [12] proposed a framework for mapping the nonlinear
 system and noise response of such algorithms; and task-informed training [13] shows the
 trade-off can be shifted but not escaped. Hallucination in reconstruction has been
-characterised in terms of a task-relevant null space [14]. The relation between task-based
-image quality and dose is treated comprehensively by Barrett et al. [8].
+characterised in terms of a task-relevant null space [14]. In CT specifically, Eulig et al.
+[17] benchmarked deep low-dose CT denoisers on the downstream detection and diagnosis of
+lesions rather than on fidelity alone, and Nelson et al. [18] found that a network trained on
+adult images changes low-contrast detectability differently on paediatric-sized phantoms. The
+relation between task-based image quality and dose is treated comprehensively by Barrett et
+al. [8].
 
 What is not established quantitatively is *how* these effects vary: how strongly fidelity
 gains predict task changes across imaging conditions, how the effect depends on the efficiency
 of the observer doing the looking, and how failure patterns distribute relative to the
-detectability available in the input. This study measures all three on one controlled matrix,
+detectability available in the input. A benchmark also answers a different question from the one asked here: it ranks methods
+against each other, whereas an analytic ceiling bounds what *any* processing of a given input
+can attain, so the question becomes how much of the information already present survives.
+This study measures all three on one controlled matrix,
 with an analytic reference that removes the usual ambiguity about whether an apparent loss is
 real or an artefact of the estimator, and with repeated independent realisations so that
 effect sizes come with intervals.
@@ -204,8 +211,9 @@ its role here is measurement-chain validation and leakage control (Sections 2.5 
 ### 2.1 Task, observers, and what "input" means
 
 The task is signal-known-exactly / background-known-exactly (SKE/BKE) detection of a
-low-contrast disk on a uniform background. Trials, phantoms, model observers and the ROC
-machinery are reused from `taskiq-core` (version
+low-contrast disk on a uniform background, the standard paradigm of objective, task-based
+assessment [3,4]. Trials, phantoms, model observers and the ROC
+machinery are reused from `taskiq-core` [16] (version
 [[results:statistics.json:provenance.taskiq_core]]) rather than reimplemented; the trial
 generator returns, with the image stacks, the **analytic** noise power spectrum (NPS) of the
 noise it generated, which is what allows an observer to be evaluated in closed form with
@@ -873,3 +881,5 @@ This work received no external funding.
 14. S. Bhadra, V. A. Kelkar, F. J. Brooks, and M. A. Anastasio, "On hallucinations in tomographic image reconstruction," *IEEE Trans. Med. Imaging* **40**(11), 3249–3260 (2021) [doi:10.1109/TMI.2021.3077857].
 15. K. Zhang, W. Zuo, Y. Chen, D. Meng, and L. Zhang, "Beyond a Gaussian denoiser: residual learning of deep CNN for image denoising," *IEEE Trans. Image Process.* **26**(7), 3142–3155 (2017) [doi:10.1109/TIP.2017.2662206].
 16. S. Yamamoto, "taskiq-core: task-based image quality on synthetic phantoms," Zenodo (2026) [doi:10.5281/zenodo.21422924].
+17. E. Eulig, B. Ommer, and M. Kachelrieß, "Benchmarking deep learning-based low-dose CT image denoising algorithms," *Med. Phys.* **51**(12), 8776–8788 (2024) [doi:10.1002/mp.17379].
+18. B. J. Nelson, P. Kc, A. Badal, L. Jiang, et al., "Pediatric evaluations for deep learning CT denoising," *Med. Phys.* **51**(2), 978–990 (2024) [doi:10.1002/mp.16901].
