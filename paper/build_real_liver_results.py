@@ -37,6 +37,49 @@ TRAINING = {
 }
 
 
+#: Configuration of the real-data arm, transcribed from ldct-io examples/liver_cnn.py
+#: and denoiq_core/denoisers.py. Recorded so the Methods can resolve them as markers
+#: rather than typing numbers into the prose, where they could drift from the code.
+SPEC = {
+    "lesion": {
+        "diameter_mm": 8.0,
+        "contrast_hu": -25.0,
+        "edge_sigma_mm": 0.5,
+        "supersample": 4,
+        "roi_px": 48,
+    },
+    "sites": {
+        "hu_range_low": 0.0,
+        "hu_range_high": 160.0,
+        "max_sd_hu": 60.0,
+        "slice_halfwidth": 25,
+        "max_per_case": 250,
+        "min_per_case": 16,
+    },
+    "cnn": {
+        "small": {"depth": 6, "width": 24, "kernel": 3},
+        "large": {"depth": 10, "width": 96, "kernel": 5},
+        "patch_px": 64,
+        "optimiser": "Adam",
+        "learning_rate": 0.001,
+        "formulation": "the network predicts the noise, which is subtracted from its input",
+    },
+    "arms": {
+        "gaussian_small_mm": 0.75,
+        "gaussian_large_mm": 1.00,
+        "tv_weight_x_noise": 1.0,
+        "nlm_h_x_noise": 0.8,
+    },
+    "implementation": {
+        "gaussian": "scipy.ndimage.gaussian_filter, mode='nearest'",
+        "tv": "skimage.restoration.denoise_tv_chambolle, channel_axis=None, applied to the "
+        "mean-removed plane and the mean restored, so the filter is shift-invariant",
+        "nlm": "skimage.restoration.denoise_nl_means, fast_mode=True, patch_size=5, "
+        "patch_distance=6, sigma=h",
+    },
+}
+
+
 SLUGS = {
     "none": "unprocessed",
     "gaussian 0.75 mm": "gauss075",
@@ -130,6 +173,7 @@ def main() -> int:
                 "large": large["sha256"],
             },
         },
+        "spec": SPEC,
         "all_cases": {
             "ceiling": ceiling_run["ceiling"],
             "n_cases": len(ceiling_run["cases"]),

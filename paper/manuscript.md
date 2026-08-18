@@ -246,6 +246,8 @@ standard deviation, and non-local means with `h` =
 deviation. A small residual convolutional network in the style of DnCNN [16] is evaluated
 separately (Section 3.6) and is not part of the primary matrix.
 
+The Gaussian filter is `scipy.ndimage.gaussian_filter` with `mode=[[results:real_liver.json:spec.implementation.gaussian]]`; total variation is `skimage.restoration.denoise_tv_chambolle` applied as [[results:real_liver.json:spec.implementation.tv]]; non-local means is `skimage.restoration.denoise_nl_means` with [[results:real_liver.json:spec.implementation.nlm]]. Library versions are recorded with the provenance of every run.
+
 **Where the noise level comes from, and why it does not break the bound.** For total variation
 and non-local means the noise standard deviation used to set the parameter is the *true*
 simulation value for that acquisition setting: a setting-informed (oracle) parameterization,
@@ -380,6 +382,68 @@ The study also carries an auditable rule-based translation of the measured quant
 green / amber / red verdict with the rule that fired attached. Its thresholds are task-specific
 author-set values, not clinically validated criteria; the complete rule set is given in
 Supplementary Methods, and verdict counts per stratum are reported in Section 3.5.
+
+### 2.10 The real low-dose CT arm
+
+**Images.** Twelve Siemens liver cases from LDCT-and-Projection-data, using the vendor
+reconstructions of both the routine-dose and the simulated quarter-dose acquisition. Nothing is
+re-reconstructed. The quarter-dose noise field is taken as the difference between the two
+reconstructions of the same anatomy, so the noise carried into every trial is the acquisition's
+own and not a model of it.
+
+**Lesion insertion.** A patient scan has no ground truth: the lesions in it were found by a
+reader, at a contrast nobody measured. A **synthetic** lesion of known size and amplitude is
+therefore inserted into real parenchyma, which keeps the background that makes the task hard and
+supplies the truth that makes it measurable. The lesion is a disk of
+[[results:real_liver.json:spec.lesion.diameter_mm|.0f]] mm diameter and [[results:real_liver.json:spec.lesion.contrast_hu|.0f]] HU
+contrast, with a Gaussian edge of [[results:real_liver.json:spec.lesion.edge_sigma_mm|.1f]] mm, rendered on a grid
+supersampled [[results:real_liver.json:spec.lesion.supersample]]-fold so its own edge is not a one-pixel staircase,
+and added **after** reconstruction. The one assumption this makes is stated rather than left
+implicit: an inserted lesion does not carry the reconstruction's own response to a real lesion of
+that contrast, so the arm measures detection of a known additive signal in real anatomy and
+real noise, not detection of pathology.
+
+**Where lesions are placed.** Candidate sites are regions of interest of
+[[results:real_liver.json:spec.lesion.roi_px]] pixels whose mean lies between [[results:real_liver.json:spec.sites.hu_range_low|.0f]] and
+[[results:real_liver.json:spec.sites.hu_range_high|.0f]] HU and whose standard deviation is below
+[[results:real_liver.json:spec.sites.max_sd_hu|.0f]] HU, drawn from the
+[[results:real_liver.json:spec.sites.slice_halfwidth]] slices either side of the middle of each case. Up to
+[[results:real_liver.json:spec.sites.max_per_case]] sites are used per case and a case contributing fewer than
+[[results:real_liver.json:spec.sites.min_per_case]] is dropped. Signal-present and signal-absent trials are built at
+the same sites from the same background, so the pair differs only by the lesion.
+
+**Denoisers.** The classical arms use the implementations of Section 2.3, parameterized in
+physical units for this data: Gaussian filters of [[results:real_liver.json:spec.arms.gaussian_small_mm|.2f]] mm and
+[[results:real_liver.json:spec.arms.gaussian_large_mm|.2f]] mm, total variation at
+[[results:real_liver.json:spec.arms.tv_weight_x_noise|.0f]]× and non-local means at
+[[results:real_liver.json:spec.arms.nlm_h_x_noise|.1f]]× the measured noise standard deviation.
+
+**Network.** A residual convolutional denoiser in the DnCNN formulation:
+[[results:real_liver.json:spec.cnn.formulation]]. Two configurations are evaluated — the smaller with
+[[results:real_liver.json:spec.cnn.small.depth]] layers of [[results:real_liver.json:spec.cnn.small.width]] channels and
+[[results:real_liver.json:spec.cnn.small.kernel]]×[[results:real_liver.json:spec.cnn.small.kernel]] kernels
+([[results:real_liver.json:capacity.small.parameters]] parameters), the larger with
+[[results:real_liver.json:spec.cnn.large.depth]] layers of [[results:real_liver.json:spec.cnn.large.width]] channels and
+[[results:real_liver.json:spec.cnn.large.kernel]]×[[results:real_liver.json:spec.cnn.large.kernel]] kernels
+([[results:real_liver.json:capacity.large.parameters]] parameters). Both are trained on
+[[results:real_liver.json:spec.cnn.patch_px]]×[[results:real_liver.json:spec.cnn.patch_px]] quarter-dose / routine-dose patch pairs with
+[[results:real_liver.json:spec.cnn.optimiser]] at a learning rate of [[results:real_liver.json:spec.cnn.learning_rate]], the smaller for
+[[results:real_liver.json:capacity.small.epochs]] epochs at batch [[results:real_liver.json:capacity.small.batch]] on
+[[results:real_liver.json:capacity.small.patches_per_case]] patches per case, the larger for
+[[results:real_liver.json:capacity.large.epochs]] epochs at batch [[results:real_liver.json:capacity.large.batch]] on
+[[results:real_liver.json:capacity.large.patches_per_case]] patches per case. **The two therefore differ in three
+respects at once** — parameters, training data and training length — and are not a controlled
+comparison of capacity.
+
+**What the network is and is not shown.** Training pairs are normalised exactly as inference
+normalises them, by each image's own mean and estimated noise level; a network trained in
+absolute HU and deployed through a normalising wrapper is not the network that was trained. The
+split is by case: the network sees [[results:real_liver.json:held_out.n_train_cases]] cases and is evaluated on the
+[[results:real_liver.json:held_out.n_test_cases]] it never saw, because slices from one patient are not independent
+and a network tested on another slice of a liver it trained on is being tested on its own
+training set. The network never sees a lesion — its targets are routine-dose reconstructions of
+ordinary anatomy, which is what a denoiser is actually given — so the lesion exists only in the
+evaluation.
 
 ### 2.9 Use of generative AI
 

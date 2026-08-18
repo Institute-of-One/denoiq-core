@@ -246,6 +246,8 @@ standard deviation, and non-local means with `h` =
 deviation. A small residual convolutional network in the style of DnCNN [16] is evaluated
 separately (Section 3.6) and is not part of the primary matrix.
 
+The Gaussian filter is `scipy.ndimage.gaussian_filter` with `mode=scipy.ndimage.gaussian_filter, mode='nearest'`; total variation is `skimage.restoration.denoise_tv_chambolle` applied as skimage.restoration.denoise_tv_chambolle, channel_axis=None, applied to the mean-removed plane and the mean restored, so the filter is shift-invariant; non-local means is `skimage.restoration.denoise_nl_means` with skimage.restoration.denoise_nl_means, fast_mode=True, patch_size=5, patch_distance=6, sigma=h. Library versions are recorded with the provenance of every run.
+
 **Where the noise level comes from, and why it does not break the bound.** For total variation
 and non-local means the noise standard deviation used to set the parameter is the *true*
 simulation value for that acquisition setting: a setting-informed (oracle) parameterization,
@@ -380,6 +382,68 @@ The study also carries an auditable rule-based translation of the measured quant
 green / amber / red verdict with the rule that fired attached. Its thresholds are task-specific
 author-set values, not clinically validated criteria; the complete rule set is given in
 Supplementary Methods, and verdict counts per stratum are reported in Section 3.5.
+
+### 2.10 The real low-dose CT arm
+
+**Images.** Twelve Siemens liver cases from LDCT-and-Projection-data, using the vendor
+reconstructions of both the routine-dose and the simulated quarter-dose acquisition. Nothing is
+re-reconstructed. The quarter-dose noise field is taken as the difference between the two
+reconstructions of the same anatomy, so the noise carried into every trial is the acquisition's
+own and not a model of it.
+
+**Lesion insertion.** A patient scan has no ground truth: the lesions in it were found by a
+reader, at a contrast nobody measured. A **synthetic** lesion of known size and amplitude is
+therefore inserted into real parenchyma, which keeps the background that makes the task hard and
+supplies the truth that makes it measurable. The lesion is a disk of
+8 mm diameter and -25 HU
+contrast, with a Gaussian edge of 0.5 mm, rendered on a grid
+supersampled 4-fold so its own edge is not a one-pixel staircase,
+and added **after** reconstruction. The one assumption this makes is stated rather than left
+implicit: an inserted lesion does not carry the reconstruction's own response to a real lesion of
+that contrast, so the arm measures detection of a known additive signal in real anatomy and
+real noise, not detection of pathology.
+
+**Where lesions are placed.** Candidate sites are regions of interest of
+48 pixels whose mean lies between 0 and
+160 HU and whose standard deviation is below
+60 HU, drawn from the
+25 slices either side of the middle of each case. Up to
+250 sites are used per case and a case contributing fewer than
+16 is dropped. Signal-present and signal-absent trials are built at
+the same sites from the same background, so the pair differs only by the lesion.
+
+**Denoisers.** The classical arms use the implementations of Section 2.3, parameterized in
+physical units for this data: Gaussian filters of 0.75 mm and
+1.00 mm, total variation at
+1× and non-local means at
+0.8× the measured noise standard deviation.
+
+**Network.** A residual convolutional denoiser in the DnCNN formulation:
+the network predicts the noise, which is subtracted from its input. Two configurations are evaluated — the smaller with
+6 layers of 24 channels and
+3×3 kernels
+(21385 parameters), the larger with
+10 layers of 96 channels and
+5×5 kernels
+(1849633 parameters). Both are trained on
+64×64 quarter-dose / routine-dose patch pairs with
+Adam at a learning rate of 0.001, the smaller for
+16 epochs at batch 32 on
+800 patches per case, the larger for
+60 epochs at batch 64 on
+3000 patches per case. **The two therefore differ in three
+respects at once** — parameters, training data and training length — and are not a controlled
+comparison of capacity.
+
+**What the network is and is not shown.** Training pairs are normalised exactly as inference
+normalises them, by each image's own mean and estimated noise level; a network trained in
+absolute HU and deployed through a normalising wrapper is not the network that was trained. The
+split is by case: the network sees 8 cases and is evaluated on the
+4 it never saw, because slices from one patient are not independent
+and a network tested on another slice of a liver it trained on is being tested on its own
+training set. The network never sees a lesion — its targets are routine-dose reconstructions of
+ordinary anatomy, which is what a denoiser is actually given — so the lesion exists only in the
+evaluation.
 
 ### 2.9 Use of generative AI
 
