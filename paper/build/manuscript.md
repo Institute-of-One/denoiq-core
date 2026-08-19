@@ -62,7 +62,7 @@ realisations, and comparisons are Holm-adjusted. The matrix ran over
 vendor reconstructions of the routine and quarter-dose acquisitions, a synthetic lesion of known size and
 contrast inserted into real parenchyma, and a residual CNN trained on
 8 cases and evaluated on the 4 it
-never saw, at two capacities spanning 86× in parameters.
+never saw, at two configurations spanning 86× in parameters.
 
 **Results.** *Controlled*: ΔSSIM and Δ`d'`(PW) correlated at Spearman ρ =
 -0.62

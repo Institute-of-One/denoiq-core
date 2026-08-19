@@ -62,7 +62,7 @@ realisations, and comparisons are Holm-adjusted. The matrix ran over
 vendor reconstructions of the routine and quarter-dose acquisitions, a synthetic lesion of known size and
 contrast inserted into real parenchyma, and a residual CNN trained on
 [[results:real_liver.json:held_out.n_train_cases]] cases and evaluated on the [[results:real_liver.json:held_out.n_test_cases]] it
-never saw, at two capacities spanning [[results:real_liver.json:capacity.parameter_ratio|.0f]]× in parameters.
+never saw, at two configurations spanning [[results:real_liver.json:capacity.parameter_ratio|.0f]]× in parameters.
 
 **Results.** *Controlled*: ΔSSIM and Δ`d'`(PW) correlated at Spearman ρ =
 [[results:statistics.json:divergence.spearman_delta_ssim_delta_d_pw.value|.2f]]
