@@ -464,7 +464,12 @@ def figure7_redlamp_atlas(path: Path, atlas_payload: dict[str, Any]) -> Path:
             "(normalised relative model — not a scanner calibration)",
             fontsize=9,
         )
-        ax.legend(fontsize=7, loc="lower right", framealpha=0.85, frameon=True)
+        # Outside the axes. Inside, every corner has a contour or a contour label in it:
+        # lower right hid the d'=1 line, and moving the panel to the upper left only
+        # traded that for the d'=12 label. A legend that has to cover something belongs
+        # somewhere it cannot.
+        handles, labels = ax.get_legend_handles_labels()
+        fig.legend(handles, labels, fontsize=7, loc="outside lower center", ncol=2)
         return _save(fig, path)
 
 
@@ -660,6 +665,10 @@ def figure8_floor_strata(path: Path, statistics: dict[str, Any]) -> Path:
             if as_percent:
                 ax.yaxis.set_major_formatter(lambda value, _pos: f"{value:.0%}")
             ax.margins(y=0.18)
+            # A fraction of evaluations has no negative half. Where every stratum is zero
+            # matplotlib centres an empty axis on it and offers a -6% tick, which reads as
+            # a measurement rather than as the absence of one.
+            ax.set_ylim(bottom=0.0)
         axes[0].set_ylabel("fraction of evaluations")
         fig.suptitle(
             "Failure patterns by the detectability available in the input\n"

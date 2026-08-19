@@ -91,7 +91,7 @@ def main() -> int:
     axL.spines[["top", "right"]].set_visible(False)
     axL.legend(fontsize=7.5, loc="lower left", frameon=True, framealpha=0.95, ncol=2)
 
-    # --- right: what 86x the capacity bought, and what it cost ---------------------
+    # --- right: what the larger configuration bought, and what it cost -------------
     cap = data["capacity"]
     small, large = cap["small"], cap["large"]
     x = [0, 1]
@@ -109,11 +109,14 @@ def main() -> int:
     twin.tick_params(axis="y", labelcolor="#4C78A8")
     # Both axes span only their own two points, so state the sizes rather than let
     # the scaling imply that a 0.04 dB gain and a 0.35 loss in d' are comparable.
+    # "the capacity" would say the two networks differ in capacity alone. They do not:
+    # parameters, training patches and epochs all move together, as Table 3 and Section
+    # 3.6 state. The figure has to say the same thing the text says.
     axR.set_title(
-        f"{cap['parameter_ratio']:.0f}x the capacity: "
-        f"PSNR {large['psnr'] - small['psnr']:+.2f} dB, "
+        f"larger configuration ({cap['parameter_ratio']:.0f}× the parameters, "
+        f"more patches, more epochs):\nPSNR {large['psnr'] - small['psnr']:+.2f} dB, "
         f"$d'$ {large['d_prime'] - small['d_prime']:+.2f}",
-        fontsize=9.5,
+        fontsize=9,
     )
     axR.set_xlim(-0.35, 1.35)
     axR.grid(alpha=0.3, axis="y")
