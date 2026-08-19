@@ -52,3 +52,4 @@ paper/build/*.docx
 *_PROPOSAL.md
 paper/cover_letter_medphys.txt
 paper/susy_medphys_fields.txt
+paper/build/title_page.md
