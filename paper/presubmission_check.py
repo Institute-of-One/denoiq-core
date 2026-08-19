@@ -42,6 +42,10 @@ ABSTRACT_MUST_MENTION = ("liver", "CNN", "ceiling", "detectability", "fidelity")
 COLUMN_INCHES = 6.5
 #: Below this, type set at 9 pt lands under 6 pt on the page.
 MIN_SCALE = 0.70
+#: Height of the text block a figure and its caption have to share. Figure 1 shipped at
+#: 11.9 in tall - five stages stacked vertically - and the converted PDF cut it in half
+#: and stranded the caption overleaf. Width was checked; height was not.
+MAX_PRINTED_INCHES = 7.5
 
 errors: list[str] = []
 warnings: list[str] = []
@@ -188,10 +192,17 @@ def check_figures(src: str) -> None:
 
     for p in sorted(FIGURES.glob("fig*.png")):
         raw = p.read_bytes()
-        w, _h = struct.unpack(">II", raw[16:24])
+        w, h = struct.unpack(">II", raw[16:24])
         i = raw.find(b"pHYs")
         dpi = round(struct.unpack(">I", raw[i + 4 : i + 8])[0] * 0.0254) if i > 0 else 100
         scale = COLUMN_INCHES / (w / dpi)
+        printed = (h / dpi) * min(1.0, scale)
+        if printed > MAX_PRINTED_INCHES:
+            fail(
+                f"{p.name} prints {printed:.1f} in tall once fitted to a {COLUMN_INCHES} in "
+                f"column, over the {MAX_PRINTED_INCHES} in text block; the converter will "
+                "cut it across a page break"
+            )
         if scale < MIN_SCALE:
             fail(
                 f"{p.name} is {w / dpi:.1f} in wide at {dpi} dpi; in a {COLUMN_INCHES} in column "

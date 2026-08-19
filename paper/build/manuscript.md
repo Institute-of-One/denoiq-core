@@ -52,7 +52,7 @@ of a low-contrast disk on synthetic phantoms over a matrix of dose, noise correl
 and lesion configuration, with three deterministic denoisers (Gaussian, total variation,
 non-local means) and three observers: prewhitening linear (PW), channelised Hotelling
 (CHO), and non-prewhitening with an eye filter (NPWE). Each processed arm is referenced to the
-unprocessed arm of its own condition and to that input's **analytic** ideal-observer
+unprocessed arm of its own condition and to that input's analytic ideal-observer
 detectability — the ceiling the data-processing inequality [1] and the Neyman–Pearson lemma [2]
 place on any processing of it. Estimates are cross-fitted, uncertainty is by bootstrap over
 realisations, and comparisons are Holm-adjusted. The matrix ran over
@@ -69,7 +69,7 @@ never saw, at two capacities spanning 86× in parameters.
 (88.2% of processed evaluations divergent, with ΔSSIM >
 0 and Δ`d'`(PW) < 0). Denoising helped the inefficient observer more than the efficient one:
 `B` = Δ`d'`(NPWE) − Δ`d'`(PW) = +1.13. The
-information-floor hypothesis was **partially refuted**: below the floor fidelity rose while the
+information-floor hypothesis was partially refuted: below the floor fidelity rose while the
 task estimate fell, but failure patterns did not concentrate there, and excess lesion-like
 responses were absent throughout. *Real data*: across 7 methods the
 rank correlation between PSNR and `d'` was ρ =
@@ -173,7 +173,7 @@ prewhitening observer. Third, below a prespecified input-detectability criterion
 plausible outputs would remain possible despite failure to preserve the required task
 performance.
 
-That no processed arm exceeds its input's ceiling is **not** among them: that is a theorem, and
+That no processed arm exceeds its input's ceiling is *not* among them: that is a theorem, and
 its role here is measurement-chain validation and leakage control (Sections 2.5 and 3.4).
 
 ### 1.3 Contributions
@@ -202,7 +202,7 @@ low-contrast disk on a uniform background, the standard paradigm of objective, t
 assessment [16,17]. Trials, phantoms, model observers and the ROC
 machinery are reused from `taskiq-core` [18] (version
 0.4.0) rather than reimplemented; the trial
-generator returns, with the image stacks, the **analytic** noise power spectrum (NPS) of the
+generator returns, with the image stacks, the analytic noise power spectrum (NPS) of the
 noise it generated, which is what allows an observer to be evaluated in closed form with
 nothing estimated. Geometry: 64 ×
 64 pixels at
@@ -219,18 +219,18 @@ legend label for that same image.
 
 Three observers are estimated from images and scored out of fold (Section 2.5):
 
-1. The **held-out prewhitening linear observer** (PW): the class-mean difference prewhitened by
+1. The *held-out prewhitening linear observer* (PW): the class-mean difference prewhitened by
    the measured NPS. This is the efficient observer of the study, and the one every
    processed-image comparison uses.
-2. A **channelised Hotelling observer** (CHO) on Laguerre–Gauss channels [19], an intermediate
+2. A *channelised Hotelling observer* (CHO) on Laguerre–Gauss channels [19], an intermediate
    observer: tractable because a channel covariance can be estimated where a pixel covariance
    cannot.
-3. A **non-prewhitening observer with a Burgess eye filter** (NPWE) [20], used as a
+3. A *non-prewhitening observer with a Burgess eye filter* (NPWE) [20], used as a
    stylized surrogate for limited noise-prewhitening efficiency. No human observer study
    was performed here, and NPWE is not offered as a validated model of a human reader.
 
-Separately, and only for the unprocessed input, we compute the **analytic ideal linear
-(prewhitening) observer** from the true signal and the analytic NPS. That quantity is exact for
+Separately, and only for the unprocessed input, we compute the *analytic ideal linear
+(prewhitening) observer* from the true signal and the analytic NPS. That quantity is exact for
 the experiment it describes and carries no sampling error; it is the input's *ceiling*, and it
 is the only observer here that is not estimated from images.
 
@@ -248,7 +248,7 @@ consequences are visible in the results: for a fixed signal profile `d' ∝ c/σ
 as `mAs_floor ∝ kV^(2p−2)`, which for this `p` is linear in kV.
 
 Dose is taken proportional to mAs; it also rises with kV in reality, and that dependence is
-left out, so **every dose comparison in this paper is made at fixed kV**. On the kV axis we
+left out, so every dose comparison in this paper is made at fixed kV. On the kV axis we
 report kV itself and never a dose ratio. This is a normalised model, not a calibration: it
 carries no measured dose-to-noise relation for any device and no absolute exposure values.
 
@@ -277,9 +277,9 @@ is processed independently — all asserted in the test suite.
 
 ### 2.4 Experimental design and independent realisations
 
-The matrix has four domains, described in Table 1. An **input condition** is one acquisition
-and phantom setting; an **arm** is one condition evaluated with one processing, including the
-unprocessed one; an **evaluation** is one arm in one realisation. Conditions are not shared
+The matrix has four domains, described in Table 1. An *input condition* is one acquisition
+and phantom setting; an *arm* is one condition evaluated with one processing, including the
+unprocessed one; an *evaluation* is one arm in one realisation. Conditions are not shared
 between domains, so arms need no deduplication: the dose, noise-correlation and lesion domains
 each generate their own conditions, and the atlas domain adds settings on the kV–mAs plane used
 for the floor demonstration, where a single denoiser is applied rather than all three. That is
@@ -306,7 +306,7 @@ On the unprocessed input the ideal linear observer is closed-form. On processed 
 the noise spectrum nor the effective signal is known analytically — a non-linear denoiser has no
 transfer function — so both are estimated, and the estimate must not be allowed to score itself.
 
-Estimation is **cross-fitted** over `K` =
+Estimation is *cross-fitted* over `K` =
 5 folds. Fold membership is by trial index
 modulo `K`; the trials are i.i.d. draws from one seeded stream, so a positional partition is
 already a random one and needs no second random number to record. For each fold, the effective
@@ -353,7 +353,7 @@ reference:
 observer `O` in {PW, CHO, NPWE}.
 
 **Endpoint 1 — fidelity–task divergence.** The Spearman correlation between ΔSSIM and Δ`d'`(PW)
-across evaluations, and the **divergence rate**: the fraction of evaluations with ΔSSIM > 0 and
+across evaluations, and the *divergence rate*: the fraction of evaluations with ΔSSIM > 0 and
 Δ`d'`(PW) < 0. Both are reported overall, per denoiser, and stratified by floor stratum. An
 individual arm is called *divergent*; the phenomenon is *fidelity–task divergence*.
 
@@ -370,7 +370,7 @@ distribution. The floor stratifies conditions by the detectability available in 
 not claimed to *cause* the failures.
 
 Erasure is contrast recovery below the gauge's threshold, and an excess response is a
-lesion-like matched-filter rate above the gauge's allowance **and** above the same rate measured
+lesion-like matched-filter rate above the gauge's allowance *and* above the same rate measured
 on the unprocessed input of that condition — in signal-absent trials the object is uniform but
 the acquired image is not, and noise alone produces such responses. Both definitions, and the
 matched-filter normalisation behind them, are restated in Supplementary Methods.
@@ -409,13 +409,13 @@ reconstructions of the same anatomy, so the noise carried into every trial is th
 own and not a model of it.
 
 **Lesion insertion.** A patient scan has no ground truth: the lesions in it were found by a
-reader, at a contrast nobody measured. A **synthetic** lesion of known size and amplitude is
+reader, at a contrast nobody measured. A synthetic lesion of known size and amplitude is
 therefore inserted into real parenchyma, which keeps the background that makes the task hard and
 supplies the truth that makes it measurable. The lesion is a disk of
 8 mm diameter and -25 HU
 contrast, with a Gaussian edge of 0.5 mm, rendered on a grid
 supersampled 4-fold so its own edge is not a one-pixel staircase,
-and added **after** reconstruction. The one assumption this makes is stated rather than left
+and added *after* reconstruction. The one assumption this makes is stated rather than left
 implicit: an inserted lesion does not carry the reconstruction's own response to a real lesion of
 that contrast, so the arm measures detection of a known additive signal in real anatomy and
 real noise, not detection of pathology.
@@ -577,7 +577,7 @@ comparisons exceeded the ceiling margin**. The same holds at the unadjusted armw
 550).
 
 One comparison did exceed its margin, and it is reported separately because it is not a
-statement about processing. It occurred on an **unprocessed** arm — a self-comparison of the
+statement about processing. It occurred on an unprocessed arm — a self-comparison of the
 input against its own analytic ceiling, where the processing is the identity and cannot create
 information, so the exceedance measures the estimator and the finite sample rather than a
 violated bound. That arm is AUC-saturated:
@@ -713,7 +713,7 @@ denoiser is actually given — and the lesion exists only in the evaluation.
 | `nlm 0.8x noise` | 5.50 | 0.68 | 27.50 |
 | CNN, 21385 parameters | 5.31 | 0.66 | 28.74 |
 | `gaussian 0.75 mm` | 5.10 | 0.63 | 28.04 |
-| CNN, 1849633 parameters | 4.96 | 0.61 | **28.77** |
+| CNN, 1849633 parameters | 4.96 | 0.61 | 28.77 |
 | `gaussian 1.00 mm` | 4.82 | 0.60 | 27.85 |
 
 Three things follow.
@@ -809,7 +809,7 @@ the prewhitening observer no better, with the channelised observer in between. T
 improvement is a statement about the observer as much as about the algorithm, and a study that
 does not say which observer it used has not reported an effect size.
 
-The third prespecified hypothesis was **partially refuted**, and the part that failed is as
+The third prespecified hypothesis was partially refuted, and the part that failed is as
 informative as the part that held. What held is the coexistence it predicted: below the
 operational requirement, fidelity still improved — by
 +0.210 in SSIM — while

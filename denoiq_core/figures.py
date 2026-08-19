@@ -146,8 +146,11 @@ def figure1_pipeline(
         )
 
     with plt.rc_context(_STYLE):
+        # One column per stage, not one row. Stacked vertically five stages came to
+        # 11.9 in, taller than the page they print on, so the figure was cut in half and
+        # its caption stranded overleaf.
         fig, axes = plt.subplots(
-            len(stages), 2, figsize=(5.2, 2.35 * len(stages)), constrained_layout=True
+            2, len(stages), figsize=(1.5 * len(stages), 3.7), constrained_layout=True
         )
         # One window for every row, set by the *lesion contrast* rather than by the noise:
         # a window wide enough to contain low-dose noise renders the lesion invisible
@@ -155,8 +158,8 @@ def figure1_pipeline(
         # the honest depiction — that noise really is several times the contrast.
         window = 2.5 * float(np.ptp(trials.signal))
         centre = float(config.phantom.background)
-        for row, (name, present, absent) in enumerate(stages):
-            for col, stack in enumerate((present, absent)):
+        for col, (name, present, absent) in enumerate(stages):
+            for row, stack in enumerate((present, absent)):
                 ax = axes[row, col]
                 ax.imshow(
                     stack[0],
@@ -169,9 +172,11 @@ def figure1_pipeline(
                 ax.set_yticks([])
                 ax.grid(False)
                 if row == 0:
-                    ax.set_title("signal present" if col == 0 else "signal absent", fontsize=10)
+                    ax.set_title(name.replace("\n", " "), fontsize=8)
                 if col == 0:
-                    ax.set_ylabel(name, fontsize=9)
+                    ax.set_ylabel(
+                        "signal\npresent" if row == 0 else "signal\nabsent", fontsize=8
+                    )
         fig.suptitle(
             f"{kv:g} kV, {mas:g} mAs  ·  noise SD {trials.noise_sd:.0f}, "
             f"lesion contrast {np.max(np.abs(trials.signal)):.0f}\n"
@@ -226,7 +231,7 @@ def figure3_task_vs_dose(path: Path, dose: dict[str, Any]) -> Path:
     order = _denoiser_order(rows)
     with plt.rc_context(_STYLE):
         # 9.6 in reduces to 0.67 in a text column and takes the tick labels with it.
-        fig, axes = plt.subplots(1, 3, figsize=(7.4, 2.9), constrained_layout=True, sharey=True)
+        fig, axes = plt.subplots(1, 3, figsize=(7.4, 3.4), constrained_layout=True, sharey=True)
         for ax, observer, title in zip(
             axes,
             ("ideal", "cho", "npwe"),
@@ -247,7 +252,10 @@ def figure3_task_vs_dose(path: Path, dose: dict[str, Any]) -> Path:
             ax.set_xlabel("relative dose (mAs / mAs$_{ref}$)")
             ax.set_title(title, fontsize=9)
         axes[0].set_ylabel("estimated task $d'$")
-        axes[0].legend(fontsize=6.5)
+        # Below the panels, not inside the left one: in the left panel the entries sat on
+        # the rising curves and on the ceiling line they name.
+        handles, labels = axes[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc="outside lower center", ncol=3, fontsize=7.5)
         return _save(fig, path)
 
 
