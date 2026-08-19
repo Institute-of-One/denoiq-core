@@ -608,8 +608,8 @@ defined in Section 2.5. Over the remaining
 [[results:statistics.json:ceiling.unsaturated.max_excess|sci2]], the mean
 [[results:statistics.json:ceiling.unsaturated.mean_excess|.3f]], and there were
 [[results:statistics.json:ceiling.unsaturated.n_violations]] exceedances, so nothing here rests
-on the saturated regime. Figure 6 plots processed against ceiling AUC with an inset
-over the unsaturated range.
+on the saturated regime. Figure 6 plots processed against ceiling AUC, with a second
+panel detailing the unsaturated range and marking on its floor the arms that fall below it.
 
 This is validation, not a finding: the theorem concerns the likelihood-ratio ideal observer, and
 what is checked here is the measurement chain. Two readings must be kept apart. A true ideal

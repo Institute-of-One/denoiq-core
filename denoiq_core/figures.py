@@ -174,9 +174,7 @@ def figure1_pipeline(
                 if row == 0:
                     ax.set_title(name.replace("\n", " "), fontsize=8)
                 if col == 0:
-                    ax.set_ylabel(
-                        "signal\npresent" if row == 0 else "signal\nabsent", fontsize=8
-                    )
+                    ax.set_ylabel("signal\npresent" if row == 0 else "signal\nabsent", fontsize=8)
         fig.suptitle(
             f"{kv:g} kV, {mas:g} mAs  ·  noise SD {trials.noise_sd:.0f}, "
             f"lesion contrast {np.max(np.abs(trials.signal)):.0f}\n"
@@ -264,6 +262,11 @@ def figure3_task_vs_dose(path: Path, dose: dict[str, Any]) -> Path:
 # --------------------------------------------------------------------------------------
 
 
+#: Where the detail panel starts. Below this the rank statistic still resolves; above it
+#: the ceiling AUC saturates and the comparison is limited by resolution, not information.
+DETAIL_FROM = 0.95
+
+
 def figure6_dpi_ceiling(path: Path, sweeps: list[dict[str, Any]]) -> Path:
     """Held-out prewhitening AUC after processing against the input's analytic ceiling.
 
@@ -273,90 +276,105 @@ def figure6_dpi_ceiling(path: Path, sweeps: list[dict[str, Any]]) -> Path:
     need not attain that equality after a non-linear transformation. The error bars are the
     Hanley-McNeil standard error of the plotted AUC; the ceiling is analytic and carries no
     sampling error of its own.
+
+    Two panels rather than one with an inset. The detail used to be an inset in the
+    lower-right, which is the only corner of this plot that looks empty and is not: the
+    panel covered four points outright and clipped two more. No rectangle inside these axes
+    is both large enough to read and free of data, so the detail gets its own panel, where
+    it cannot hide anything.
     """
     rows = [row for sweep in sweeps for row in sweep["rows"]]
+    names = sorted({row["denoiser"] for row in rows})
     with plt.rc_context(_STYLE):
-        fig, ax = plt.subplots(figsize=(4.6, 4.4), constrained_layout=True)
+        fig, (ax, detail) = plt.subplots(1, 2, figsize=(7.2, 3.8), constrained_layout=True)
         lo = min(min(r["ceiling_auc"] for r in rows), min(r["auc_ideal"] for r in rows))
         lo = max(0.45, lo - 0.02)
-        ax.plot(
-            [lo, 1.0],
-            [lo, 1.0],
-            "k--",
-            lw=1.0,
-            label="identity (equality requires a true ideal observer)",
-        )
-        for name in sorted({row["denoiser"] for row in rows}):
-            subset = [row for row in rows if row["denoiser"] == name]
-            ax.errorbar(
-                [row["ceiling_auc"] for row in subset],
-                [row["auc_ideal"] for row in subset],
-                yerr=[row["auc_se_ideal"] for row in subset],
-                fmt="o",
-                ms=4,
-                lw=0.8,
-                alpha=0.85,
-                label=name,
-            )
-        ax.set_xlim(lo, 1.005)
-        ax.set_ylim(lo, 1.005)
 
-        # Inset over the crowded top-right corner, where the ceiling is close to 1 and the rank
-        # statistic runs out of resolution. The saturation boundary is drawn so that the reader
-        # can see which points the saturated-subset analysis of the manuscript excludes.
-        inset = ax.inset_axes((0.50, 0.155, 0.46, 0.385))
-        inset.set_facecolor("white")
-        inset.set_zorder(5)  # the parent's identity line must not show through the panel
-        for name in sorted({row["denoiser"] for row in rows}):
-            subset = [row for row in rows if row["denoiser"] == name and row["ceiling_auc"] >= 0.95]
-            if not subset:
-                continue
-            inset.errorbar(
-                [row["ceiling_auc"] for row in subset],
-                [row["auc_ideal"] for row in subset],
-                yerr=[row["auc_se_ideal"] for row in subset],
-                fmt="o",
-                ms=3,
-                lw=0.7,
-                alpha=0.85,
+        below = 0
+        for axis, left, high in ((ax, lo, 1.005), (detail, DETAIL_FROM, 1.002)):
+            axis.plot(
+                [left, 1.0],
+                [left, 1.0],
+                "k--",
+                lw=1.0,
+                label="identity (equality requires a true ideal observer)",
             )
-        inset.plot([0.95, 1.0], [0.95, 1.0], "k--", lw=0.9)
+            for name in names:
+                subset = [
+                    row for row in rows if row["denoiser"] == name and row["ceiling_auc"] >= left
+                ]
+                if not subset:
+                    continue
+                drawn = axis.errorbar(
+                    [row["ceiling_auc"] for row in subset],
+                    [row["auc_ideal"] for row in subset],
+                    yerr=[row["auc_se_ideal"] for row in subset],
+                    fmt="o",
+                    ms=4,
+                    lw=0.8,
+                    alpha=0.85,
+                    label=name,
+                )
+                # A point can clear the ceiling cut on x and still fall under the panel on
+                # y: those are the arms furthest from the diagonal, which is to say the ones
+                # that matter most to the claim. Clipping them silently would make the
+                # detail panel read as though nothing falls far below the line. They are
+                # marked on the floor at their own x, and counted underneath.
+                outside = [row for row in subset if row["auc_ideal"] < left]
+                below += len(outside)
+                if outside:
+                    axis.plot(
+                        [row["ceiling_auc"] for row in outside],
+                        [left] * len(outside),
+                        marker="v",
+                        ms=4,
+                        ls="none",
+                        color=drawn.lines[0].get_color(),
+                        clip_on=False,
+                    )
+            axis.set_xlim(left, high)
+            axis.set_ylim(left, high)
+            axis.set_xlabel("analytic ideal-observer AUC of the input (ceiling)")
+
+        # The saturation boundary is drawn so that a reader can see which points the
+        # saturated-subset analysis of the manuscript excludes.
         saturation = 1.0 - 10.0 / (rows[0]["n_trials"] ** 2)
-        inset.axvline(saturation, color="0.45", lw=0.9, ls=":")
-        inset.text(
+        detail.axvline(saturation, color="0.45", lw=0.9, ls=":")
+        detail.text(
             0.985,
             0.04,
             "saturated →",
-            transform=inset.transAxes,
-            fontsize=6,
+            transform=detail.transAxes,
+            fontsize=7,
             color="0.35",
             va="bottom",
             ha="right",
         )
-        inset.set_xlim(0.95, 1.002)
-        inset.set_ylim(0.95, 1.002)
-        inset.tick_params(labelsize=6)
-        inset.set_title("unsaturated range", fontsize=7).set_bbox(
-            {"facecolor": "white", "edgecolor": "none", "pad": 1.5}
-        )
-        inset.grid(alpha=0.2)
+
         # The "raw" series is below the diagonal too, and it should be: it is the same
         # held-out estimator applied to unprocessed images, so its distance from the line is
-        # the price of estimating an observer from a finite sample — not information lost.
+        # the price of estimating an observer from a finite sample, not information lost.
+        # Set above the diagonal, where nothing can be plotted.
         ax.text(
-            0.98,
-            0.03,
-            "the unprocessed series measures the estimator's\nown cost, not a loss of information",
+            0.035,
+            0.72,
+            "the unprocessed series measures the\nestimator's own cost, not a loss of\ninformation",
             transform=ax.transAxes,
-            ha="right",
-            va="bottom",
-            fontsize=6.5,
+            ha="left",
+            va="top",
+            fontsize=7,
             color="0.35",
         )
-        ax.set_xlabel("analytic ideal-observer AUC of the unprocessed input (ceiling)")
         ax.set_ylabel("held-out prewhitening AUC\nafter processing")
         ax.set_title("No processing exceeds its input's ceiling", fontsize=9)
-        ax.legend(fontsize=7, loc="upper left")
+        detail.set_title(f"detail: ceiling AUC ≥ {DETAIL_FROM:g}", fontsize=9)
+        if below:
+            detail.set_xlabel(
+                f"analytic ideal-observer AUC of the input (ceiling)\n"
+                f"▼ {below} arms fall below this panel; all are plotted at left",
+                fontsize=8,
+            )
+        ax.legend(fontsize=6.5, loc="upper left")
         return _save(fig, path)
 
 

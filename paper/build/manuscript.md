@@ -608,8 +608,8 @@ defined in Section 2.5. Over the remaining
 1.64×10⁻⁴, the mean
 -0.040, and there were
 0 exceedances, so nothing here rests
-on the saturated regime. Figure 6 plots processed against ceiling AUC with an inset
-over the unsaturated range.
+on the saturated regime. Figure 6 plots processed against ceiling AUC, with a second
+panel detailing the unsaturated range and marking on its floor the arms that fall below it.
 
 This is validation, not a finding: the theorem concerns the likelihood-ratio ideal observer, and
 what is checked here is the measurement chain. Two readings must be kept apart. A true ideal
@@ -971,7 +971,7 @@ This work received no external funding.
 
 **Figure 5.** Observer-dependent benefit: Δ`d'` for the prewhitening, channelised Hotelling and non-prewhitening observers, and their difference B, per denoiser with clustered 95 % intervals
 
-**Figure 6.** Cross-fitted prewhitening AUC after processing against the analytic ceiling of the unprocessed input, with the identity line and an inset over the unsaturated range
+**Figure 6.** Cross-fitted prewhitening AUC after processing against the analytic ceiling of the unprocessed input, with the identity line, and a detail panel over the unsaturated range that marks the arms falling below its floor
 
 **Figure 7.** The kV–mAs detectability atlas and the operational floor, the contour where the input's ideal `d'` crosses the prespecified criterion
 

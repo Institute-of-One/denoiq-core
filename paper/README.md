@@ -116,7 +116,7 @@ not is a test failure rather than a reviewer's discovery.
 | Fig 3 | task `d'` against relative dose for the three estimated observers, with the analytic ideal-observer ceiling of the unprocessed input |
 | Fig 4 | fidelity–task divergence: ΔSSIM against Δ`d'`(PW), processed minus unprocessed, for every arm–realisation evaluation, with the divergent quadrant shaded and the per-realisation divergence rates beside it |
 | Fig 5 | observer-dependent benefit: Δ`d'` for the prewhitening, channelised Hotelling and non-prewhitening observers, and their difference B, per denoiser with clustered 95 % intervals |
-| Fig 6 | cross-fitted prewhitening AUC after processing against the analytic ceiling of the unprocessed input, with the identity line and an inset over the unsaturated range |
+| Fig 6 | cross-fitted prewhitening AUC after processing against the analytic ceiling of the unprocessed input, with the identity line, and a detail panel over the unsaturated range that marks the arms falling below its floor |
 | Fig 7 | the kV–mAs detectability atlas and the operational floor, the contour where the input's ideal `d'` crosses the prespecified criterion |
 | Fig 8 | failure patterns by floor stratum: divergence, contrast erasure, excess lesion-like responses and mean task degradation, with clustered 95 % intervals |
 | Fig 9 | the real low-dose CT arm: task `d'` against PSNR for the seven held-out methods with the closed-form ceiling marked, and what raising network capacity 86-fold did to each |
