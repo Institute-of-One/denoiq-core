@@ -185,14 +185,48 @@ def build_docx(
 #: half of a Table 2 row on one page and half on the next, with the repeated header in
 #: between, so a reader met three numbers with no idea which denoiser they belonged to.
 #: Rows here are two or three lines; moving a whole row to the next page costs nothing.
-_ROW_PROPERTIES = "<w:trPr><w:cantSplit/></w:trPr>"
+def _set_property(fragment: str, container: str, element: str, prop: str) -> tuple[str, int]:
+    """Add ``prop`` to every ``container``'s properties element, creating one if needed.
+
+    The properties element comes in three forms and all three occur: open with children,
+    self-closing and empty, and absent. Missing the self-closing form does not fail
+    loudly -- it appends a *second* properties element, which the schema forbids and
+    which Word then silently ignores, so the setting looks applied and is not.
+    """
+    import re
+
+    opened = f"<{element}>"
+    fragment, with_children = re.subn(re.escape(opened), f"{opened}{prop}", fragment)
+    fragment, empty = re.subn(
+        rf"<{re.escape(element)}\s*/>", f"{opened}{prop}</{element}>", fragment
+    )
+    # The lookbehind skips a self-closing container: it has no inside to put a property
+    # in, and appending one would land it after the element rather than within it.
+    fragment, absent = re.subn(
+        rf"(<{re.escape(container)}\b[^>]*>)(?<!/>)(?!<{re.escape(element)})",
+        rf"\1{opened}{prop}</{element}>",
+        fragment,
+    )
+    return fragment, with_children + empty + absent
+
+
+def _keep_with_next(fragment: str) -> tuple[str, int]:
+    """Mark every paragraph in ``fragment`` as staying with the paragraph after it."""
+    return _set_property(fragment, "w:p", "w:pPr", "<w:keepNext/>")
 
 
 def keep_table_rows_whole(path: Path) -> Path:
-    """Set ``cantSplit`` on every table row of a written ``.docx``.
+    """Keep table rows unbroken, and keep each table with its caption on one page.
 
-    Pandoc has no option for this and no reference document can supply it, because it is a
-    row property rather than a style. The file is a zip of XML, so it is set afterwards.
+    Two separate Word defaults, both wrong for a table of results. A row may break across
+    a page: ``cantSplit`` stops that. And a table may break between any two rows even when
+    the whole thing would fit overleaf, which put four rows of a six-row Table 2 on the
+    next page. ``keepNext`` on every paragraph of the caption and of all but the last row
+    moves the table whole instead.
+
+    Neither is reachable from pandoc or from a reference document -- one is a row
+    property and the other has to be set paragraph by paragraph -- so they are set here,
+    on the written file, which is a zip of XML.
     """
     import re
     import shutil
@@ -204,11 +238,33 @@ def keep_table_rows_whole(path: Path) -> Path:
         contents = {name: archive.read(name) for name in names}
 
     document = contents[entry].decode("utf-8")
-    # A row that already carries properties gets cantSplit added to them; one that carries
-    # none gets a properties element, which must be the first child of the row.
-    document, with_props = re.subn(r"(<w:trPr>)", r"\1<w:cantSplit/>", document)
-    document, without_props = re.subn(
-        r"(<w:tr\b[^>]*>)(?!<w:trPr>)", rf"\1{_ROW_PROPERTIES}", document
+    # The properties element must be the first child of the row, whether it was already
+    # there, there but empty, or absent.
+    document, split_stopped = _set_property(document, "w:tr", "w:trPr", "<w:cantSplit/>")
+
+    kept = 0
+
+    def bind_table(match: re.Match) -> str:
+        """Bind a table's caption and rows to what follows them."""
+        nonlocal kept
+        caption, table = match.group(1), match.group(2)
+        rows = re.findall(r"<w:tr\b.*?</w:tr>", table, re.S)
+        caption, n = _keep_with_next(caption)
+        kept += n
+        # The last row must not keep with what follows it, or the paragraph after the
+        # table gets dragged onto the same page too.
+        for row in rows[:-1]:
+            bound, n = _keep_with_next(row)
+            kept += n
+            table = table.replace(row, bound, 1)
+        return caption + table
+
+    # Pandoc writes the caption paragraph, a newline and some indentation, then the table.
+    document = re.sub(
+        r"(<w:p\b(?:(?!<w:p\b).)*?</w:p>\s*)(<w:tbl>.*?</w:tbl>)",
+        bind_table,
+        document,
+        flags=re.S,
     )
     contents[entry] = document.encode("utf-8")
 
@@ -217,7 +273,7 @@ def keep_table_rows_whole(path: Path) -> Path:
         for name in names:  # preserve the original entry order
             archive.writestr(name, contents[name])
     shutil.move(str(temporary), str(path))
-    print(f"  rows kept whole: {with_props + without_props}")
+    print(f"  rows kept whole: {split_stopped}, paragraphs bound to the next: {kept}")
     return path
 
 
