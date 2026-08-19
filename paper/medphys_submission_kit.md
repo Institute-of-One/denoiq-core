@@ -1,5 +1,34 @@
 # Medical Physics (AAPM / Wiley) — Submission Kit — IORN-005 (CT-Noise_Core)
 
+## Submitted
+
+**Submitted 19 August 2026. Manuscript ID 26-1820**, Research Article, corresponding and
+sole author Shuji Yamamoto. Awaiting editorial assignment.
+
+What went in:
+
+- `paper/build/manuscript_v2.docx`, `supplementary_v2.docx`, `title_page.docx` (build of
+  12:49 on the submission day), plus the cover letter.
+- Data Sharing: Zenodo version DOI 10.5281/zenodo.21733389 (denoiq-core v0.1.0; concept
+  10.5281/zenodo.21733388) and TCIA LDCT-and-Projection-data, 10.7937/9npb-2637, CC BY 4.0.
+- Deputy Editor preferred: Guang-Hong Chen, Jeffrey H Siewerdsen, Ioannis Sechopoulos.
+  Associate Editor preferred: Ehsan Abadi. No exclusions, no reviewers named by us.
+- AI/ML checklist answered Yes throughout except "stage of development described in the
+  Introduction", which is No: the question addresses an algorithm on a translation path
+  and this CNN is an object of evaluation, not a candidate for deployment.
+- Conflicts detailed in full in the cover letter and repeated in the form.
+- Page charges accepted: Research Article allows ten journal pages and this manuscript
+  is likely to run 13-16, so expect roughly $600-1,200 at galley proof unless figures
+  move to the supplement during revision. Supplementary material does not count.
+
+Fixed during the submission itself, after the form's own checklist prompted the question:
+**the manuscript quoted a validation loss three times and never said what it was measured
+on**. It is the last 15% of the patches drawn from the eight training cases; the four
+held-out cases are read once, after training. Absent that sentence, a reader with eight
+training and four test cases in front of them could reasonably infer the held-out cases
+had selected the model, which is the leakage Sections 2.5 and 3.4 exist to refuse.
+
+
 Target journal: **Medical Physics**, AAPM, published by Wiley. Article type: **Research
 Article**. Manuscript source: `paper/manuscript.md`; build with
 `python paper/build_manuscript.py`, then `paper/build_docx.py` for the upload file.
@@ -27,7 +56,7 @@ has no funder mandating open access, so no charge applies unless OnlineOpen is c
 ## Requirements verified
 
 - **Structured abstract**, Background / Purpose / Methods / Results / Conclusions,
-  maximum 500 words — **ours: 479**.
+  maximum 500 words — **ours: 489**.
 - **References numbered in order of first citation**, AMA 10th style; up to six authors
   listed in full, seven or more give the first three and *et al.* — **ours: 23, verified
   in order, all cited, none listed uncited**.
