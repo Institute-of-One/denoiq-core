@@ -76,7 +76,7 @@ rank correlation between PSNR and `d'` was ρ =
 [[results:real_liver.json:held_out.spearman_psnr_vs_d_prime.rho|+.2f]]; the method with the best PSNR ranked
 [[results:real_liver.json:held_out.psnr_winner_task_rank]] of [[results:real_liver.json:held_out.n_methods]] on the task; and
 [[results:real_liver.json:all_exceedances]] arms exceeded the closed-form ceiling in any real-data comparison.
-A larger configuration of the same architecture -- [[results:real_liver.json:capacity.parameter_ratio|.0f]]x the parameters, trained on more patches for more epochs -- improved validation loss and gave the best PSNR in the study, [[results:real_liver.json:capacity.large.psnr|.2f]] dB, while lowering detectability from [[results:real_liver.json:capacity.small.d_prime|.2f]] to [[results:real_liver.json:capacity.large.d_prime|.2f]].
+A larger configuration of the same architecture — [[results:real_liver.json:capacity.parameter_ratio|.0f]]× the parameters, trained on more patches for more epochs — improved validation loss and gave the best PSNR in the study, [[results:real_liver.json:capacity.large.psnr|.2f]] dB, while lowering detectability from [[results:real_liver.json:capacity.small.d_prime|.2f]] to [[results:real_liver.json:capacity.large.d_prime|.2f]].
 
 **Conclusions.** Denoising effects differed by observer, in a direction consistent with differences in prewhitening efficiency: processing improved the estimate for the non-prewhitening observer while leaving the prewhitening observer no better, which would be redistribution of existing information rather than creation of new information. Fidelity gains alone do not establish task preservation, and on real low-dose CT they ranked methods close to inversely to the task. The divergence appeared in both arms and persisted under a substantially larger and longer-trained network of the same architecture.
 
@@ -188,7 +188,7 @@ its role here is measurement-chain validation and leakage control (Sections 2.5 
    to fail when the class label is made available to the processing.
 5. Confirmation of the divergence and of the ceiling on real low-dose CT — twelve liver cases,
    a case-disjoint held-out split, and a learned denoiser at two configurations spanning
-   [[results:real_liver.json:capacity.parameter_ratio|.0f]]x in parameters — showing that the same divergence was also
+   [[results:real_liver.json:capacity.parameter_ratio|.0f]]× in parameters — showing that the same divergence was also
    observed with synthetic lesions inserted into real low-dose CT backgrounds.
 6. An open, deterministic implementation in which every reported number is regenerated from
    machine-readable outputs.

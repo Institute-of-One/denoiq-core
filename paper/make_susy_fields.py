@@ -32,6 +32,9 @@ def plain(text: str) -> str:
     text = re.sub(r"\*\*(.+?)\*\*", r"\1", text, flags=re.S)
     text = re.sub(r"\*(.+?)\*", r"\1", text, flags=re.S)
     text = re.sub(r"`(.+?)`", r"\1", text, flags=re.S)
+    # An abstract field carries no reference list, so a bracketed number in it points at
+    # nothing. The manuscript's abstract cites two; the form's copy must not.
+    text = re.sub(r" ?\[\d+(?:\s*,\s*\d+)*\]", "", text)
     return re.sub(r"[ \t]+", " ", text).strip()
 
 
