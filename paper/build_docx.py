@@ -177,7 +177,48 @@ def build_docx(
         outputfile=str(output),
         extra_args=["--resource-path", str(PAPER_DIR)],
     )
+    keep_table_rows_whole(output)
     return output
+
+
+#: Word's default is to let a table row break across a page. In the converted PDF that put
+#: half of a Table 2 row on one page and half on the next, with the repeated header in
+#: between, so a reader met three numbers with no idea which denoiser they belonged to.
+#: Rows here are two or three lines; moving a whole row to the next page costs nothing.
+_ROW_PROPERTIES = "<w:trPr><w:cantSplit/></w:trPr>"
+
+
+def keep_table_rows_whole(path: Path) -> Path:
+    """Set ``cantSplit`` on every table row of a written ``.docx``.
+
+    Pandoc has no option for this and no reference document can supply it, because it is a
+    row property rather than a style. The file is a zip of XML, so it is set afterwards.
+    """
+    import re
+    import shutil
+    import zipfile
+
+    entry = "word/document.xml"
+    with zipfile.ZipFile(path) as archive:
+        names = archive.namelist()
+        contents = {name: archive.read(name) for name in names}
+
+    document = contents[entry].decode("utf-8")
+    # A row that already carries properties gets cantSplit added to them; one that carries
+    # none gets a properties element, which must be the first child of the row.
+    document, with_props = re.subn(r"(<w:trPr>)", r"\1<w:cantSplit/>", document)
+    document, without_props = re.subn(
+        r"(<w:tr\b[^>]*>)(?!<w:trPr>)", rf"\1{_ROW_PROPERTIES}", document
+    )
+    contents[entry] = document.encode("utf-8")
+
+    temporary = path.with_suffix(".docx.tmp")
+    with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name in names:  # preserve the original entry order
+            archive.writestr(name, contents[name])
+    shutil.move(str(temporary), str(path))
+    print(f"  rows kept whole: {with_props + without_props}")
+    return path
 
 
 def main(argv: list[str] | None = None) -> int:

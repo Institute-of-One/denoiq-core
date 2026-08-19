@@ -123,8 +123,8 @@ FIGURE_FILES = (
 )
 SUPPLEMENTARY_FIGURE_FILES = ("figS1_redlamp_console.png",)
 
-#: Order Table 2's rows are reported in: weakest smoothing first, so the NPWE column reads as
-#: a trend rather than as an unordered list.
+#: Order Table 2's denoisers are reported in: weakest smoothing first, so the NPWE row reads
+#: as a trend rather than as an unordered list.
 DENOISER_ORDER = ("gaussian(1.5 px)", "TV(0.4 sd)", "NLM(0.6 sd)")
 
 # Page geometry (§5 of the proposal): Letter, single column, generous but not wasteful.
@@ -415,13 +415,49 @@ def _load(results: Path, name: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+#: A real minus sign, and a space that cannot be broken at.
+#:
+#: Word treats an ASCII hyphen as a line-break opportunity, so in a narrow column
+#: ``-0.91 [-0.94, -0.88]`` came out as ``-0.91 [-`` / ``0.94, -0.88]``: the stranded
+#: sign reads as punctuation and the lower bound reads as positive. U+2212 carries no
+#: break opportunity, and it is the correct glyph for a minus in any case.
+MINUS = "−"
+NBSP = " "
+
+
+def _bind(text: str) -> str:
+    """Make a numeric string unbreakable: real minus signs, no breakable spaces."""
+    return text.replace("-", MINUS).replace(" ", NBSP)
+
+
 def _ci(entry: dict, spec: str = "+.2f") -> str:
-    """``value [low, high]`` from a bootstrap record."""
-    return f"{entry['value']:{spec}} [{entry['ci_low']:{spec}}, {entry['ci_high']:{spec}}]"
+    """``value [low, high]`` from a bootstrap record.
+
+    The interval is bound into one token, so the only place the cell can wrap is the
+    space before the bracket. That gives a deterministic two-line cell instead of a
+    break wherever the column happens to run out.
+    """
+    value = _bind(f"{entry['value']:{spec}}")
+    low, high = (_bind(f"{entry[k]:{spec}}") for k in ("ci_low", "ci_high"))
+    return f"{value} [{low},{NBSP}{high}]"
 
 
 def _pct(entry: dict) -> str:
-    return f"{entry['value']:.1%} [{entry['ci_low']:.1%}, {entry['ci_high']:.1%}]"
+    value = _bind(f"{entry['value']:.1%}")
+    low, high = (_bind(f"{entry[k]:.1%}") for k in ("ci_low", "ci_high"))
+    return f"{value} [{low},{NBSP}{high}]"
+
+
+def _transpose(rows: list[list[str]]) -> list[list[str]]:
+    """Turn a wide table on its side, keeping the corner cell as the new header's first.
+
+    Seven or eight columns of ``value [low, high]`` do not fit a 6.5 in text block: each
+    column gets under an inch, which is narrower than the numbers it has to hold. The
+    same table with the denoisers as columns gives every cell half again as much room,
+    and it puts the comparison a reader actually makes -- one metric across denoisers --
+    along a row.
+    """
+    return [list(column) for column in zip(*rows, strict=True)]
 
 
 def table1_data(results: Path) -> tuple[list[list[str]], str]:
@@ -495,7 +531,7 @@ def table2_data(results: Path) -> tuple[list[list[str]], str]:
         raise BuildError(f"statistics.json has no observer entry for {missing}")
 
     header = [
-        "denoiser",
+        "effect",
         "ΔSSIM",
         "Δd′ PW",
         "Δd′ CHO",
@@ -533,14 +569,15 @@ def table2_data(results: Path) -> tuple[list[list[str]], str]:
     caption = (
         "**Table 2.** Observer-dependent effects: processed minus unprocessed at the same "
         "condition and realisation, as mean [95 % CI] from a bootstrap resampling whole "
-        "realisations. PW is the cross-fitted prewhitening observer, CHO the channelised "
+        "realisations. Columns are the denoisers. "
+        "PW is the cross-fitted prewhitening observer, CHO the channelised "
         "Hotelling observer, NPWE the non-prewhitening observer with an eye filter — a "
         "stylised surrogate for limited prewhitening efficiency, not a human-reader model. "
         "The benefit is B = Δd′(NPWE) − Δd′(PW); p-values are two-sided bootstrap values for "
         "B, Holm-adjusted across the three denoisers. None of these columns is the analytic "
         "ceiling, which is a property of the unprocessed input and is unchanged by processing."
     )
-    return [header, *body], caption
+    return _transpose([header, *body]), caption
 
 
 def table_s1_data(results: Path) -> tuple[list[list[str]], str]:
@@ -639,7 +676,7 @@ def table_s3_data(results: Path) -> tuple[list[list[str]], str]:
         "floor they are red by construction, since an input that fails the requirement is "
         "itself a red rule."
     )
-    return [header, *body], caption
+    return _transpose([header, *body]), caption
 
 
 def table_s4_data(results: Path) -> tuple[list[list[str]], str]:

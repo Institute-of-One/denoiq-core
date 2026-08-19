@@ -117,20 +117,49 @@ def test_table_2_reports_observer_effects_with_intervals():
     rows, caption = build_pdf.table2_data(RESULTS)
     statistics = json.loads((RESULTS / "statistics.json").read_text(encoding="utf-8"))
     by_denoiser = statistics["observer_dependence"]["by_denoiser"]
-    assert [row[0] for row in rows[1:-1]] == list(build_pdf.DENOISER_ORDER)
-    assert rows[-1][0] == "All"
-    for row in rows[1:-1]:
-        entry = by_denoiser[row[0]]
+    # Denoisers are the columns: seven columns of "value [low, high]" do not fit the text
+    # block, and the cells were breaking mid-number in the converted document.
+    header, *body = rows
+    assert header[1:-1] == list(build_pdf.DENOISER_ORDER)
+    assert header[-1] == "All"
+    labelled = {row[0]: row[1:] for row in body}
+    assert set(labelled) == {"ΔSSIM", "Δd′ PW", "Δd′ CHO", "Δd′ NPWE", "benefit B", "p (Holm)"}
+
+    for column, name in enumerate(build_pdf.DENOISER_ORDER):
+        entry = by_denoiser[name]
         # Every performance cell carries its interval, as the journal requires.
-        for cell in row[1:-1]:
-            assert "[" in cell and "]" in cell, cell
-        assert f"{entry['delta_d_pw']['value']:+.2f}" in row[2]
-        assert f"{entry['delta_d_npwe']['value']:+.2f}" in row[4]
+        for label in ("ΔSSIM", "Δd′ PW", "Δd′ CHO", "Δd′ NPWE", "benefit B"):
+            assert "[" in labelled[label][column] and "]" in labelled[label][column]
+        assert build_pdf._bind(f"{entry['delta_d_pw']['value']:+.2f}") in labelled["Δd′ PW"][column]
+        assert (
+            build_pdf._bind(f"{entry['delta_d_npwe']['value']:+.2f}")
+            in labelled["Δd′ NPWE"][column]
+        )
         # The point of the table: the inefficient observer gains, the efficient one does not.
         assert entry["delta_d_npwe"]["value"] > 0.0
         assert entry["delta_d_pw"]["value"] <= 0.0
         assert entry["benefit"]["ci_low"] > 0.0
     assert "Holm" in caption
+
+
+@requires_inputs
+def test_numeric_cells_cannot_break_across_a_line():
+    """No ASCII hyphen and no breakable space inside a reported number.
+
+    Word breaks a line after a hyphen. In a 0.93 in column "-0.91 [-0.94, -0.88]" came out
+    as "-0.91 [-" then "0.94, -0.88]", which reads as a positive lower bound. The only
+    break a numeric cell may offer is the space before its opening bracket.
+    """
+    for builder in (build_pdf.table2_data, build_pdf.table_s3_data, build_pdf.table_s4_data):
+        rows, _caption = builder(RESULTS)
+        for row in rows[1:]:
+            for cell in row[1:]:
+                if "[" not in cell:
+                    continue
+                assert "-" not in cell, f"ASCII hyphen in {cell!r} from {builder.__name__}"
+                head, _, interval = cell.partition(" ")
+                assert " " not in interval, f"breakable space inside {interval!r}"
+                assert head and interval.startswith("[")
 
 
 def test_a_missing_results_file_is_an_error_not_an_empty_table(tmp_path):
