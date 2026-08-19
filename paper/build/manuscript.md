@@ -62,7 +62,8 @@ realisations, and comparisons are Holm-adjusted. The matrix ran over
 vendor reconstructions of the routine and quarter-dose acquisitions, a synthetic lesion of known size and
 contrast inserted into real parenchyma, and a residual CNN trained on
 8 cases and evaluated on the 4 it
-never saw, at two configurations spanning 86× in parameters.
+never saw, with a 15% patch-level validation split inside the training cases, at two
+configurations spanning 86× in parameters.
 
 **Results.** *Controlled*: ΔSSIM and Δ`d'`(PW) correlated at Spearman ρ =
 -0.62
@@ -451,6 +452,12 @@ Adam at a learning rate of 0.001, the smaller for
 3000 patches per case. The two therefore differ in three
 respects at once — parameters, training data and training length — and are not a controlled
 comparison of capacity.
+
+The validation loss quoted below is measured on a 15% split of the patches drawn from the
+8 training cases, held out from the gradient. The held-out cases take no part in
+training or in model selection: they are read once, after training has finished. This is the
+same discipline Section 2.5 applies to the observers, for the same reason — a quantity that
+selects a model cannot also be evidence about it.
 
 **What the network is and is not shown.** Training pairs are normalised exactly as inference
 normalises them, by each image's own mean and estimated noise level; a network trained in

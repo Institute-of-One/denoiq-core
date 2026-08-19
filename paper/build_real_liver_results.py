@@ -60,6 +60,7 @@ SPEC = {
         "small": {"depth": 6, "width": 24, "kernel": 3},
         "large": {"depth": 10, "width": 96, "kernel": 5},
         "patch_px": 64,
+        "validation_fraction": 0.15,
         "optimiser": "Adam",
         "learning_rate": 0.001,
         "formulation": "the network predicts the noise, which is subtracted from its input",
