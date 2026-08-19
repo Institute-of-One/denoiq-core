@@ -137,7 +137,18 @@ study; the real-data arm uses de-identified public images from The Cancer Imagin
 under CC BY 4.0, so no ethics approval or informed consent applies. There is no preprint
 and the manuscript is not under consideration elsewhere. Generative AI was used as a tool
 and is disclosed in the manuscript; no numerical result came from it, and no AI system is
-an author. The author declares the competing interests stated in the manuscript.
+an author.
+
+Competing interests, disclosed in full: the author is Representative Director (CEO) of
+LISIT Co., Ltd. and Chief Executive Officer of TexelCraft OU, and Institute of One is the
+open-research initiative of LISIT Co., Ltd. Neither company sells or licenses any product
+related to the subject of this manuscript, and the work used no client or patient data. Two
+further interests bear on the subject rather than on finance. The software the study runs
+on - denoiq-core and taskiq-core - was written by the author, so the author is both the
+implementer and the assessor; the manuscript states this in its Limitations. And the
+manuscript argues for openly referenced validation while the author's research initiative is
+founded on releasing code and data openly, which is an ideological position related to the
+subject and is declared as such. There are no other competing interests and no funders.
 
 Yours sincerely,
 Shuji Yamamoto, PhD
