@@ -24,13 +24,13 @@ unprocessed images, `S` the SSIM of the processed images against the noise-free 
 
 | level | rule | reads as |
 |---|---|---|
-| **red** | `C` < [[results:dose_sweep.json:config.criteria.d_prime_threshold]] | the input does not meet the prespecified requirement, and no processing can restore it |
-| **red** | `S` ≥ [[results:dose_sweep.json:config.criteria.plausible_ssim]] and `T` ≤ [[results:dose_sweep.json:config.criteria.min_task_d_prime]] | high fidelity with inadequate task performance |
-| **red** | `F` > [[results:dose_sweep.json:config.criteria.max_false_structure_rate]] and `F` > `F_input` | excess lesion-like responses over the input |
-| **red** | `ρ` < [[results:dose_sweep.json:config.criteria.min_contrast_recovery]] | erasure of true contrast |
-| **amber** | `C` < [[results:dose_sweep.json:config.criteria.amber_factor]] × [[results:dose_sweep.json:config.criteria.d_prime_threshold]] | marginal: a small dose change crosses the floor |
-| **amber** | 1 − `T`/`T_input` > [[results:dose_sweep.json:config.criteria.max_task_loss]] | severe task degradation relative to the input |
-| **green** | none of the above | — |
+| red | `C` < [[results:dose_sweep.json:config.criteria.d_prime_threshold]] | the input does not meet the prespecified requirement, and no processing can restore it |
+| red | `S` ≥ [[results:dose_sweep.json:config.criteria.plausible_ssim]] and `T` ≤ [[results:dose_sweep.json:config.criteria.min_task_d_prime]] | high fidelity with inadequate task performance |
+| red | `F` > [[results:dose_sweep.json:config.criteria.max_false_structure_rate]] and `F` > `F_input` | excess lesion-like responses over the input |
+| red | `ρ` < [[results:dose_sweep.json:config.criteria.min_contrast_recovery]] | erasure of true contrast |
+| amber | `C` < [[results:dose_sweep.json:config.criteria.amber_factor]] × [[results:dose_sweep.json:config.criteria.d_prime_threshold]] | marginal: a small dose change crosses the floor |
+| amber | 1 − `T`/`T_input` > [[results:dose_sweep.json:config.criteria.max_task_loss]] | severe task degradation relative to the input |
+| green | none of the above | — |
 
 Any red rule outranks any amber rule; within a level every rule that fired contributes a reason,
 in the order listed. The adequacy threshold on `T` is a threshold for *inadequate* performance,
@@ -49,12 +49,12 @@ normalised so that an image containing exactly one true lesion reads `1.0` at th
 map is evaluated over all positions (a full 2-D correlation in `same` mode with zero padding;
 the lesion is centred and the image is [[results:dose_sweep.json:config.phantom.size]] pixels
 across, so boundary effects fall outside the lesion support). For each image the maximum over
-positions is taken, and the **lesion-like response rate** is the fraction of signal-absent images
+positions is taken, and the *lesion-like response rate* is the fraction of signal-absent images
 whose maximum reaches [[results:dose_sweep.json:config.amplitude_fraction]] of a true lesion's
 amplitude — a round fraction chosen in advance rather than tuned. The same statistic is computed
 on the unprocessed input of the same condition, and the gauge fires only on an excess over it.
 
-**Contrast recovery** is the projection of the class-mean difference image onto the same
+*Contrast recovery* is the projection of the class-mean difference image onto the same
 mean-subtracted lesion profile, divided by that profile's squared norm: the amplitude of the
 surviving lesion in units of the true contrast. It is 1 when contrast is preserved and 0 when it
 is erased; values above 1 mean the processing amplified the mean difference. Values are not

@@ -378,8 +378,8 @@ matched-filter normalisation behind them, are restated in Supplementary Methods.
 ### 2.7 Statistical analysis
 
 Arms are not independent observations: all arms of a realisation share its noise stream, and the
-arms of a condition share its images. Intervals therefore come from a **cluster bootstrap that
-resamples whole realisations** with replacement ([[results:statistics.json:n_boot]] replicates,
+arms of a condition share its images. Intervals therefore come from a cluster bootstrap that
+resamples whole realisations with replacement ([[results:statistics.json:n_boot]] replicates,
 seeded), carrying every arm of a drawn realisation along. Point estimates are the statistic on
 the full data; intervals are percentile intervals; two-sided bootstrap p-values are reported
 beside them and Holm-adjusted within each family (denoisers within an endpoint, stratum
@@ -448,8 +448,8 @@ physical units for this data: Gaussian filters of [[results:real_liver.json:spec
 [[results:real_liver.json:capacity.small.epochs]] epochs at batch [[results:real_liver.json:capacity.small.batch]] on
 [[results:real_liver.json:capacity.small.patches_per_case]] patches per case, the larger for
 [[results:real_liver.json:capacity.large.epochs]] epochs at batch [[results:real_liver.json:capacity.large.batch]] on
-[[results:real_liver.json:capacity.large.patches_per_case]] patches per case. **The two therefore differ in three
-respects at once** — parameters, training data and training length — and are not a controlled
+[[results:real_liver.json:capacity.large.patches_per_case]] patches per case. The two therefore differ in three
+respects at once — parameters, training data and training length — and are not a controlled
 comparison of capacity.
 
 **What the network is and is not shown.** Training pairs are normalised exactly as inference
@@ -570,9 +570,9 @@ The claim the design supports is about processing, and it is stated simultaneous
 whole family: with the armwise margin widened by Bonferroni to a family-wise level of `0.05`
 across all [[results:statistics.json:ceiling.family_wise.n_comparisons]] comparisons
 (`z` = [[results:statistics.json:ceiling.family_wise.z|.2f]]),
-**[[results:statistics.json:ceiling.family_wise.n_exceedances_processed_arms]] of the
+[[results:statistics.json:ceiling.family_wise.n_exceedances_processed_arms]] of the
 [[results:statistics.json:ceiling.family_wise.n_processed_comparisons]] processed-arm
-comparisons exceeded the ceiling margin**. The same holds at the unadjusted armwise margin
+comparisons exceeded the ceiling margin. The same holds at the unadjusted armwise margin
 ([[results:statistics.json:ceiling.n_violations_processed_arms]] of
 [[results:statistics.json:ceiling.family_wise.n_processed_comparisons]]).
 
@@ -693,8 +693,8 @@ Archive, `CC BY 4.0`), vendor reconstructions of both the routine and the simula
 acquisition. A lesion of known size and contrast is inserted into real parenchyma, so that the
 task has a ground truth the acquisition itself cannot supply. The learned denoiser is trained on
 quarter-dose / full-dose patch pairs from [[results:real_liver.json:held_out.n_train_cases]] cases and evaluated on
-the [[results:real_liver.json:held_out.n_test_cases]] it never saw ([[results:real_liver.json:held_out.n_pairs]] pairs). **The split is by
-case, not by slice**: slices from one patient are not independent, and a network tested on
+the [[results:real_liver.json:held_out.n_test_cases]] it never saw ([[results:real_liver.json:held_out.n_pairs]] pairs). The split is by
+case, not by slice: slices from one patient are not independent, and a network tested on
 another slice of a liver it trained on is being tested on its own training set. Normalisation at
 training matches normalisation at inference, since a network trained in absolute HU and deployed
 through a normalising wrapper is not the network that was trained. The network never sees a

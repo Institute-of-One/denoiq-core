@@ -59,6 +59,34 @@ def warn(msg: str) -> None:
     warnings.append(msg)
 
 
+# ---------------------------------------------------------------- emphasis
+def check_emphasis(built: str, label: str = "manuscript") -> None:
+    """Bold that is not a run-in heading is bold doing a job italic should do.
+
+    Bold had accumulated on ordinary terms mid-sentence until a reader could no longer
+    tell which bold meant "this paragraph is about X" and which meant "note this word".
+    A run-in heading opens a paragraph and closes with a full stop or colon; anything
+    else -- a term, a clause, a headline result -- is emphasis and belongs in italic or
+    in nothing at all.
+
+    Checked on the built file, not the source. Scanning the source line by line missed
+    every span that straddled a line break, which is how half a sentence in Section 2.7
+    stayed bold through two rounds of this.
+    """
+    body = built.split("## References")[0]
+    for match in re.finditer(r"\*\*(.+?)\*\*", body, re.S):
+        span = " ".join(match.group(1).split())
+        before, after = body[: match.start()], body[match.end() :]
+        opens_line = before.endswith("\n") or not before
+        # A bold span with nothing else on its line is a title, an author name or a
+        # heading. One with prose beside it is emphasis, whatever it says.
+        if opens_line and (after.startswith("\n") or not after):
+            continue
+        if opens_line and span.endswith((".", ":")):
+            continue  # a run-in heading, or an abstract label
+        fail(f"bold mid-sentence in the {label}: **{span[:60]}** - should it be italic?")
+
+
 # ---------------------------------------------------------------- front matter
 def check_front_matter(src: str, built: str) -> None:
     """The half an editor reads first, against the half that changed."""
@@ -261,6 +289,10 @@ def main() -> int:
     src = SOURCE.read_text(encoding="utf-8")
     built = BUILT.read_text(encoding="utf-8")
 
+    check_emphasis(built)
+    supplementary = PAPER / "build" / "supplementary.md"
+    if supplementary.exists():
+        check_emphasis(supplementary.read_text(encoding="utf-8"), "supplement")
     check_front_matter(src, built)
     check_references(src)
     check_tables(src)

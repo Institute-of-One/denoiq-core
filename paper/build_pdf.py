@@ -415,37 +415,38 @@ def _load(results: Path, name: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-#: A real minus sign, and a space that cannot be broken at.
+#: A real minus sign.
 #:
 #: Word treats an ASCII hyphen as a line-break opportunity, so in a narrow column
 #: ``-0.91 [-0.94, -0.88]`` came out as ``-0.91 [-`` / ``0.94, -0.88]``: the stranded
-#: sign reads as punctuation and the lower bound reads as positive. U+2212 carries no
+#: sign reads as punctuation and the lower bound reads as positive. U+2212 offers no
 #: break opportunity, and it is the correct glyph for a minus in any case.
+#:
+#: Binding the whole interval with non-breaking spaces as well was a step too far. A
+#: token wider than its column does not stay on one line - Word breaks it *anywhere* -
+#: and ``[100.0%, 100.0%]`` came back as ``[100.0%, 100.`` / ``0%]``. Ordinary spaces
+#: after the commas put the break points between the numbers, which is where a reader
+#: can absorb one. The rule is: never break inside a number, always allow a break
+#: between two of them.
 MINUS = "−"
-NBSP = " "
 
 
 def _bind(text: str) -> str:
-    """Make a numeric string unbreakable: real minus signs, no breakable spaces."""
-    return text.replace("-", MINUS).replace(" ", NBSP)
+    """Make one number unbreakable, by giving it a minus that is not a hyphen."""
+    return text.replace("-", MINUS)
 
 
 def _ci(entry: dict, spec: str = "+.2f") -> str:
-    """``value [low, high]`` from a bootstrap record.
-
-    The interval is bound into one token, so the only place the cell can wrap is the
-    space before the bracket. That gives a deterministic two-line cell instead of a
-    break wherever the column happens to run out.
-    """
+    """``value [low, high]`` from a bootstrap record."""
     value = _bind(f"{entry['value']:{spec}}")
     low, high = (_bind(f"{entry[k]:{spec}}") for k in ("ci_low", "ci_high"))
-    return f"{value} [{low},{NBSP}{high}]"
+    return f"{value} [{low}, {high}]"
 
 
 def _pct(entry: dict) -> str:
     value = _bind(f"{entry['value']:.1%}")
     low, high = (_bind(f"{entry[k]:.1%}") for k in ("ci_low", "ci_high"))
-    return f"{value} [{low},{NBSP}{high}]"
+    return f"{value} [{low}, {high}]"
 
 
 def _transpose(rows: list[list[str]]) -> list[list[str]]:
@@ -683,7 +684,7 @@ def table_s4_data(results: Path) -> tuple[list[list[str]], str]:
     """Supplementary Table S4 — per-denoiser divergence endpoints."""
     statistics = _load(results, "statistics.json")
     divergence = statistics["divergence"]
-    header = ["denoiser", "Spearman ρ", "p (Holm)", "divergent", "mean ΔSSIM", "mean Δd′ PW"]
+    header = ["measure", "Spearman ρ", "p (Holm)", "divergent", "mean ΔSSIM", "mean Δd′ PW"]
     body = []
     for name in DENOISER_ORDER:
         entry = divergence["by_denoiser"][name]
@@ -711,9 +712,10 @@ def table_s4_data(results: Path) -> tuple[list[list[str]], str]:
         "**Table S4.** Fidelity–task divergence per denoiser: the Spearman correlation between "
         "ΔSSIM and Δd′(PW), the fraction of divergent evaluations (ΔSSIM > 0 with Δd′(PW) < 0), "
         "and the mean changes, each as value [95 % CI] from the clustered bootstrap. p-values "
-        "are two-sided bootstrap values for the correlation, Holm-adjusted across denoisers."
+        "are two-sided bootstrap values for the correlation, Holm-adjusted across "
+        "denoisers. Columns are the denoisers."
     )
-    return [header, *body], caption
+    return _transpose([header, *body]), caption
 
 
 #: Which generated tables belong to which document, and the heading text that anchors them.

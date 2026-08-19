@@ -9,6 +9,7 @@ extra; skipped without it, exactly like the deep-learning tests.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -142,24 +143,52 @@ def test_table_2_reports_observer_effects_with_intervals():
     assert "Holm" in caption
 
 
-@requires_inputs
-def test_numeric_cells_cannot_break_across_a_line():
-    """No ASCII hyphen and no breakable space inside a reported number.
+#: Conservative width of one character of 9 pt DejaVu Serif, in inches, and the text block
+#: a generated table is laid into. Columns are assumed equal, which they are not - both
+#: renderers widen a column to its content - so this is a guard against the shapes that
+#: have actually failed, not a simulation of either one's line breaking.
+CHARACTER_INCHES = 0.075
+TEXT_BLOCK_INCHES = 6.5
 
-    Word breaks a line after a hyphen. In a 0.93 in column "-0.91 [-0.94, -0.88]" came out
-    as "-0.91 [-" then "0.94, -0.88]", which reads as a positive lower bound. The only
-    break a numeric cell may offer is the space before its opening bracket.
+
+@requires_inputs
+@pytest.mark.parametrize(
+    "builder",
+    [
+        build_pdf.table1_data,
+        build_pdf.table2_data,
+        build_pdf.table_s1_data,
+        build_pdf.table_s2_data,
+        build_pdf.table_s3_data,
+        build_pdf.table_s4_data,
+    ],
+    ids=lambda fn: fn.__name__,
+)
+def test_no_table_cell_can_break_inside_a_number(builder):
+    """Every unbreakable run in a table has to fit the column it is printed in.
+
+    Two failures, both in submitted documents. A hyphen is a break opportunity, so
+    "-0.91 [-0.94, -0.88]" came out as "-0.91 [-" then "0.94, -0.88]" and the lower bound
+    read as positive. Binding the interval against that then made a token wider than its
+    column, and a token that does not fit is broken *anywhere*: "[100.0%, 100." / "0%]".
+
+    So the invariant is not "no breaks" but "no break inside a number": a run that Word
+    cannot break must be narrow enough that it never has to.
     """
-    for builder in (build_pdf.table2_data, build_pdf.table_s3_data, build_pdf.table_s4_data):
-        rows, _caption = builder(RESULTS)
-        for row in rows[1:]:
-            for cell in row[1:]:
-                if "[" not in cell:
-                    continue
-                assert "-" not in cell, f"ASCII hyphen in {cell!r} from {builder.__name__}"
-                head, _, interval = cell.partition(" ")
-                assert " " not in interval, f"breakable space inside {interval!r}"
-                assert head and interval.startswith("[")
+    rows, _caption = builder(RESULTS)
+    column_inches = TEXT_BLOCK_INCHES / len(rows[0])
+    budget = int(column_inches / CHARACTER_INCHES)
+
+    for row in rows:
+        for cell in row:
+            if "[" in cell:
+                assert "-" not in cell, f"ASCII hyphen inside the number {cell!r}"
+            # Word may break at whitespace and after a hyphen, and nowhere else.
+            for run in re.split(r"\s+|(?<=-)", cell):
+                assert len(run) <= budget, (
+                    f"{run!r} is {len(run)} characters in a {column_inches:.2f} in column "
+                    f"that holds about {budget}; it will be broken mid-token"
+                )
 
 
 def test_a_missing_results_file_is_an_error_not_an_empty_table(tmp_path):

@@ -378,8 +378,8 @@ matched-filter normalisation behind them, are restated in Supplementary Methods.
 ### 2.7 Statistical analysis
 
 Arms are not independent observations: all arms of a realisation share its noise stream, and the
-arms of a condition share its images. Intervals therefore come from a **cluster bootstrap that
-resamples whole realisations** with replacement (4000 replicates,
+arms of a condition share its images. Intervals therefore come from a cluster bootstrap that
+resamples whole realisations with replacement (4000 replicates,
 seeded), carrying every arm of a drawn realisation along. Point estimates are the statistic on
 the full data; intervals are percentile intervals; two-sided bootstrap p-values are reported
 beside them and Holm-adjusted within each family (denoisers within an endpoint, stratum
@@ -448,8 +448,8 @@ Adam at a learning rate of 0.001, the smaller for
 16 epochs at batch 32 on
 800 patches per case, the larger for
 60 epochs at batch 64 on
-3000 patches per case. **The two therefore differ in three
-respects at once** — parameters, training data and training length — and are not a controlled
+3000 patches per case. The two therefore differ in three
+respects at once — parameters, training data and training length — and are not a controlled
 comparison of capacity.
 
 **What the network is and is not shown.** Training pairs are normalised exactly as inference
@@ -570,9 +570,9 @@ The claim the design supports is about processing, and it is stated simultaneous
 whole family: with the armwise margin widened by Bonferroni to a family-wise level of `0.05`
 across all 760 comparisons
 (`z` = 3.99),
-**0 of the
+0 of the
 550 processed-arm
-comparisons exceeded the ceiling margin**. The same holds at the unadjusted armwise margin
+comparisons exceeded the ceiling margin. The same holds at the unadjusted armwise margin
 (0 of
 550).
 
@@ -693,8 +693,8 @@ Archive, `CC BY 4.0`), vendor reconstructions of both the routine and the simula
 acquisition. A lesion of known size and contrast is inserted into real parenchyma, so that the
 task has a ground truth the acquisition itself cannot supply. The learned denoiser is trained on
 quarter-dose / full-dose patch pairs from 8 cases and evaluated on
-the 4 it never saw (1000 pairs). **The split is by
-case, not by slice**: slices from one patient are not independent, and a network tested on
+the 4 it never saw (1000 pairs). The split is by
+case, not by slice: slices from one patient are not independent, and a network tested on
 another slice of a liver it trained on is being tested on its own training set. Normalisation at
 training matches normalisation at inference, since a network trained in absolute HU and deployed
 through a normalising wrapper is not the network that was trained. The network never sees a
