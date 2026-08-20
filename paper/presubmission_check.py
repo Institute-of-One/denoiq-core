@@ -268,6 +268,29 @@ def check_built(built: str) -> None:
             fail(f"{label} caption appears {built.count(label)} times")
 
 
+# ---------------------------------------------------------------- submission format
+def check_submission_format() -> None:
+    """Page numbering and continuous line numbering, in the file that gets uploaded.
+
+    Medical Physics returned MS 26-1820 before peer review for the want of both. Neither
+    is visible in the markdown, and neither is something pandoc emits, so nothing before
+    this looked at the artefact that was actually sent.
+    """
+    import zipfile  # noqa: PLC0415
+
+    for name in ("manuscript_v2.docx", "supplementary_v2.docx"):
+        path = PAPER / "build" / name
+        if not path.exists():
+            continue
+        with zipfile.ZipFile(path) as archive:
+            document = archive.read("word/document.xml").decode("utf-8")
+            parts = archive.namelist()
+        if "lnNumType" not in document:
+            fail(f"{name} has no line numbering; the journal returns submissions for it")
+        if not any(part.startswith("word/footer") for part in parts):
+            fail(f"{name} has no footer, so no page numbers")
+
+
 # ---------------------------------------------------------------- artefacts
 def check_artefacts() -> None:
     builds = sorted(PAPER.glob("*.docx")) + sorted((PAPER / "build").glob("*.docx"))
@@ -298,6 +321,7 @@ def main() -> int:
     check_tables(src)
     check_figures(src)
     check_built(built)
+    check_submission_format()
     check_artefacts()
 
     for w in warnings:

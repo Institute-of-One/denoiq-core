@@ -178,7 +178,87 @@ def build_docx(
         extra_args=["--resource-path", str(PAPER_DIR)],
     )
     keep_table_rows_whole(output)
+    number_pages_and_lines(output)
     return output
+
+
+#: The footer part, holding a centred PAGE field. Word evaluates the field on open; the
+#: literal "1" is what a reader sees before it does.
+_FOOTER_XML = (
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+    '<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+    '<w:p><w:pPr><w:jc w:val="center"/></w:pPr>'
+    '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'
+    '<w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>'
+    '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'
+    "<w:r><w:t>1</w:t></w:r>"
+    '<w:r><w:fldChar w:fldCharType="end"/></w:r>'
+    "</w:p></w:ftr>"
+)
+
+_FOOTER_PART = "word/footer1.xml"
+_FOOTER_RELATIONSHIP = "rIdPageFooter"
+_FOOTER_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"
+
+#: Continuous line numbering down the left margin, every line, restarting never.
+#: ``distance`` is twentieths of a point: 360 is a quarter inch clear of the text.
+_LINE_NUMBERING = '<w:lnNumType w:countBy="1" w:restart="continuous" w:distance="360"/>'
+
+
+def number_pages_and_lines(path: Path) -> Path:
+    """Add page numbers and continuous line numbering to a written ``.docx``.
+
+    Medical Physics returned MS 26-1820 before peer review for the want of both. Pandoc
+    emits neither and no reference document supplies them: line numbering is a section
+    property, and a page number needs a footer part, a content-type override and a
+    relationship as well as the reference to it. All of that is done here so the next
+    build carries them rather than the next submission discovering it again.
+
+    Order inside ``sectPr`` is not free. The schema wants ``footerReference`` before
+    ``footnotePr`` and ``lnNumType`` after it; Word rejects the part outright if they
+    are the other way round.
+    """
+    import re  # noqa: PLC0415
+    import shutil  # noqa: PLC0415
+    import zipfile  # noqa: PLC0415
+
+    with zipfile.ZipFile(path) as archive:
+        names = archive.namelist()
+        contents = {name: archive.read(name) for name in names}
+
+    document = contents["word/document.xml"].decode("utf-8")
+    if "lnNumType" in document:
+        return path
+
+    reference = f'<w:footerReference w:type="default" r:id="{_FOOTER_RELATIONSHIP}"/>'
+    document = document.replace("<w:sectPr>", f"<w:sectPr>{reference}", 1)
+    document = document.replace("</w:footnotePr>", f"</w:footnotePr>{_LINE_NUMBERING}", 1)
+    contents["word/document.xml"] = document.encode("utf-8")
+
+    rels = contents["word/_rels/document.xml.rels"].decode("utf-8")
+    relationship = (
+        f'<Relationship Id="{_FOOTER_RELATIONSHIP}" Type="http://schemas.openxmlformats'
+        f'.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>'
+    )
+    rels = rels.replace("</Relationships>", f"{relationship}</Relationships>", 1)
+    contents["word/_rels/document.xml.rels"] = rels.encode("utf-8")
+
+    types = contents["[Content_Types].xml"].decode("utf-8")
+    override = f'<Override PartName="/{_FOOTER_PART}" ContentType="{_FOOTER_TYPE}"/>'
+    types = types.replace("</Types>", f"{override}</Types>", 1)
+    contents["[Content_Types].xml"] = types.encode("utf-8")
+
+    contents[_FOOTER_PART] = _FOOTER_XML.encode("utf-8")
+    names = [*names, _FOOTER_PART]
+
+    temporary = path.with_suffix(".docx.tmp")
+    with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name in names:
+            archive.writestr(name, contents[name])
+    shutil.move(str(temporary), str(path))
+    lines = len(re.findall(r"<w:p[ >]", document))
+    print(f"  page numbers and continuous line numbering added ({lines} paragraphs)")
+    return path
 
 
 #: Word's default is to let a table row break across a page. In the converted PDF that put
