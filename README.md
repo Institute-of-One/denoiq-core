@@ -140,7 +140,7 @@ not part of this open core.
 
 Cite the archived release (Zenodo concept DOI resolves to the latest version) — see
 [`CITATION.cff`](CITATION.cff). This work uses **taskiq-core** as its observer/task engine;
-please cite that release too (concept DOI `10.5281/zenodo.21422924`).
+please cite that release too (concept DOI `10.5281/zenodo.21422923`; the v0.3.0 snapshot is `10.5281/zenodo.21422924`).
 
 ## Licence and provenance
 

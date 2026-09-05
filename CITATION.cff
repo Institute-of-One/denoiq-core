@@ -55,5 +55,5 @@ references:
     repository-code: "https://github.com/Institute-of-One/taskiq-core"
     identifiers:
       - type: doi
-        value: "10.5281/zenodo.21422924"
+        value: "10.5281/zenodo.21422923"
         description: "Concept DOI of the observer / task engine used by this work"
