@@ -20,6 +20,7 @@ the study or the tests; it is required only to produce this one editable artefac
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -146,12 +147,83 @@ def render_markdown(
     return "\n".join(out).rstrip() + "\n"
 
 
+#: Medical Physics has been double-anonymised since 1 July 2026. The manuscript source
+#: keeps its author block, because build_pdf.py still needs it for the SPIE layout this
+#: paper was first written for; anonymity is a property of the artefact that has to
+#: carry it, not of the source. So it is applied here, on the way into the .docx.
+#:
+#: Set False only for a venue that reviews single-anonymised.
+ANONYMOUS = True
+
+#: The author block: three lines that follow the title. Matched rather than located by
+#: line number so that reordering the front matter cannot silently defeat this.
+_AUTHOR_BLOCK = re.compile(
+    r"^\*\*Shuji Yamamoto\*\*\n"
+    r"Institute of One[^\n]*\n"
+    r"[^\n]*ORCID[^\n]*\n",
+    re.M,
+)
+
+#: The supplement carries a one-line byline instead. It needs the same treatment: the
+#: journal's checklist says no names or affiliations in the manuscript, **supplementary
+#: information**, or figures. Anonymising only the main document leaves the author's
+#: name on the first page of the file that goes to the same reviewers.
+_SUPPLEMENT_BYLINE = re.compile(r"^Shuji Yamamoto\s*·[^\n]*\n", re.M)
+
+_AVAILABILITY = re.compile(
+    r"(## Code and Data Availability\n)(.*?)(?=\n## )", re.S
+)
+_REPOSITORY_URL = re.compile(r"is public at\s+https://github\.com/\S+")
+_ARCHIVE_PHRASE = re.compile(r"archived at Zenodo as version [^.]*\.")
+
+_WITHHELD_URL = "is public"
+_WITHHELD_ARCHIVE = (
+    "archived under a version DOI. The repository URL and that DOI both name the "
+    "author, so they are withheld from this anonymised copy and given on the title "
+    "page; they are restored at acceptance."
+)
+
+
+def anonymise(markdown: str) -> str:
+    """Remove what identifies the author, and only that.
+
+    Citing one's own published work is explicitly allowed -- what the journal forbids
+    is referring to it in the first person, which this manuscript does not do. So the
+    Zenodo DOI in reference 18 stays, and the substitutions below are scoped to the
+    availability section rather than applied to the whole document. Removing the
+    reference would be over-anonymising, and would cost a citation for nothing.
+    """
+    if _SUPPLEMENT_BYLINE.search(markdown):
+        return _SUPPLEMENT_BYLINE.sub("", markdown, count=1)
+
+    if not _AUTHOR_BLOCK.search(markdown):
+        raise SystemExit(
+            "the author block is not where anonymisation expects it; refusing to "
+            "build a .docx that may still carry it"
+        )
+    markdown = _AUTHOR_BLOCK.sub("", markdown, count=1)
+
+    section = _AVAILABILITY.search(markdown)
+    if section is None:
+        raise SystemExit("no Code and Data Availability section to anonymise")
+    body = section.group(2)
+    for pattern, replacement in (
+        (_REPOSITORY_URL, _WITHHELD_URL),
+        (_ARCHIVE_PHRASE, _WITHHELD_ARCHIVE),
+    ):
+        if not pattern.search(body):
+            raise SystemExit(f"availability section has no {pattern.pattern!r}")
+        body = pattern.sub(replacement, body, count=1)
+    return markdown[: section.start(2)] + body + markdown[section.end(2) :]
+
+
 def build_docx(
     *,
     results: Path = DEFAULT_RESULTS,
     figures: Path = DEFAULT_FIGURES,
     document_kind: str = "manuscript",
     output: Path | None = None,
+    anonymous: bool = ANONYMOUS,
 ) -> Path:
     """Verify freshness, assemble the augmented Markdown, and convert it to ``.docx``."""
     import pypandoc
@@ -165,6 +237,8 @@ def build_docx(
         readme=PAPER_DIR / "README.md",
         document_kind=document_kind,
     )
+    if anonymous:
+        markdown = anonymise(markdown)
     if output is None:
         output = PAPER_DIR / "build" / f"{document_kind}_v2.docx"
     output.parent.mkdir(parents=True, exist_ok=True)

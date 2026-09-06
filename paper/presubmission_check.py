@@ -289,6 +289,46 @@ def check_submission_format() -> None:
             fail(f"{name} has no line numbering; the journal returns submissions for it")
         if not any(part.startswith("word/footer") for part in parts):
             fail(f"{name} has no footer, so no page numbers")
+        check_anonymity(archive_text(path), name)
+
+
+#: What identifies the author, and must not reach a double-anonymised submission.
+#: The surname is deliberately absent: citing one's own published work is allowed, and
+#: reference 18 is such a citation. What the journal forbids is naming the author as the
+#: author, and referring to that work in the first person -- which the prose does not do.
+IDENTIFYING = {
+    "the affiliation": "LISIT",
+    "the research division": "Institute of One",
+    "the ORCID": "0000-0001-9211-1071",
+    "the email domain": "lisit.jp",
+    "the repository organisation": "Institute-of-One",
+}
+
+
+def archive_text(path) -> str:
+    """The visible text of a .docx, equations included."""
+    import re as _re  # noqa: PLC0415
+    import zipfile  # noqa: PLC0415
+
+    with zipfile.ZipFile(path) as archive:
+        document = archive.read("word/document.xml").decode("utf-8")
+    return " ".join(_re.findall(r"<[wm]:t[^>]*>([^<]*)</[wm]:t>", document))
+
+
+def check_anonymity(text: str, name: str) -> None:
+    """Medical Physics has been double-anonymised since 1 July 2026.
+
+    MS 26-1820 went in before that was noticed and is in review carrying the author
+    block on page one. paper/build_docx.py strips it now; this makes sure a later
+    change cannot quietly put it back, because the failure is invisible in the
+    markdown -- the source keeps the author block for the SPIE layout build.
+    """
+    for what, pattern in IDENTIFYING.items():
+        if pattern in text:
+            fail(
+                f"{name} still carries {what} ({pattern!r}); Medical Physics is "
+                "double-anonymised and identity belongs on the title page only"
+            )
 
 
 # ---------------------------------------------------------------- artefacts
