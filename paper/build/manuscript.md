@@ -196,7 +196,7 @@ its role here is measurement-chain validation and leakage control (Sections 2.5 
 
 ## 2. Methods
 
-### 2.1 Task, observers, and what "input" means
+### 2.1 Detection task, observers, and the reference input
 
 The task is signal-known-exactly / background-known-exactly (SKE/BKE) detection of a
 low-contrast disk on a uniform background, the standard paradigm of objective, task-based
@@ -253,7 +253,7 @@ left out, so every dose comparison in this paper is made at fixed kV. On the kV 
 report kV itself and never a dose ratio. This is a normalised model, not a calibration: it
 carries no measured dose-to-noise relation for any device and no absolute exposure values.
 
-### 2.3 Denoisers, and what they are told
+### 2.3 Denoisers
 
 Three deterministic classical denoisers: a Gaussian filter of fixed width
 1.5 pixels, total
@@ -301,7 +301,7 @@ as a single inflated condition count. The representative realisation used for th
 images is the first seed; Figure 1 shows the signal-present and signal-absent images at one
 setting, for the unprocessed input and each classical denoiser on a common display window.
 
-### 2.5 Cross-fitted estimation, and the ceiling comparison
+### 2.5 Cross-fitted estimation and the ceiling comparison
 
 On the unprocessed input the ideal linear observer is closed-form. On processed images neither
 the noise spectrum nor the effective signal is known analytically — a non-linear denoiser has no
@@ -389,7 +389,7 @@ conventional unclustered reference, which is the narrower of the two. Conclusion
 sizes and intervals rather than on p-values. Every statistic in this manuscript is computed by
 the analysis module and written to `results/statistics.json`; none is typed.
 
-### 2.8 The operational floor and the gauge
+### 2.8 The operational information floor
 
 The floor is the contour where the input's analytic ceiling `d'` crosses a prespecified
 requirement, here the Rose criterion [23] at
@@ -401,7 +401,7 @@ green / amber / red verdict with the rule that fired attached. Its thresholds ar
 author-set values, not clinically validated criteria; the complete rule set is given in
 Supplementary Methods, and verdict counts per stratum are reported in Section 3.5.
 
-### 2.10 The real low-dose CT arm
+### 2.9 The real low-dose CT arm
 
 **Images.** Twelve Siemens liver cases from LDCT-and-Projection-data, using the vendor
 reconstructions of both the routine-dose and the simulated quarter-dose acquisition. Nothing is
@@ -502,23 +502,6 @@ and a network tested on another slice of a liver it trained on is being tested o
 training set. The network never sees a lesion — its targets are routine-dose reconstructions of
 ordinary anatomy, which is what a denoiser is actually given — so the lesion exists only in the
 evaluation.
-
-### 2.9 Use of generative AI
-
-Generative AI (Claude, Anthropic, through the Claude Code command-line tool) was used as
-a tool in preparing this work: scaffolding and refactoring the released software,
-drafting unit tests, writing the figure and analysis scripts, and drafting and revising
-manuscript prose. It was not used to design the study, to choose the endpoints, or to
-decide what the results mean.
-
-No numerical result came from the model. Every number, table and figure in this
-manuscript is emitted by executed code into machine-readable files under `results/`, and
-the text resolves against those files at build time; the test suite fails if the two
-disagree, so a value cannot be typed into the prose. Every reference was checked against
-its Crossref record before being cited. The author designed the study, re-executed every
-result and verified all figures, equations and claims against the code, and is solely
-accountable for the content. No AI system is an author. This disclosure follows ICMJE and
-COPE guidance and is repeated under Disclosures.
 
 ## 3. Results
 
@@ -922,10 +905,19 @@ images from LDCT-and-Projection-data, distributed by The Cancer Imaging Archive 
 no data were collected for this study, no proprietary software was used, and the work required no
 additional ethical approval.
 
-**AI-assisted tools.** Generative AI tools were used for language editing, code review, and
-consistency checking during development of the software and manuscript. All study design
-decisions, implementations, numerical results, interpretations, and final text were independently
-reviewed and approved by the author, who assumes full responsibility for the work.
+**Use of generative AI.** Generative AI (Claude, Anthropic, through the Claude Code command-line tool) was used as
+a tool in preparing this work: scaffolding and refactoring the released software,
+drafting unit tests, writing the figure and analysis scripts, and drafting and revising
+manuscript prose. It was not used to design the study, to choose the endpoints, or to
+decide what the results mean.
+
+No numerical result came from the model. Every number, table and figure in this
+manuscript is emitted by executed code into machine-readable files under `results/`, and
+the text resolves against those files at build time; the test suite fails if the two
+disagree, so a value cannot be typed into the prose. Every reference was checked against
+its Crossref record before being cited. The author designed the study, re-executed every
+result and verified all figures, equations and claims against the code, and is solely
+accountable for the content. No AI system is an author. This disclosure follows ICMJE and COPE guidance.
 
 ## Code and Data Availability
 
@@ -934,7 +926,7 @@ public LDCT-and-Projection-data collection (TCIA, `CC BY 4.0`, DOI `10.7937/9npb
 
 **Two packages are needed, and neither reproduces the paper alone.** The controlled arm, the
 endpoints, the statistics and the figures are `denoiq-core`, below. The code that reads the
-projection data, inserts the lesion, realises the observer described in Section 2.10 and scores
+projection data, inserts the lesion, realises the observer described in Section 2.9 and scores
 the result is `ldct-io`, at <https://github.com/Institute-of-One/ldct-io>, MIT licensed, archived
 as version `0.1.0` (version DOI `10.5281/zenodo.22723944`; concept DOI
 `10.5281/zenodo.22723943`). The entry point for the real-data arm is its

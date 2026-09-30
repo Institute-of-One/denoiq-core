@@ -418,7 +418,21 @@ def test_no_placeholder_survives_into_a_submission_draft():
     assert "available at review time" in availability
     disclosures = text.split("## Disclosures", 1)[1].split("## Code and Data", 1)[0]
     assert "conflicts of interest" in disclosures
-    assert "Generative AI tools" in disclosures
+    # The generative-AI statement belongs here, where ICMJE asks for it, and not as a numbered
+    # Methods subsection before the Results, which is where it used to sit. These assertions
+    # are on what the disclosure has to say rather than on one phrase of it: the earlier check
+    # was satisfied by the literal "Generative AI tools" and by nothing else.
+    assert "Generative AI" in disclosures, "the disclosure must name generative AI"
+    assert "Claude" in disclosures, "the disclosure must name the tool that was used"
+    assert "No AI system is an author" in disclosures
+    assert "accountable for the content" in disclosures
+    assert "ICMJE" in disclosures
+    methods = text.split("## 2. Methods", 1)[1].split("## 3. Results", 1)[0]
+    # Lower-case both sides. Written as `"generative AI" not in methods.lower()` this can never
+    # fire, because the capital letters cannot survive the lowering — which is what an injection
+    # test caught when the statement was put back into Methods and the check stayed green.
+    assert "generative ai" not in methods.lower(), (
+        "the generative-AI statement is a disclosure, not a Methods subsection")
 
 
 def test_path_resolution_rules():
