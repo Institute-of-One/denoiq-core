@@ -430,6 +430,40 @@ real noise, not detection of pathology.
 [[results:real_liver.json:spec.sites.min_per_case]] is dropped. Signal-present and signal-absent trials are built at
 the same sites from the same background, so the pair differs only by the lesion.
 
+**The observer, on anatomical background.** A prewhitening matched filter needs the noise
+power spectrum of the images it scores. On a uniform phantom that spectrum is the noise; on liver
+parenchyma an image-by-image estimate would be dominated by the anatomy, which is not noise and
+does not repeat between trials. The paired construction of the preceding paragraph is what makes
+the estimate possible: because the signal-present and signal-absent members of a pair are built at
+the same site from the same background, their difference removes the anatomy and leaves the noise.
+The noise power spectrum is therefore estimated as the two-dimensional spectrum of those paired
+differences after their mean is removed, and the anatomy enters neither the template nor the
+covariance.
+
+The template is formed on training folds and applied to held-out ones. Trials are assigned to
+[[results:real_liver.json:spec.observer.folds]] folds by [[results:real_liver.json:spec.observer.fold_assignment]]. Within each training
+fold the signal is estimated as the difference of the present and absent means rather than assumed
+known, the noise power spectrum is estimated from the paired differences as above, and the
+template is the inverse transform of the estimated signal spectrum divided by that noise spectrum.
+The division is regularised in three steps, because an estimated spectrum has a zeroed DC bin and
+small high-frequency values that would otherwise dominate the template: the DC bin is replaced by
+the mean of its four neighbours, a ridge of [[results:real_liver.json:spec.observer.nps_ridge_x_mean]] of the spectrum's
+mean is added, and a floor of [[results:real_liver.json:spec.observer.nps_floor_x_max]] of its maximum is applied. Each
+held-out trial is then scored by the inner product of its image with the template. A template that
+had seen the trial it scores would report the fit rather than the detectability, which is why the
+folds are held out.
+
+**Detectability.** The two members of a pair share a background, so the per-trial difference of
+their scores removes it and carries two independent noise draws. Its variance is twice that of a
+single image, and the detectability of one image is therefore
+
+> *d*′ = √2 · mean(Δ) / sd(Δ),
+
+with Δ the per-trial difference of the present and absent scores. Omitting the √2 understates *d*′ by
+[[results:real_liver.json:spec.observer.understatement_without_sqrt_two_percent]] per cent, which is larger than the differences between denoisers this arm is measuring. The
+same quantity is computed for the unprocessed quarter-dose images and for every denoised arm, from
+the same trials, so the comparison across arms is paired throughout.
+
 **Denoisers.** The classical arms use the implementations of Section 2.3, parameterized in
 physical units for this data: Gaussian filters of [[results:real_liver.json:spec.arms.gaussian_small_mm|.2f]] mm and
 [[results:real_liver.json:spec.arms.gaussian_large_mm|.2f]] mm, total variation at
@@ -896,9 +930,17 @@ reviewed and approved by the author, who assumes full responsibility for the wor
 ## Code and Data Availability
 
 The controlled arm is generated analytically from documented seeds. The real-data arm uses the
-public LDCT-and-Projection-data collection (TCIA, `CC BY 4.0`, DOI `10.7937/9npb-2637`); the code
-that reads it, inserts the lesion and scores the result is `ldct-io`, and the consolidated
-outputs are committed as `results/real_liver.json`. Every number reported here is produced by
+public LDCT-and-Projection-data collection (TCIA, `CC BY 4.0`, DOI `10.7937/9npb-2637`).
+
+**Two packages are needed, and neither reproduces the paper alone.** The controlled arm, the
+endpoints, the statistics and the figures are `denoiq-core`, below. The code that reads the
+projection data, inserts the lesion, realises the observer described in Section 2.10 and scores
+the result is `ldct-io`, at <https://github.com/Institute-of-One/ldct-io>, MIT licensed, archived
+as version `0.1.0` (version DOI `10.5281/zenodo.22723944`; concept DOI
+`10.5281/zenodo.22723943`). The entry point for the real-data arm is its
+`examples/liver_cnn.py`, whose `cross_fitted_paired` is the observer and whose `PRESETS` are the
+two network configurations. Its per-run outputs are committed here under `paper/results/` and
+consolidated into `results/real_liver.json`. Every number reported here is produced by
 the code below rather than transcribed. The software is `denoiq-core`
 [[results:statistics.json:provenance.denoiq_core]] with `taskiq-core`
 [[results:statistics.json:provenance.taskiq_core]], MIT licensed, Python `3.10` to `3.12`. The

@@ -249,6 +249,19 @@
       "tv_weight_x_noise": 1.0,
       "nlm_h_x_noise": 0.8
     },
+    "observer": {
+      "name": "cross-fitted prewhitening matched filter on paired trials",
+      "folds": 5,
+      "fold_assignment": "trial index modulo the number of folds",
+      "signal_estimate": "difference of the training fold's present and absent means",
+      "noise_estimate": "two-dimensional noise power spectrum of the paired differences, with their mean removed",
+      "nps_dc_fill": "the zeroed DC bin is replaced by the mean of its four neighbours",
+      "nps_ridge_x_mean": 0.01,
+      "nps_floor_x_max": 0.001,
+      "detectability": "paired d' = sqrt(2) * mean(delta) / sd(delta), delta being the per-trial difference of the two scores",
+      "sqrt_two_reason": "the pair shares a background, so the difference carries two independent noise draws and has twice the variance of one image",
+      "understatement_without_sqrt_two_percent": 29
+    },
     "implementation": {
       "gaussian": "scipy.ndimage.gaussian_filter, mode='nearest'",
       "tv": "skimage.restoration.denoise_tv_chambolle, channel_axis=None, applied to the mean-removed plane and the mean restored, so the filter is shift-invariant",
