@@ -49,9 +49,15 @@ __all__ = [
 #: Green / amber / red, in that order — used for the atlas shading and the lamp markers.
 LEVEL_COLOURS = ("#2e7d32", "#f9a825", "#c62828")
 
+#: Raster resolution. 150 was enough to read on screen and not enough to submit: Elsevier asks
+#: for at least 300 dpi and a single-column width of at least 1063 pixels, and four of these
+#: figures came out under that. Raising it changes no number -- the figures are drawn from the
+#: same results files -- only how many pixels carry them.
+_SAVE_DPI = 300
+
 _STYLE: dict[str, Any] = {
-    "figure.dpi": 150,
-    "savefig.dpi": 150,
+    "figure.dpi": _SAVE_DPI,
+    "savefig.dpi": _SAVE_DPI,
     "font.size": 9,
     "axes.grid": True,
     "grid.alpha": 0.25,

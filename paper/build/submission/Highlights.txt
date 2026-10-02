@@ -1,0 +1,5 @@
+• Fidelity gains did not predict task detectability on real low-dose CT
+• The best-PSNR denoiser ranked fifth of nine on the detection task
+• No arm exceeded the input's ideal-observer ceiling, adversarial ones included
+• An ideal-observer dose floor supplies 60 % of the exposure a real observer needs
+• Exposure requirements can be compared across methods against a stated criterion

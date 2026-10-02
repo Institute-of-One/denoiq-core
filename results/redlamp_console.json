@@ -89,7 +89,7 @@
     }
   ],
   "provenance": {
-    "denoiq_core": "0.1.0",
+    "denoiq_core": "0.2.0",
     "taskiq_core": "0.4.0",
     "quick": false
   },

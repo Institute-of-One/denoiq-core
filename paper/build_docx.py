@@ -32,6 +32,19 @@ DEFAULT_FIGURES = PAPER_DIR / "figures"
 sys.path.insert(0, str(PAPER_DIR))
 import build_pdf  # noqa: E402  (path is set just above)
 
+#: Which journals want continuous line numbering in the submitted file. It is a per-journal
+#: switch and not a safe default: Medical Physics returns a manuscript before review without
+#: it, while Elsevier's and IOP's systems number the proof themselves, and supplying our own as
+#: well put two columns of numbers down the margin of a PMB proof. Page numbers never collide,
+#: so they are always added.
+LINE_NUMBERS = {
+    "medical physics": True,
+    "physica medica": False,
+    "pmb": False,
+    "none": False,
+}
+DEFAULT_JOURNAL = "physica medica"
+
 
 def _table_markdown(rows: list[list[str]], caption: str) -> str:
     """A generated table as a GitHub-flavoured Markdown table, caption above.
@@ -224,6 +237,7 @@ def build_docx(
     document_kind: str = "manuscript",
     output: Path | None = None,
     anonymous: bool = ANONYMOUS,
+    journal: str = DEFAULT_JOURNAL,
 ) -> Path:
     """Verify freshness, assemble the augmented Markdown, and convert it to ``.docx``."""
     import pypandoc
@@ -252,7 +266,14 @@ def build_docx(
         extra_args=["--resource-path", str(PAPER_DIR)],
     )
     keep_table_rows_whole(output)
-    number_pages_and_lines(output)
+    key = journal.strip().lower()
+    if key not in LINE_NUMBERS:
+        raise build_pdf.BuildError(
+            f"no line-numbering rule recorded for {journal!r}; add it to LINE_NUMBERS rather "
+            "than guessing, because guessing wrong is a proof with two columns of numbers or a "
+            "manuscript returned before review"
+        )
+    number_pages_and_lines(output, line_numbers=LINE_NUMBERS[key])
     return output
 
 
@@ -279,8 +300,8 @@ _FOOTER_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.f
 _LINE_NUMBERING = '<w:lnNumType w:countBy="1" w:restart="continuous" w:distance="360"/>'
 
 
-def number_pages_and_lines(path: Path) -> Path:
-    """Add page numbers and continuous line numbering to a written ``.docx``.
+def number_pages_and_lines(path: Path, *, line_numbers: bool = True) -> Path:
+    """Add page numbers, and line numbering only where the journal asks for it.
 
     Medical Physics returned MS 26-1820 before peer review for the want of both. Pandoc
     emits neither and no reference document supplies them: line numbering is a section
@@ -306,7 +327,8 @@ def number_pages_and_lines(path: Path) -> Path:
 
     reference = f'<w:footerReference w:type="default" r:id="{_FOOTER_RELATIONSHIP}"/>'
     document = document.replace("<w:sectPr>", f"<w:sectPr>{reference}", 1)
-    document = document.replace("</w:footnotePr>", f"</w:footnotePr>{_LINE_NUMBERING}", 1)
+    if line_numbers:
+        document = document.replace("</w:footnotePr>", f"</w:footnotePr>{_LINE_NUMBERING}", 1)
     contents["word/document.xml"] = document.encode("utf-8")
 
     rels = contents["word/_rels/document.xml.rels"].decode("utf-8")
@@ -331,7 +353,8 @@ def number_pages_and_lines(path: Path) -> Path:
             archive.writestr(name, contents[name])
     shutil.move(str(temporary), str(path))
     lines = len(re.findall(r"<w:p[ >]", document))
-    print(f"  page numbers and continuous line numbering added ({lines} paragraphs)")
+    added = "page numbers and continuous line numbering" if line_numbers else "page numbers"
+    print(f"  {added} added ({lines} paragraphs)")
     return path
 
 
@@ -442,6 +465,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--results", type=Path, default=DEFAULT_RESULTS)
     parser.add_argument("--figures", type=Path, default=DEFAULT_FIGURES)
     parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument(
+        "--journal",
+        default=DEFAULT_JOURNAL,
+        choices=sorted(LINE_NUMBERS),
+        help="which journal the file is for; decides line numbering, nothing else",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -450,6 +479,7 @@ def main(argv: list[str] | None = None) -> int:
             figures=args.figures,
             document_kind=args.document,
             output=args.output,
+            journal=args.journal,
         )
     except build_pdf.BuildError as exc:
         print(exc, file=sys.stderr)
