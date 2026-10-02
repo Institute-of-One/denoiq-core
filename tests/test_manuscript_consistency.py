@@ -224,6 +224,24 @@ def test_the_manuscript_fits_the_journal_word_limits():
     )
 
 
+#: Physica Medica: 3 to 5 highlights, each at most 85 characters including spaces.
+HIGHLIGHT_LIMIT = 85
+HIGHLIGHT_RANGE = (3, 5)
+
+
+def test_the_highlights_fit_the_journal_limits():
+    """A bullet one character over is caught by an editorial office, not by an author."""
+    path = PAPER / "highlights.md"
+    if not path.exists():
+        pytest.skip("paper/highlights.md has not been written yet")
+    text = re.sub(r"<!--.*?-->", "", path.read_text(encoding="utf-8"), flags=re.S)
+    bullets = [line[2:].strip() for line in text.splitlines() if line.startswith("- ")]
+    low, high = HIGHLIGHT_RANGE
+    assert low <= len(bullets) <= high, f"{len(bullets)} highlights, {low} to {high} allowed"
+    too_long = [(len(b), b) for b in bullets if len(b) > HIGHLIGHT_LIMIT]
+    assert not too_long, f"highlights over {HIGHLIGHT_LIMIT} characters: {too_long}"
+
+
 def test_the_title_is_the_same_in_every_place_it_appears():
     """The manuscript's title, CITATION.cff, .zenodo.json, README and the supplement must agree.
 
@@ -498,15 +516,25 @@ def test_no_placeholder_survives_into_a_submission_draft():
     assert "available at review time" in availability
     disclosures = text.split("## Disclosures", 1)[1].split("## Code and Data", 1)[0]
     assert "conflicts of interest" in disclosures
-    # The generative-AI statement belongs here, where ICMJE asks for it, and not as a numbered
-    # Methods subsection before the Results, which is where it used to sit. These assertions
-    # are on what the disclosure has to say rather than on one phrase of it: the earlier check
-    # was satisfied by the literal "Generative AI tools" and by nothing else.
-    assert "Generative AI" in disclosures, "the disclosure must name generative AI"
-    assert "Claude" in disclosures, "the disclosure must name the tool that was used"
-    assert "No AI system is an author" in disclosures
-    assert "accountable for the content" in disclosures
-    assert "ICMJE" in disclosures
+    # The generative-AI statement has its own section, with the heading and the position the
+    # journal specifies: a new section before the reference list. It used to be a numbered
+    # Methods subsection sitting between the real-CT arm and the Results, which is what invited
+    # an associate editor's parenthesis about AI. These assertions are on what it has to say
+    # rather than on one phrase of it: an earlier check was satisfied by the literal
+    # "Generative AI tools" and by nothing else.
+    ai_heading = (
+        "## Declaration of generative AI and AI-assisted technologies in the manuscript "
+        "preparation process"
+    )
+    assert ai_heading in text, "the generative-AI declaration needs the journal's exact heading"
+    assert text.index(ai_heading) < text.index("## References"), (
+        "the generative-AI declaration must come before the reference list")
+    ai = text.split(ai_heading, 1)[1].split("## References", 1)[0]
+    assert "Generative AI" in ai, "the declaration must name generative AI"
+    assert "Claude" in ai, "the declaration must name the tool that was used"
+    assert "No AI system is an author" in ai
+    assert "accountable for the content" in ai
+    assert "ICMJE" in ai
     methods = text.split("## 2. Methods", 1)[1].split("## 3. Results", 1)[0]
     # Lower-case both sides. Written as `"generative AI" not in methods.lower()` this can never
     # fire, because the capital letters cannot survive the lowering — which is what an injection

@@ -1071,20 +1071,6 @@ images from LDCT-and-Projection-data, distributed by The Cancer Imaging Archive 
 no data were collected for this study, no proprietary software was used, and the work required no
 additional ethical approval.
 
-**Use of generative AI.** Generative AI (Claude, Anthropic, through the Claude Code command-line tool) was used as
-a tool in preparing this work: scaffolding and refactoring the released software,
-drafting unit tests, writing the figure and analysis scripts, and drafting and revising
-manuscript prose. It was not used to design the study, to choose the endpoints, or to
-decide what the results mean.
-
-No numerical result came from the model. Every number, table and figure in this
-manuscript is emitted by executed code into machine-readable files under `results/`, and
-the text resolves against those files at build time; the test suite fails if the two
-disagree, so a value cannot be typed into the prose. Every reference was checked against
-its Crossref record before being cited. The author designed the study, re-executed every
-result and verified all figures, equations and claims against the code, and is solely
-accountable for the content. No AI system is an author. This disclosure follows ICMJE and COPE guidance.
-
 ## Code and Data Availability
 
 The controlled arm is generated analytically from documented seeds. The real-data arm uses the
@@ -1126,6 +1112,22 @@ observer and floor terminology has drifted in the text or in a figure label.
 ## Acknowledgments
 
 This work received no external funding.
+
+## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
+
+Generative AI (Claude, Anthropic, through the Claude Code command-line tool) was used as
+a tool in preparing this work: scaffolding and refactoring the released software,
+drafting unit tests, writing the figure and analysis scripts, and drafting and revising
+manuscript prose. It was not used to design the study, to choose the endpoints, or to
+decide what the results mean.
+
+No numerical result came from the model. Every number, table and figure in this
+manuscript is emitted by executed code into machine-readable files under `results/`, and
+the text resolves against those files at build time; the test suite fails if the two
+disagree, so a value cannot be typed into the prose. Every reference was checked against
+its Crossref record before being cited. The author designed the study, re-executed every
+result and verified all figures, equations and claims against the code, and is solely
+accountable for the content. No AI system is an author. This disclosure follows ICMJE and COPE guidance.
 
 ## References
 
