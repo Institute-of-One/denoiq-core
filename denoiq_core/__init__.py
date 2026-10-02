@@ -71,6 +71,13 @@ from denoiq_core.physics import (
     relative_dose,
     relative_photons,
 )
+from denoiq_core.guidance import (
+    DoseDecision,
+    achievable_floor,
+    apparent_exposure,
+    decide,
+    exposure_for_requirement,
+)
 from denoiq_core.redlamp import (
     Atlas,
     RedLamp,
@@ -126,4 +133,10 @@ __all__ = [
     "contrast_recovery",
     "classify",
     "assess",
+    # guidance
+    "DoseDecision",
+    "exposure_for_requirement",
+    "achievable_floor",
+    "apparent_exposure",
+    "decide",
 ]

@@ -1,0 +1,10 @@
+{
+  "archive": "Zenodo",
+  "comment": "The ldct-io release the manuscript cites. v0.1.0 was archived before the adversarial arm, the dose-decision analysis and the site-sensitivity analysis existed, so citing it would point a reader at code that cannot produce Sections 3.6.1, 3.6.2 and 3.7. version_doi stays null until 0.2.0 is tagged and archived, and build_manuscript.py --submission refuses to render while it is null. Same discipline as release.json; see docs/RELEASE.md.",
+  "concept_doi": "10.5281/zenodo.22723943",
+  "license": "MIT",
+  "repository": "https://github.com/Institute-of-One/ldct-io",
+  "tag": "v0.2.0",
+  "version": "0.2.0",
+  "version_doi": null
+}

@@ -239,6 +239,15 @@ def test_the_pdf_contains_the_manuscript_the_tables_and_the_figures(tmp_path):
     path = build_pdf.build_pdf(output=tmp_path / "manuscript.pdf")
     document = pypdf.PdfDocument(str(path))
     text = "\n".join(document[i].get_textpage().get_text_range() for i in range(len(document)))
+    # The title wraps across lines on the page, so the title check is made on whitespace-
+    # normalised text; an earlier title happened to survive the wrap and hid this.
+    flat = " ".join(text.split())
+    title = next(
+        line[2:].strip()
+        for line in (PAPER / "manuscript.md").read_text(encoding="utf-8").splitlines()
+        if line.startswith("# ")
+    )
+    assert " ".join(title.split()) in flat, "the manuscript's title is not in the PDF"
     for expected in (
         "Abstract",
         # SPIE numbers sections without a trailing period.
@@ -253,7 +262,7 @@ def test_the_pdf_contains_the_manuscript_the_tables_and_the_figures(tmp_path):
         "Table 2",
         "Figures",
         "Fig. 8",
-        "Denoising under a data-processing ceiling",
+
         "Address all correspondence to Shuji Yamamoto",
     ):
         assert expected in text, f"{expected!r} is not in the PDF"

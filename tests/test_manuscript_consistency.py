@@ -176,6 +176,86 @@ def test_the_version_is_the_same_in_every_place_it_appears():
     assert zenodo["version"] == packaged, ".zenodo.json version is out of step"
 
 
+#: Physica Medica, full length article: 10,000 words excluding the abstract, figure captions
+#: and references. The guide states that exceeding a limit without the Editor-in-Chief's
+#: permission means the submission is refused automatically, so this is a hard gate, not advice.
+WORD_LIMIT = 10_000
+ABSTRACT_LIMIT = 250
+
+
+def _counted_body(built: str) -> tuple[int, int]:
+    """Words counted against the limit, and the abstract's own count.
+
+    Counted the way the journal counts: the reference list, the abstract, the figure-caption
+    section and the title block are all outside the limit.
+    """
+    text = re.sub(r"<!--.*?-->", "", built, flags=re.S)
+    body = text.split("## References")[0]
+    match = re.search(r"## Abstract\n(.*?)\n## ", body, flags=re.S)
+    abstract = match.group(1) if match else ""
+    # The keyword line sits inside the abstract block but is not part of the abstract.
+    abstract_only = re.split(r"\*\*Keywords:\*\*", abstract)[0]
+    front = body.split("## Abstract")[0]
+    counted = body
+    for chunk in (abstract, front):
+        if chunk:
+            counted = counted.replace(chunk, " ")
+    return len(counted.split()), len(abstract_only.split())
+
+
+@requires_results
+def test_the_manuscript_fits_the_journal_word_limits():
+    """A limit discovered by hand, once, is a limit that will be exceeded again.
+
+    The margin is thin -- a few sentences of correction have taken the body over this limit
+    during revision -- and the penalty is refusal without review, so the count belongs in the
+    suite rather than in someone's memory.
+    """
+    if not BUILT.exists():
+        pytest.skip("paper/build/manuscript.md has not been built yet")
+    body_words, abstract_words = _counted_body(BUILT.read_text(encoding="utf-8"))
+    assert body_words <= WORD_LIMIT, (
+        f"the body is {body_words} words against a {WORD_LIMIT} limit "
+        f"({body_words - WORD_LIMIT} over); cut it or obtain the Editor-in-Chief's permission"
+    )
+    assert abstract_words <= ABSTRACT_LIMIT, (
+        f"the abstract is {abstract_words} words against a {ABSTRACT_LIMIT} limit "
+        f"({abstract_words - ABSTRACT_LIMIT} over)"
+    )
+
+
+def test_the_title_is_the_same_in_every_place_it_appears():
+    """The manuscript's title, CITATION.cff, .zenodo.json, README and the supplement must agree.
+
+    There was no such check until the title was changed, and by then two different titles had
+    been in circulation for some time: the manuscript said one thing and the archive metadata
+    another. Nothing failed, because nothing was looking. A reader arriving from the DOI would
+    have been told the paper was called something it is not.
+
+    The Medical Physics artefacts are deliberately outside this check. They record what was
+    submitted to that journal; retitling them would falsify the record rather than update it.
+    """
+    manuscript = (PAPER / "manuscript.md").read_text(encoding="utf-8")
+    heading = next(
+        line[2:].strip() for line in manuscript.splitlines() if line.startswith("# ")
+    )
+    assert heading, "the manuscript has no H1 title"
+
+    import json
+
+    citation = (REPO / "CITATION.cff").read_text(encoding="utf-8")
+    assert f'title: "{heading}"' in citation, "CITATION.cff title is out of step"
+
+    zenodo = json.loads((REPO / ".zenodo.json").read_text(encoding="utf-8"))
+    assert zenodo["title"] == heading, ".zenodo.json title is out of step"
+
+    # README and the supplement wrap the title across lines, so compare on collapsed spacing.
+    flat = " ".join(heading.split())
+    for name, path in (("README.md", REPO / "README.md"), ("supplementary.md", PAPER / "supplementary.md")):
+        text = " ".join(path.read_text(encoding="utf-8").split())
+        assert flat in text, f"{name} does not carry the manuscript's title"
+
+
 def test_the_affiliation_policy_holds_in_the_manuscript():
     """Only one affiliation may appear, and two institutions may appear nowhere.
 

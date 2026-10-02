@@ -15,6 +15,8 @@ Inputs, produced by ldct-io and committed under ``paper/results/``:
     liver_cnn_large.json   the same split and denoisers + the 1.85 M network
     liver_ceiling.json     all twelve cases, no learned denoiser
     dose_axis.json         liver and chest, two operating points
+    dose_decision.json     the measured dose axis: where the task is lost, and what
+                           processing does and does not return
 """
 
 from __future__ import annotations
@@ -111,6 +113,30 @@ SLUGS = {
     "nlm 0.8x noise": "nlm",
     "CNN small (21k)": "cnn_small",
     "CNN large (1850k)": "cnn_large",
+    "GAN small (21k)": "gan_small",
+    "GAN large (1850k)": "gan_large",
+}
+
+#: The sensitivity run labels its arms its own way; map them to the same slugs the table uses.
+SLUGS_SENS = {
+    "unprocessed": "unprocessed",
+    "gaussian 0.75 mm": "gauss075",
+    "gaussian 1.00 mm": "gauss100",
+    "tv 1x noise": "tv",
+    "nlm 0.8x noise": "nlm",
+    "CNN 21k": "cnn_small",
+    "CNN 1.85M": "cnn_large",
+    "GAN 21k": "gan_small",
+    "GAN 1.85M": "gan_large",
+}
+
+#: The four learned arms, as ``preset -> the label its run writes``. Each run writes the five
+#: classical arms as well, identically, which :func:`_merged_rows` checks rather than trusts.
+LEARNED = {
+    "small": "CNN small (21k)",
+    "large": "CNN large (1850k)",
+    "small_gan": "GAN small (21k)",
+    "large_gan": "GAN large (1850k)",
 }
 
 
@@ -118,18 +144,145 @@ def _load(name: str) -> dict:
     return json.loads((SRC / f"{name}.json").read_text(encoding="utf-8"))
 
 
-def _merged_rows(small: dict, large: dict) -> list[dict]:
-    """The five classical arms (identical in both runs) plus both networks."""
-    classical = [r for r in small["rows"] if not r["label"].startswith("CNN")]
-    other = [r for r in large["rows"] if not r["label"].startswith("CNN")]
-    if classical != other:
-        raise SystemExit(
-            "the classical arms differ between the two capacity runs; they share a "
-            "split and a seed and must be identical, so something has drifted"
-        )
-    cnn_small = next(r for r in small["rows"] if r["label"].startswith("CNN"))
-    cnn_large = next(r for r in large["rows"] if r["label"].startswith("CNN"))
-    rows = [*classical, cnn_small, cnn_large]
+def _guidance(run: dict) -> dict:
+    """The dose axis, reduced to the numbers a protocol decision is made from.
+
+    Everything here is derived from ``dose_decision.json``; nothing is typed. The quantities
+    are the ones the Results section states, in the order it states them: where the task is
+    lost, whether processing moves that point, how much exposure the processed picture claims,
+    and how far the ideal-observer scaling law can be trusted.
+    """
+    rows = run["rows"]
+    crossing = run["dose_at_requirement_measured"]
+    nominal = run["alpha_measured_at"]
+    raw_label = "unprocessed"
+    raw_crossing = crossing[raw_label]
+    processed = {k: v for k, v in crossing.items() if k != raw_label}
+
+    at_nominal = {r["label"]: r for r in rows if r["dose"] == nominal}
+    below = [r for r in rows if r["dose"] < raw_crossing and r["label"] != raw_label]
+    # The overstatement is only alarming where the task has already failed, so it is
+    # summarised separately above and below the crossing rather than pooled.
+    worst_below = max(below, key=lambda r: r["apparent_dose"] / r["dose"])
+
+    efficiency = {
+        label: row["d_prime"] / row["ceiling"] for label, row in at_nominal.items()
+    }
+    eta = efficiency[raw_label]
+
+    spreads = {k: v["spread_fraction"] for k, v in run["scaling_law_check"].items()}
+    worst_observer = max(spreads, key=lambda k: spreads[k])
+
+    # The ideal-observer floor and the reachable one, on THIS axis.
+    #
+    # denoiq_core.guidance converts between them with 1/eta^2, which follows from
+    # d' proportional to sqrt(D) -- the total noise a site measures in its own images. This
+    # study's dose axis is not that one: only the inserted noise is stochastic, its power goes
+    # as 1/beta - 1, and so d' goes as sqrt(beta / (1 - beta)). Quoting 1/eta^2 here would mix
+    # the two. The ceiling obeys this axis exactly, so its crossing is available in closed form,
+    # and the reachable floor follows from holding the efficiency constant -- an assumption,
+    # which is why its agreement with the measured crossing is reported beside it.
+    ceiling_at_nominal = at_nominal[raw_label]["ceiling"]
+    ideal_excess = (1.0 / nominal - 1.0) * (ceiling_at_nominal / run["requirement"]) ** 2
+    ideal_floor = 1.0 / (1.0 + ideal_excess)
+    reachable_floor = 1.0 / (1.0 + ideal_excess * eta**2)
+    floor_ratio = raw_crossing / ideal_floor
+
+    return {
+        "requirement": run["requirement"],
+        "requirement_source": run["requirement_source"],
+        "nominal_dose": nominal,
+        "n_pairs": run["n_pairs"],
+        "n_cases": len(run["cases"]),
+        "doses": run["doses"],
+        "crossing": {
+            "unprocessed": raw_crossing,
+            "best_processed": min(processed.values()),
+            "best_processed_label": min(processed, key=lambda k: processed[k]),
+            "worst_processed": max(processed.values()),
+            "worst_processed_label": max(processed, key=lambda k: processed[k]),
+            "by_method": crossing,
+        },
+        "processing_penalty": {
+            "n_processed": len(processed),
+            "n_needing_more_dose": sum(1 for v in processed.values() if v > raw_crossing * 1.02),
+            "worst_percent": 100.0 * (max(processed.values()) / raw_crossing - 1.0),
+            "best_percent": 100.0 * (min(processed.values()) / raw_crossing - 1.0),
+        },
+        "overstatement": {
+            "at_nominal_max": max(
+                r["apparent_dose"] / r["dose"] for k, r in at_nominal.items() if k != raw_label
+            ),
+            "at_nominal_max_label": max(
+                (k for k in at_nominal if k != raw_label),
+                key=lambda k: at_nominal[k]["apparent_dose"] / at_nominal[k]["dose"],
+            ),
+            "worst_below_crossing": worst_below["apparent_dose"] / worst_below["dose"],
+            "worst_below_crossing_label": worst_below["label"],
+            "worst_below_crossing_dose": worst_below["dose"],
+            "worst_below_crossing_apparent": worst_below["apparent_dose"],
+            "worst_below_crossing_d_prime": worst_below["d_prime"],
+        },
+        "efficiency": {
+            "at_nominal": efficiency,
+            "unprocessed_at_nominal": eta,
+            # The exposure penalty an ideal-observer floor hides, from guidance.achievable_floor.
+            #
+            # Two numbers, because they answer different questions and are easy to confuse.
+            # `achievable_floor_percent` is how much MORE exposure the reachable floor needs
+            # than the ideal-observer one, with the ideal floor as the denominator.
+            # `ideal_floor_shortfall_percent` is how much of the REQUIRED exposure an
+            # ideal-observer calculation fails to supply, with the requirement as the
+            # denominator. At eta = 0.745 they are 80 % and 44 %, and saying the ideal
+            # calculation "underestimates the requirement by 80 %" is the second quantity
+            # named with the first one's value.
+            # The sqrt(D) conversion, kept because denoiq_core.guidance offers it to a site
+            # working in total noise, and labelled so it is not mistaken for this axis.
+            "sqrt_law_floor_factor": 1.0 / eta**2,
+            "sqrt_law_floor_percent": 100.0 * (1.0 / eta**2 - 1.0),
+            # This axis, where the conversion belongs.
+            "ideal_observer_floor": ideal_floor,
+            "reachable_floor_constant_efficiency": reachable_floor,
+            "reachable_floor_measured": raw_crossing,
+            "constant_efficiency_agreement_percent": 100.0
+            * abs(reachable_floor - raw_crossing)
+            / raw_crossing,
+            "floor_ratio": floor_ratio,
+            "floor_ratio_percent": 100.0 * (floor_ratio - 1.0),
+            "ideal_floor_fraction_of_required": ideal_floor / raw_crossing,
+            "ideal_floor_shortfall_percent": 100.0 * (1.0 - ideal_floor / raw_crossing),
+        },
+        "scaling_law": {
+            "ceiling_spread": run["ceiling_scaling_spread"],
+            "worst_observer_spread": spreads[worst_observer],
+            "worst_observer_label": worst_observer,
+            "dose_range_fold": max(run["doses"]) / min(run["doses"]),
+            "by_method": spreads,
+        },
+    }
+
+
+def _merged_rows(runs: dict[str, dict]) -> list[dict]:
+    """The five classical arms, identical in every run, plus each run's learned arm.
+
+    The equality check is the point. All four runs evaluate the same held-out pairs with the
+    same seed, so their classical rows have to agree bit for bit; if they do not, something has
+    drifted between the runs and merging them would hide it behind a plausible table.
+    """
+    reference = None
+    learned: list[dict] = []
+    for preset, label in LEARNED.items():
+        run = runs[preset]
+        classical = [r for r in run["rows"] if r["label"] not in LEARNED.values()]
+        if reference is None:
+            reference = classical
+        elif classical != reference:
+            raise SystemExit(
+                f"the classical arms in the {preset} run differ from the others; they share a "
+                "split and a seed and must be identical, so something has drifted"
+            )
+        learned.append(next(r for r in run["rows"] if r["label"] == label))
+    rows = [*(reference or []), *learned]
 
     unprocessed = next(r for r in rows if r["label"] == "none")
     for r in rows:
@@ -139,15 +292,17 @@ def _merged_rows(small: dict, large: dict) -> list[dict]:
 
 
 def main() -> int:
-    small, large = _load("liver_cnn_small"), _load("liver_cnn_large")
+    runs = {preset: _load(f"liver_cnn_{preset}") for preset in LEARNED}
+    small, large = runs["small"], runs["large"]
     ceiling_run, dose = _load("liver_ceiling"), _load("dose_axis")
 
-    if small["ceiling"] != large["ceiling"]:
-        raise SystemExit("the two capacity runs disagree about the ceiling")
-    if small["test"] != large["test"]:
-        raise SystemExit("the two capacity runs used different held-out cases")
+    for preset, run in runs.items():
+        if run["ceiling"] != small["ceiling"]:
+            raise SystemExit(f"the {preset} run disagrees about the ceiling")
+        if run["test"] != small["test"]:
+            raise SystemExit(f"the {preset} run used different held-out cases")
 
-    rows = _merged_rows(small, large)
+    rows = _merged_rows(runs)
     rho, p_value = spearmanr([r["psnr"] for r in rows], [r["d_prime"] for r in rows])
 
     by_psnr = sorted(rows, key=lambda r: -r["psnr"])
@@ -183,18 +338,67 @@ def main() -> int:
             "small": {
                 "parameters": PARAMETERS["small"],
                 **TRAINING["small"],
-                **next(r for r in rows if "21k" in r["label"]),
+                **next(r for r in rows if r["label"] == LEARNED["small"]),
             },
             "large": {
                 "parameters": PARAMETERS["large"],
                 **TRAINING["large"],
-                **next(r for r in rows if "1850k" in r["label"]),
+                **next(r for r in rows if r["label"] == LEARNED["large"]),
             },
             "parameter_ratio": PARAMETERS["large"] / PARAMETERS["small"],
-            "checkpoint_sha256": {
-                "small": small["sha256"],
-                "large": large["sha256"],
+            "checkpoint_sha256": {preset: run["sha256"] for preset, run in runs.items()},
+        },
+        # The controlled comparison the adversarial arms exist for. At each capacity the two
+        # networks share an architecture, a training split, a patch set, an epoch count, a
+        # batch size, a learning rate and a seed; only the objective differs. Anything that
+        # separates them is therefore attributable to optimising appearance rather than
+        # fidelity, and not to capacity, data or training length.
+        "objective": {
+            capacity: {
+                "mse": next(r for r in rows if r["label"] == LEARNED[capacity]),
+                "adversarial": next(
+                    r for r in rows if r["label"] == LEARNED[f"{capacity}_gan"]
+                ),
+                "adversarial_config": runs[f"{capacity}_gan"]["adversarial"]["objective"],
+                "epochs": runs[f"{capacity}_gan"]["epochs"],
+                "d_prime_ratio": (
+                    next(r for r in rows if r["label"] == LEARNED[f"{capacity}_gan"])["d_prime"]
+                    / next(r for r in rows if r["label"] == LEARNED[capacity])["d_prime"]
+                ),
+                "psnr_difference": (
+                    next(r for r in rows if r["label"] == LEARNED[f"{capacity}_gan"])["psnr"]
+                    - next(r for r in rows if r["label"] == LEARNED[capacity])["psnr"]
+                ),
+            }
+            for capacity in ("small", "large")
+        },
+        # What the adversarial arm was built to provoke, and did not. `added` counts
+        # lesion-shaped structure the processing put into a lesion-free image, with the
+        # anatomy cancelled; the unprocessed row is the noise's own rate, and is the only
+        # reference under which the number means anything.
+        "fabrication": {
+            "noise_itself": next(r for r in rows if r["label"] == "none")[
+                "added_structure_rate"
+            ],
+            "by_method": {
+                SLUGS[r["label"]]: r["added_structure_rate"]
+                for r in rows
+                if r["label"] in SLUGS
             },
+            "max_processed": max(
+                r["added_structure_rate"] for r in rows if r["label"] != "none"
+            ),
+            "n_above_the_noise": sum(
+                1
+                for r in rows
+                if r["label"] != "none"
+                and r["added_structure_rate"]
+                > next(x for x in rows if x["label"] == "none")["added_structure_rate"]
+            ),
+            "n_processed": len(rows) - 1,
+            "lowest_contrast_recovery": min(
+                (r for r in rows if r["label"] != "none"), key=lambda r: r["contrast_recovery"]
+            ),
         },
         "spec": SPEC,
         "all_cases": {
@@ -223,6 +427,47 @@ def main() -> int:
     payload["operating_points"]["noise_ratio_chest_over_liver"] = (
         dose["chest"]["noise_sd"] / dose["liver"]["noise_sd"]
     )
+    payload["guidance"] = _guidance(_load("dose_decision"))
+
+    # How much the held-out ranking depends on where the lesions were put. Drawing the admitted
+    # sites showed the admission rule passes bowel, mesentery and vessel structure as well as
+    # parenchyma, so the evaluation was repeated with the one criterion that addresses it added
+    # and everything else held fixed, including the pairs per case.
+    sensitivity = _load("site_sensitivity")
+    published = sensitivity["rules"]["as published"]
+    strict = sensitivity["rules"]["low structure"]
+    swaps = sum(
+        1
+        for a, b in zip(
+            sensitivity["comparison"]["ranking_as_published"],
+            sensitivity["comparison"]["ranking_low_structure"],
+        )
+        if a != b
+    )
+    payload["site_sensitivity"] = {
+        "n_pairs": published["n_pairs"],
+        "structure_sd_median": published["structure_sd_median"],
+        "structure_sd_median_strict": strict["structure_sd_median"],
+        "structure_over_lesion_fraction": published["structure_over_lesion_fraction"],
+        "lesion_depth_hu": published["lesion_depth_hu"],
+        "structure_threshold_hu": strict["rule"]["structure_sd"],
+        "ceiling": published["ceiling"],
+        "ceiling_strict": strict["ceiling"],
+        "spearman_rho": sensitivity["comparison"]["spearman_rho"],
+        "spearman_p": sensitivity["comparison"]["spearman_p"],
+        "n_methods": len(published["rows"]),
+        "n_positions_changed": swaps,
+        "by_method": {
+            SLUGS_SENS[r["label"]]: {
+                "published": r["d_prime"],
+                "strict": next(
+                    x["d_prime"] for x in strict["rows"] if x["label"] == r["label"]
+                ),
+            }
+            for r in published["rows"]
+            if r["label"] in SLUGS_SENS
+        },
+    }
     payload["all_exceedances"] = (
         payload["held_out"]["n_exceeding_ceiling"]
         + payload["all_cases"]["n_exceeding_ceiling"]

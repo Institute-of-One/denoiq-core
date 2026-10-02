@@ -1,7 +1,6 @@
 # denoiq-core
 
-**Denoising under a data-processing ceiling: observer-dependent benefits, fidelity–task
-divergence, and an information floor.**
+**Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization.**
 
 The code and results behind the study of that name: a simulation study of when denoising helps
 a detection task, when it hurts one, and how both depend on who is looking.

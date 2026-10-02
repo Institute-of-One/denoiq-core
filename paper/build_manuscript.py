@@ -48,6 +48,7 @@ DOCUMENTS = ("manuscript", "supplementary")
 #: Where the archived-release metadata lives. The version DOI is not a measurement, so it does
 #: not belong in ``results/``; it is minted by Zenodo when the release is cut.
 DEFAULT_RELEASE = PAPER_DIR / "release.json"
+DEFAULT_LDCT_IO_RELEASE = PAPER_DIR / "ldct_io_release.json"
 
 #: ``[[results:<file>:<path>]]`` or ``[[results:<file>:<path>|<format>]]``. The format is
 #: separated by a pipe rather than a colon because paths contain brackets and dots but never
@@ -59,6 +60,13 @@ MARKER = re.compile(r"\[\[results:([^:|\]]+):(.+?)(?:\|([^|\]]+))?\]\](?!\])")
 #: ``archive_statement`` is derived rather than stored: it is the sentence the manuscript needs,
 #: and it differs between a draft (no DOI yet) and a submission (DOI required).
 RELEASE_MARKER = re.compile(r"\[\[release:([a-z_]+)\]\]")
+
+#: The manuscript cites two archived packages, not one. ``ldct-io`` carries the real-data arm,
+#: and the version archived before this revision does not contain the adversarial arm, the
+#: dose-decision analysis or the site-sensitivity analysis, so pointing a reader at it would
+#: point them at code that cannot produce three of the sections. It therefore gets the same
+#: gate: its DOI is a marker, and a submission build refuses while that DOI is null.
+LDCT_IO_MARKER = re.compile(r"\[\[ldct_io:([a-z_]+)\]\]")
 _STEP = re.compile(r"([^.\[\]]+)|\[([^\]]*)\]")
 #: Kept as a capturing group so ``re.split`` returns the comments too, in place.
 _COMMENT = re.compile(r"(<!--.*?-->)", re.S)
@@ -137,7 +145,9 @@ def resolve(payload: Any, path: str) -> Any:
     return current
 
 
-def release_value(field: str, release: dict[str, Any], *, submission: bool) -> str:
+def release_value(
+    field: str, release: dict[str, Any], *, submission: bool, label: str = "release.json"
+) -> str:
     """One ``[[release:...]]`` substitution.
 
     ``archive_statement`` is the only derived field. Before the release is minted there is no
@@ -148,7 +158,7 @@ def release_value(field: str, release: dict[str, Any], *, submission: bool) -> s
     if field != "archive_statement":
         value = release.get(field)
         if value is None:
-            raise ResolutionError(f"release.json has no value for {field!r}")
+            raise ResolutionError(f"{label} has no value for {field!r}")
         return str(value)
     doi = release.get("version_doi")
     version = release.get("version", "")
@@ -156,7 +166,7 @@ def release_value(field: str, release: dict[str, Any], *, submission: bool) -> s
         return f"archived at {release.get('archive', 'Zenodo')} as version {version}, doi:{doi}"
     if submission:
         raise ResolutionError(
-            "release.json has no version_doi: mint the archived release before building a "
+            f"{label} has no version_doi: mint the archived release before building a "
             "submission draft (see docs/RELEASE.md)"
         )
     return (
@@ -180,9 +190,27 @@ def render(
     if isinstance(release, Path):
         release = json.loads(release.read_text(encoding="utf-8")) if release.exists() else {}
 
+    ldct_io_release = (
+        json.loads(DEFAULT_LDCT_IO_RELEASE.read_text(encoding="utf-8"))
+        if DEFAULT_LDCT_IO_RELEASE.exists()
+        else {}
+    )
+
     def substitute_release(match: re.Match[str]) -> str:
         try:
             return release_value(match.group(1), release, submission=submission)
+        except ResolutionError as exc:
+            problems.append(str(exc))
+            return match.group(0)
+
+    def substitute_ldct_io(match: re.Match[str]) -> str:
+        try:
+            return release_value(
+                match.group(1),
+                ldct_io_release,
+                submission=submission,
+                label="ldct_io_release.json",
+            )
         except ResolutionError as exc:
             problems.append(str(exc))
             return match.group(0)
@@ -221,7 +249,9 @@ def render(
     rendered = "".join(
         piece
         if _COMMENT.fullmatch(piece)
-        else RELEASE_MARKER.sub(substitute_release, MARKER.sub(substitute, piece))
+        else LDCT_IO_MARKER.sub(
+            substitute_ldct_io, RELEASE_MARKER.sub(substitute_release, MARKER.sub(substitute, piece))
+        )
         for piece in pieces
     )
     if problems:

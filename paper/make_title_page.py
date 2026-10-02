@@ -18,7 +18,7 @@ BUILT = PAPER / "build" / "manuscript.md"
 OUT_MD = PAPER / "build" / "title_page.md"
 OUT_DOCX = PAPER / "build" / "title_page.docx"
 
-RUNNING_TITLE = "Denoising under a data-processing ceiling"
+RUNNING_TITLE = "Task detectability limits in AI-denoised CT"
 
 
 def main() -> int:

@@ -8,7 +8,7 @@
 
 # Supplementary material
 
-**Denoising under a data-processing ceiling: observer-dependent benefits, fidelity–task divergence, and an information floor**
+**Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization**
 
 Shuji Yamamoto · Institute of One, LISIT Co., Ltd., Tokyo, Japan
 
