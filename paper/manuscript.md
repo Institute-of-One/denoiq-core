@@ -1093,13 +1093,13 @@ public LDCT-and-Projection-data collection (TCIA, `CC BY 4.0`, DOI `10.7937/9npb
 **Two packages are needed, and neither reproduces the paper alone.** The controlled arm, the
 endpoints, the statistics and the figures are `denoiq-core`, below. The code that reads the
 images, inserts the lesion, trains the four networks, realises the observer of Section 2.9 and
-scores the result is `ldct-io`, at <https://github.com/Institute-of-One/ldct-io>, MIT licensed,
+scores it is `ldct-io`, at <https://github.com/Institute-of-One/ldct-io>, MIT licensed,
 [[ldct_io:archive_statement]]. Its entry points are
 `examples/liver_cnn.py` for the held-out comparison, `examples/dose_decision.py` for Section 3.7
 and `examples/site_sensitivity.py` for Section 3.6.2; `cross_fitted_paired` is the observer and
 `PRESETS` the four network configurations. Its per-run outputs are committed here under
-`paper/results/` and consolidated into `results/real_liver.json`. Every number reported here is
-produced by the code rather than transcribed. The software is `denoiq-core`
+`paper/results/` and consolidated into `results/real_liver.json`. Every number here is produced
+by the code rather than transcribed. The software is `denoiq-core`
 [[results:statistics.json:provenance.denoiq_core]] with `taskiq-core`
 [[results:statistics.json:provenance.taskiq_core]], MIT licensed, Python `3.10` to `3.12`. The
 repository — source, tests, generated results, figures and this manuscript's build — is public at
@@ -1109,14 +1109,13 @@ repository — source, tests, generated results, figures and this manuscript's b
 Realisation seeds are the [[results:statistics.json:design.n_seeds]] values recorded in
 `results/statistics.json`; the bootstrap seed is
 [[results:statistics.json:bootstrap_seed]] with [[results:statistics.json:n_boot]] replicates.
-Four commands regenerate everything:
+Five commands regenerate everything:
 
-1. `denoiq_core.experiment.run_primary()` — the multi-realisation matrix, endpoints and
-   statistics.
+1. `denoiq_core.experiment.run_primary()` — the matrix, endpoints and statistics.
 2. `denoiq_core.experiment.run_all()` — the representative-realisation artefacts and the atlas.
 3. `paper/make_figures.py` — Figs. 1 to 8 and the supplementary figures.
-4. `paper/build_real_liver_results.py` — consolidates the real-data runs and their derived
-   statistics into `results/real_liver.json`.
+4. `paper/build_real_liver_results.py` — consolidates the real-data runs into
+   `results/real_liver.json`.
 5. `paper/build_manuscript.py` — resolves every number in this manuscript from `results/`.
 
 `pytest` runs the consistency suite, which re-derives the reported endpoints, effect sizes and
