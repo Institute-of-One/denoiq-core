@@ -338,11 +338,15 @@ def main() -> int:
             "small": {
                 "parameters": PARAMETERS["small"],
                 **TRAINING["small"],
+                # The checkpoint saved is the last epoch, not the lowest-validation one, so the
+                # best loss a run reached is reported beside it rather than implied by it.
+                "best_val_loss": runs["small"]["best_val_loss"],
                 **next(r for r in rows if r["label"] == LEARNED["small"]),
             },
             "large": {
                 "parameters": PARAMETERS["large"],
                 **TRAINING["large"],
+                "best_val_loss": runs["large"]["best_val_loss"],
                 **next(r for r in rows if r["label"] == LEARNED["large"]),
             },
             "parameter_ratio": PARAMETERS["large"] / PARAMETERS["small"],

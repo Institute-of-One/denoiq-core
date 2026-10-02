@@ -229,6 +229,32 @@ HIGHLIGHT_LIMIT = 85
 HIGHLIGHT_RANGE = (3, 5)
 
 
+@requires_results
+def test_every_supplementary_reference_points_at_something():
+    """A pointer to material that does not exist is worse than no pointer.
+
+    Trimming Sections 3.4, 3.5 and 3.6 moved verification detail to the supplement and left
+    sentences saying so. Three of those pointers named material that had not been written yet,
+    and nothing would have noticed before a reader did.
+    """
+    manuscript = (PAPER / "build" / "manuscript.md").read_text(encoding="utf-8")
+    supplement = (PAPER / "build" / "supplementary.md").read_text(encoding="utf-8")
+
+    sections = set(re.findall(r"^## (S\d+)\.", supplement, re.M))
+    tables = set(re.findall(r"\bTable (S\d+)\b", supplement))
+    missing = []
+    for label in set(re.findall(r"Supplementary Section (S\d+)", manuscript)):
+        if label not in sections:
+            missing.append(f"Section {label}")
+    for label in set(re.findall(r"Supplementary Table (S\d+)", manuscript)):
+        if label not in tables:
+            missing.append(f"Table {label}")
+    if "Supplementary Methods" in manuscript:
+        assert "Supplementary Methods" in supplement, (
+            "the manuscript points at Supplementary Methods and the supplement has no such part")
+    assert not missing, f"the manuscript points at supplementary material that does not exist: {missing}"
+
+
 def test_the_highlights_fit_the_journal_limits():
     """A bullet one character over is caught by an editorial office, not by an author."""
     path = PAPER / "highlights.md"

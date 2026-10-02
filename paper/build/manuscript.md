@@ -650,8 +650,8 @@ error is identically zero and the margin collapses to one quantisation step. Exc
 580 gave a largest excess of
 1.64×10⁻⁴ and
 0 exceedances, so nothing rests on the
-saturated regime. Supplementary Methods give the margin construction, the saturation criterion and
-the exceeding arm in full.
+saturated regime. Supplementary Section S8 gives the margin construction, the saturation
+criterion and the exceeding arm in full.
 
 This validates the measurement chain rather than finding anything: the observer plotted is an
 estimated linear one, which need not sit on the identity line after a non-linear transformation,
@@ -782,9 +782,9 @@ objective it was trained against scored worse on the task. Capacity was not vari
 parameters, training patches and epochs moved together, so what this shows is that the divergence
 persisted when the network was made substantially larger and trained longer within this
 architecture. That weakens the objection that the network was too small to be representative
-without excluding it, and says nothing about architectures not tried here. Supplementary Methods
-give the training curves, including the large network's validation minimum well before its last
-epoch, and the saturation of mean-squared error against a target that carries noise of its own.
+without excluding it, and says nothing about architectures not tried here. The checkpoint kept is
+each run's last epoch, not its lowest-validation one; Supplementary Section S7 gives the
+configuration of all four networks and the best validation loss each reached.
 
 Repeating the measurement at a second and very different acquisition — chest at
 10% dose, with

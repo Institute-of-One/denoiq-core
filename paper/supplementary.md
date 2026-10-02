@@ -84,7 +84,7 @@ its own margin (Section 3.4).
 ## S4. The learned denoiser used in the synthetic demonstration
 
 This network is the synthetic-arm demonstration network and is distinct from the real-data CNNs
-described in Section 2.10.
+described in Section 2.9.
 
 The convolutional network is a small residual (DnCNN-style) model trained deterministically on
 CPU on synthetic pairs spanning dose, with a checkpoint whose parameter hash is recorded in
@@ -112,3 +112,78 @@ degradation and the verdict distribution, for each of the three strata.
 Table S4 gives, for each denoiser, the Spearman correlation between ΔSSIM and Δ`d'`(PW), the
 divergence rate, the mean ΔSSIM and Δ`d'` for all three observers, the observer-dependent
 benefit, and the Holm-adjusted p-values within each family.
+
+## S7. The four networks of the real low-dose CT arm
+
+These are the networks of Sections 3.6 and 3.6.1, and are distinct from the demonstration
+network of Section S4.
+
+Two capacities, and at each capacity two objectives. The small configuration is
+[[results:real_liver.json:capacity.small.parameters]] parameters trained on
+[[results:real_liver.json:capacity.small.patches_per_case]] patches per case for
+[[results:real_liver.json:capacity.small.epochs]] epochs at batch
+[[results:real_liver.json:capacity.small.batch]]; the large is
+[[results:real_liver.json:capacity.large.parameters]] parameters on
+[[results:real_liver.json:capacity.large.patches_per_case]] patches per case for
+[[results:real_liver.json:capacity.large.epochs]] epochs at batch
+[[results:real_liver.json:capacity.large.batch]], a ratio of
+[[results:real_liver.json:capacity.parameter_ratio|.0f]]× in parameters. Capacity, training data
+and training length move together between the two, so they do not isolate capacity.
+
+Within a capacity they do isolate the objective. The adversarial network is built from the same
+seed with the same architecture and trained on the same patches, for the same epochs, at the
+same batch size and learning rate; only the loss differs, by the least-squares adversarial term
+of Mao et al. [24] against a small patch critic. Its weights —
+`mse_weight` = [[results:real_liver.json:objective.small.adversarial_config.mse_weight|.2f]],
+`adv_weight` = [[results:real_liver.json:objective.small.adversarial_config.adv_weight|.1f]],
+critic learning rate
+[[results:real_liver.json:objective.small.adversarial_config.discriminator_lr|.0e]] — were fixed
+by a sweep recorded in `results/adv_weight_sweep.json` before this arm was run. A first sweep at
+the fidelity arm's pixelwise weight found the adversarial term doing almost nothing across a
+five-hundred-fold range of weights, because the pixelwise term is in units of the input's own
+noise while the least-squares term is bounded when the critic is confused; the weights above are
+where the term bites, and the effect is flat over more than an order of magnitude around them,
+so the arm does not sit on a knife edge.
+
+The checkpoint kept for each run is its last epoch rather than its lowest-validation one. The
+best validation loss reached was [[results:real_liver.json:capacity.small.best_val_loss|.3f]] for
+the small fidelity arm and [[results:real_liver.json:capacity.large.best_val_loss|.3f]] for the
+large one; for the adversarial arms the full per-epoch history of the generator loss, the critic
+loss and the validation mean-squared error is recorded in
+`paper/results/liver_cnn_small_gan.json` and `paper/results/liver_cnn_large_gan.json`. Every
+checkpoint's SHA-256 is in the same files.
+
+## S8. The ceiling comparison: margin, saturation, and the one exceedance
+
+The comparison of Section 3.4 is made against a margin rather than against the ceiling itself,
+because an estimated AUC has sampling error and a bound compared without one would be violated by
+noise alone. The armwise margin is the Hanley–McNeil standard error of the estimated AUC scaled
+by `z`; the family-wise statement widens it by Bonferroni over all
+[[results:statistics.json:ceiling.family_wise.n_comparisons]] comparisons, giving `z` =
+[[results:statistics.json:ceiling.family_wise.z|.2f]] at a family-wise level of `0.05`. At the
+largest excess observed the margin was
+[[results:statistics.json:ceiling.margin_at_max_excess|sci2]] in AUC.
+
+An evaluation is treated as saturated when its analytic ceiling AUC exceeds
+`1 − 10/(n_present · n_absent)`, which is the regime in which the closed-form interval degenerates:
+at perfect separation the Hanley–McNeil standard error is identically zero, the margin collapses
+to a single quantisation step, and no widening of `z` recovers it.
+[[results:statistics.json:ceiling.n_saturated]] of
+[[results:statistics.json:ceiling.n_evaluations]] evaluations met that rule and are analysed
+separately for this reason and not because excluding them helps: over the remaining
+[[results:statistics.json:ceiling.unsaturated.n_evaluations]] the largest excess was
+[[results:statistics.json:ceiling.unsaturated.max_excess|sci2]] and the mean
+[[results:statistics.json:ceiling.unsaturated.mean_excess|.3f]].
+
+The single exceedance occurred on an **unprocessed** arm, where the processing is the identity and
+cannot create information, so what it measures is the estimator and the finite sample rather than
+a violated bound. Its analytic ceiling AUC is
+[[results:statistics.json:ceiling.violation_detail[0].ceiling_auc|.7f]], the estimator achieved
+[[results:statistics.json:ceiling.violation_detail[0].auc|.7f]], and the excess is
+[[results:statistics.json:ceiling.violation_detail[0].excess|sci2]] in AUC against a margin of
+[[results:statistics.json:ceiling.violation_detail[0].margin|sci2]] — of the order of ten
+misordered pairs in `1.44` million. The family-wise margin leaves this same
+[[results:statistics.json:ceiling.family_wise.n_exceedances_unprocessed_arms]] exceedance, for
+exactly that reason. Across the processed arms, which are the ones the claim is about,
+[[results:statistics.json:ceiling.family_wise.n_exceedances_processed_arms]] of
+[[results:statistics.json:ceiling.family_wise.n_processed_comparisons]] exceeded the margin.
