@@ -134,7 +134,16 @@ def vancouver(record: dict, doi: str, problems: list[str]) -> str:
         # there; only a journal article needs one.
         if container and record.get("type") not in {"proceedings-article", "book-chapter"}:
             problems.append(f"{doi}: no LTWA abbreviation for {container!r}, used {abbreviation!r}")
-    year = record.get("issued", {}).get("date-parts", [[None]])[0][0]
+    # The year of the issue, not the year it first appeared online. Crossref's `issued` is the
+    # earliest date it holds, which for a paper published online ahead of print is the online
+    # date: it gave 2023 for a paper the journal paginates in its 2024 volume 51 issue 2, and a
+    # reader checking the citation would not find it. `published-print` is the issue, so it wins
+    # wherever it exists.
+    year = (
+        record.get("published-print", {}).get("date-parts")
+        or record.get("issued", {}).get("date-parts")
+        or [[None]]
+    )[0][0]
     volume = record.get("volume", "")
     pages = shorten_pages(record.get("page", ""))
 
@@ -179,7 +188,11 @@ def main(argv: list[str] | None = None) -> int:
         if index in BOOKS or index in SOFTWARE:
             converted.append((index, BOOKS.get(index) or SOFTWARE[index]))
             continue
-        found = re.search(r"doi:([^\]\s]+)", entry)
+        # Both spellings: the original list wrote "doi:10.x", the converted one writes it as a
+        # URL. Reading only the first made the script non-idempotent -- run twice, it found no
+        # DOI in its own output, reported nothing and quietly kept the entry it had just
+        # written, so a later fix to the formatting changed nothing and said so.
+        found = re.search(r"(?:doi:|https?://(?:dx\.)?doi\.org/)([^\]\s]+)", entry)
         if not found:
             problems.append(f"[{index}] has no DOI and is not a known book: {entry[:70]}")
             converted.append((index, entry))

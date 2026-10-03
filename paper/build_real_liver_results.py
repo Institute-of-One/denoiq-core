@@ -95,12 +95,17 @@ SPEC = {
         # number being typed into the prose. 1 - 1/sqrt(2), as a percentage.
         "understatement_without_sqrt_two_percent": round(100.0 * (1.0 - 2.0**-0.5)),
     },
+    # The function and its arguments are separate, because the sentence in Section 2.3 names
+    # the function itself. Holding both in one string made the built text read
+    # "gaussian_filter with mode=scipy.ndimage.gaussian_filter, mode='nearest'": the function
+    # name appeared twice in each of the three clauses.
     "implementation": {
-        "gaussian": "scipy.ndimage.gaussian_filter, mode='nearest'",
-        "tv": "skimage.restoration.denoise_tv_chambolle, channel_axis=None, applied to the "
-        "mean-removed plane and the mean restored, so the filter is shift-invariant",
-        "nlm": "skimage.restoration.denoise_nl_means, fast_mode=True, patch_size=5, "
-        "patch_distance=6, sigma=h",
+        "gaussian_function": "scipy.ndimage.gaussian_filter",
+        "gaussian_arguments": "mode='nearest'",
+        "tv_function": "skimage.restoration.denoise_tv_chambolle",
+        "tv_arguments": "channel_axis=None",
+        "nlm_function": "skimage.restoration.denoise_nl_means",
+        "nlm_arguments": "fast_mode=True, patch_size=5, patch_distance=6, sigma=h",
     },
 }
 

@@ -160,13 +160,22 @@ def render_markdown(
     return "\n".join(out).rstrip() + "\n"
 
 
-#: Medical Physics has been double-anonymised since 1 July 2026. The manuscript source
-#: keeps its author block, because build_pdf.py still needs it for the SPIE layout this
-#: paper was first written for; anonymity is a property of the artefact that has to
-#: carry it, not of the source. So it is applied here, on the way into the .docx.
+#: Whether the .docx is anonymised, per journal, for the same reason line numbering is per
+#: journal: it is a property of the venue and not a safe default in either direction. Medical
+#: Physics has been double-anonymised since 1 July 2026 and identity leaked into that submission
+#: in four places. Physica Medica states a single anonymised process, and anonymising for it
+#: strips the repository URL and the archive DOI out of the availability statement — turning the
+#: paper's strongest reproducibility claim into a promise to supply it later, which is the thing
+#: the statement exists to avoid.
 #:
-#: Set False only for a venue that reviews single-anonymised.
-ANONYMOUS = True
+#: The manuscript source keeps its author block, because the PDF layout needs it; anonymity is a
+#: property of the artefact that has to carry it, not of the source.
+ANONYMOUS_BY_JOURNAL = {
+    "medical physics": True,
+    "physica medica": False,
+    "pmb": False,
+    "none": False,
+}
 
 #: The author block: three lines that follow the title. Matched rather than located by
 #: line number so that reordering the front matter cannot silently defeat this.
@@ -234,11 +243,26 @@ def build_docx(
     figures: Path = DEFAULT_FIGURES,
     document_kind: str = "manuscript",
     output: Path | None = None,
-    anonymous: bool = ANONYMOUS,
+    anonymous: bool | None = None,
     journal: str = DEFAULT_JOURNAL,
 ) -> Path:
-    """Verify freshness, assemble the augmented Markdown, and convert it to ``.docx``."""
+    """Verify freshness, assemble the augmented Markdown, and convert it to ``.docx``.
+
+    ``anonymous`` defaults to whatever the journal's review model asks for; pass it only to
+    override that deliberately.
+    """
     import pypandoc
+
+    if anonymous is None:
+        key = journal.strip().lower()
+        if key not in ANONYMOUS_BY_JOURNAL:
+            raise build_pdf.BuildError(
+                f"no anonymisation rule recorded for {journal!r}; add it to "
+                "ANONYMOUS_BY_JOURNAL rather than guessing, because guessing wrong either "
+                "leaks identity into a double-anonymised review or strips the repository and "
+                "the archive DOI out of a single-anonymised one"
+            )
+        anonymous = ANONYMOUS_BY_JOURNAL[key]
 
     source, built, _pdf = build_pdf.document_paths(document_kind)
     text = build_pdf.check_freshness(source, built, results)

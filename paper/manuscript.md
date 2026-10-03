@@ -51,7 +51,7 @@ with three classical denoisers and three observers, and on
 synthetic lesion in abdominal soft tissue. Each arm is referenced to its unprocessed input and its
 analytic ceiling [1,2]. Residual CNNs trained on
 [[results:real_liver.json:held_out.n_train_cases]] cases were evaluated on
-[[results:real_liver.json:held_out.n_test_cases]] never seen, at two capacities, each paired with a
+[[results:real_liver.json:held_out.n_test_cases]] never-seen cases, at two capacities, each paired with a
 counterpart differing only in an adversarial objective. Exposure was compared on a dose simulation
 rescaling the collection's measured noise, against `d'` ≥
 [[results:real_liver.json:guidance.requirement|.0f]].
@@ -224,7 +224,7 @@ Three observers are estimated from images and scored out of fold (Section 2.5):
    observer: tractable because a channel covariance can be estimated where a pixel covariance
    cannot.
 3. A *non-prewhitening observer with a Burgess eye filter* (NPWE) [20], used as a
-   stylized surrogate for limited noise-prewhitening efficiency. No human observer study
+   stylised surrogate for limited noise-prewhitening efficiency. No human observer study
    was performed here, and NPWE is not offered as a validated model of a human reader.
 
 Separately, and only for the unprocessed input, we compute the *analytic ideal linear
@@ -261,7 +261,14 @@ standard deviation, and non-local means with `h` =
 deviation. A small residual convolutional network in the style of DnCNN [21] is evaluated
 separately (Section 3.6) and is not part of the primary matrix.
 
-The Gaussian filter is `scipy.ndimage.gaussian_filter` with `mode=[[results:real_liver.json:spec.implementation.gaussian]]`; total variation is `skimage.restoration.denoise_tv_chambolle` applied as [[results:real_liver.json:spec.implementation.tv]]; non-local means is `skimage.restoration.denoise_nl_means` with [[results:real_liver.json:spec.implementation.nlm]]. Library versions are recorded with the provenance of every run.
+The Gaussian filter is `[[results:real_liver.json:spec.implementation.gaussian_function]]` with
+`[[results:real_liver.json:spec.implementation.gaussian_arguments]]`; total variation is
+`[[results:real_liver.json:spec.implementation.tv_function]]` with
+`[[results:real_liver.json:spec.implementation.tv_arguments]]`, applied to the mean-removed plane
+with the mean restored so that the filter is shift-invariant; non-local means is
+`[[results:real_liver.json:spec.implementation.nlm_function]]` with
+`[[results:real_liver.json:spec.implementation.nlm_arguments]]`. Library versions are recorded
+with the provenance of every run.
 
 **Where the noise level comes from, and why it does not break the bound.** For total variation
 and non-local means the noise standard deviation used to set the parameter is the *true*
@@ -908,8 +915,7 @@ has already failed.
 
 **What an ideal-observer floor omits.** A floor computed from an ideal observer is not reachable.
 The achieved fraction of the ceiling on the unprocessed input at the nominal exposure is
-[[results:real_liver.json:guidance.efficiency.unprocessed_at_nominal|.3f]], and exposure enters
-and on this axis the ceiling crosses the requirement at
+[[results:real_liver.json:guidance.efficiency.unprocessed_at_nominal|.3f]], and exposure enters as a square root; on this axis the ceiling crosses the requirement at
 [[results:real_liver.json:guidance.efficiency.ideal_observer_floor|.3f]] of the routine protocol while the
 unprocessed input crosses it at
 [[results:real_liver.json:guidance.efficiency.reachable_floor_measured|.3f]] — a factor
@@ -1039,7 +1045,7 @@ criterion `d'` = [[results:dose_sweep.json:config.criteria.d_prime_threshold|.0f
 operational criterion, not a universal information boundary, and every gauge threshold is
 task-specific: clinical deployment would require re-specifying and validating all of them. No
 human observer study was performed, so the non-prewhitening observer stands only as a
-stylized surrogate for limited prewhitening efficiency. The lesion is inserted, not native: what
+stylised surrogate for limited prewhitening efficiency. The lesion is inserted, not native: what
 is measured is detection of a specified low-contrast signal, not of hepatocellular carcinoma,
 haemangioma or any other native lesion, whose contrast, margin and size distributions differ.
 Whether the ordering reported here transfers to those is a question for readers and for clinical
@@ -1144,7 +1150,7 @@ accountable for the content. No AI system is an author. This disclosure follows 
 6. Li K, Li H, Anastasio MA. Investigating the use of signal detection information in supervised learning-based image denoising with consideration of task-shift. J Med Imaging 2024;11:1-20. https://doi.org/10.1117/1.JMI.11.5.055501.
 7. Bhadra S, Kelkar VA, Brooks FJ, Anastasio MA. On Hallucinations in Tomographic Image Reconstruction. IEEE Trans Med Imaging 2021;40:3249-60. https://doi.org/10.1109/TMI.2021.3077857.
 8. Eulig E, Ommer B, Kachelrieß M. Benchmarking deep learning‐based low‐dose CT image denoising algorithms. Med Phys 2024;51:8776-88. https://doi.org/10.1002/mp.17379.
-9. Nelson BJ, Kc P, Badal A, Jiang L, Masters SC, Zeng R. Pediatric evaluations for deep learning CT denoising. Med Phys 2023;51:978-90. https://doi.org/10.1002/mp.16901.
+9. Nelson BJ, Kc P, Badal A, Jiang L, Masters SC, Zeng R. Pediatric evaluations for deep learning CT denoising. Med Phys 2024;51:978-90. https://doi.org/10.1002/mp.16901.
 10. Barrett HH, Myers KJ, Hoeschen C, Kupinski MA, Little MP. Task-based measures of image quality and their relation to radiation dose and patient risk. Phys Med Biol 2015;60:R1-R75. https://doi.org/10.1088/0031-9155/60/2/R1.
 11. Greffier J, Dabli D, Frandon J, Hamard A, Belaouni A, Akessoul P, et al. Comparison of two versions of a deep learning image reconstruction algorithm on CT image quality and dose reduction: A phantom study. Med Phys 2021;48:5743-55. https://doi.org/10.1002/mp.15180.
 12. Greffier J, Si‐Mohamed S, Frandon J, Loisy M, de Oliveira F, Beregi JP, et al. Impact of an artificial intelligence deep‐learning reconstruction algorithm for CT on image quality and potential dose reduction: A phantom study. Med Phys 2022;49:5052-63. https://doi.org/10.1002/mp.15807.

@@ -229,6 +229,45 @@ HIGHLIGHT_LIMIT = 85
 HIGHLIGHT_RANGE = (3, 5)
 
 
+def test_no_stale_artefact_survives_in_the_build_directory():
+    """Opening the newest file has to be safe advice, and for a while it was not.
+
+    ``paper/build/`` held four generations of the same document under three naming schemes:
+    ``manuscript.pdf`` from one day, ``manuscript_v2.docx`` from the same day by another
+    renderer, and ``manuscript_v2.pdf`` and ``supplementary_v2.pdf`` from two months earlier
+    carrying a different title, a different conclusion and seven arms instead of nine. Anyone
+    opening the wrong one was reviewing a paper that no longer exists.
+    """
+    sys.path.insert(0, str(PAPER))
+    import build_all  # noqa: PLC0415
+
+    if not build_all.BUILD.exists():
+        pytest.skip("paper/build/ has not been built yet")
+    stale = build_all.sweep(dry_run=True)
+    assert not stale, (
+        f"paper/build/ holds artefacts this build does not produce: {stale}; "
+        "run python paper/build_all.py"
+    )
+
+
+@requires_results
+def test_a_figure_drawn_from_results_is_not_older_than_them():
+    """A figure must not be older than the results it draws from.
+
+    Placing a figure only needs the file to exist, which is how Figure 10 came to carry a
+    Spearman correlation of -0.29 beside a text that said -0.08 for six weeks: the arm grew from
+    seven methods to nine, the generator crashed on the new labels, and nothing in the build
+    noticed that the picture had stopped matching the numbers.
+    """
+    sys.path.insert(0, str(PAPER))
+    import figure_sources  # noqa: PLC0415
+
+    problems = figure_sources.stale(RESULTS)
+    assert not problems, "\n  ".join(
+        ["a figure is older than the results it was drawn from:", *problems]
+    )
+
+
 @requires_results
 def test_every_supplementary_reference_points_at_something():
     """A pointer to material that does not exist is worse than no pointer.
@@ -350,7 +389,11 @@ REQUIRED_IN_MANUSCRIPT = (
     "likelihood-ratio ideal observer",
     "not a boundary of zero information",
     "prespecified",
-    "stylized surrogate",
+    # The claim is that NPWE stands in for limited prewhitening efficiency and nothing more.
+    # Written with a fixed spelling, this gate failed a correction that only changed -ize to
+    # -ise, which is house style and not a claim; the pattern keeps the claim and lets either
+    # spelling through.
+    re.compile(r"styli[sz]ed surrogate"),
     "setting-informed (oracle) parameterization",
 )
 
@@ -372,7 +415,13 @@ def test_the_manuscript_does_not_overstate_the_result():
 
 def test_the_manuscript_states_the_things_it_must_state():
     text = SOURCE.read_text(encoding="utf-8")
-    missing = [phrase for phrase in REQUIRED_IN_MANUSCRIPT if phrase not in text]
+    missing = []
+    for phrase in REQUIRED_IN_MANUSCRIPT:
+        if isinstance(phrase, re.Pattern):
+            if phrase.search(text) is None:
+                missing.append(phrase.pattern)
+        elif phrase not in text:
+            missing.append(phrase)
     assert not missing, f"the manuscript no longer states: {missing}"
 
 

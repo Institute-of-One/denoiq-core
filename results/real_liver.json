@@ -618,9 +618,12 @@
       "understatement_without_sqrt_two_percent": 29
     },
     "implementation": {
-      "gaussian": "scipy.ndimage.gaussian_filter, mode='nearest'",
-      "tv": "skimage.restoration.denoise_tv_chambolle, channel_axis=None, applied to the mean-removed plane and the mean restored, so the filter is shift-invariant",
-      "nlm": "skimage.restoration.denoise_nl_means, fast_mode=True, patch_size=5, patch_distance=6, sigma=h"
+      "gaussian_function": "scipy.ndimage.gaussian_filter",
+      "gaussian_arguments": "mode='nearest'",
+      "tv_function": "skimage.restoration.denoise_tv_chambolle",
+      "tv_arguments": "channel_axis=None",
+      "nlm_function": "skimage.restoration.denoise_nl_means",
+      "nlm_arguments": "fast_mode=True, patch_size=5, patch_distance=6, sigma=h"
     }
   },
   "all_cases": {

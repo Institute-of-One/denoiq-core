@@ -7,7 +7,7 @@ beside the table would have put a figure and a table with different numbers on t
 page. This reads ``results/real_liver.json`` -- the file the table's markers resolve
 against -- so the two cannot disagree.
 
-    python paper/make_real_liver_figure.py   # -> paper/figures/fig9_real_liver.png
+    python paper/make_real_liver_figure.py   # -> paper/figures/fig10_real_liver.png
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import figure_sources
 import matplotlib
 
 matplotlib.use("Agg")
@@ -22,7 +23,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 PAPER = Path(__file__).resolve().parent
 RESULTS = PAPER.parent / "results" / "real_liver.json"
-OUT = PAPER / "figures" / "fig9_real_liver.png"
+OUT = PAPER / "figures" / "fig10_real_liver.png"
 
 # Drawn at roughly the width it prints at, so nothing shrinks into illegibility.
 plt.rcParams.update({"font.size": 9.5, "axes.titlesize": 10, "figure.dpi": 300})
@@ -35,6 +36,8 @@ SHORT = {
     "nlm 0.8x noise": "NLM",
     "CNN small (21k)": "CNN 21 k",
     "CNN large (1850k)": "CNN 1.85 M",
+    "GAN small (21k)": "GAN 21 k",
+    "GAN large (1850k)": "GAN 1.85 M",
 }
 
 
@@ -58,7 +61,18 @@ def main() -> int:
         "gaussian 1.00 mm": ("X", "#e377c2"),
         "CNN small (21k)": ("s", "#ff7f0e"),
         "CNN large (1850k)": ("D", "#d62728"),
+        # The adversarial arms share the fidelity arms' colours at each capacity, because what
+        # distinguishes them is the objective and not the size, and a hollow marker so the pair
+        # reads as a pair.
+        "GAN small (21k)": ("*", "#ff7f0e"),
+        "GAN large (1850k)": ("p", "#d62728"),
     }
+    missing = [r["label"] for r in rows if r["label"] not in style]
+    if missing:
+        raise SystemExit(
+            f"no marker for {missing}: this figure is drawn from results/real_liver.json, so an "
+            "arm added there without a style here leaves the figure showing the old arms"
+        )
     for r in rows:
         marker, colour = style[r["label"]]
         axL.scatter(
@@ -125,6 +139,9 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
     plt.close(fig)
+    # Record what it was drawn from, so a later change to the results makes it demonstrably
+    # stale instead of quietly disagreeing with the text.
+    figure_sources.record(OUT, [RESULTS])
 
     print(f"wrote {OUT}")
     print(f"  {len(rows)} methods, ceiling d' = {ceiling:.2f}, Spearman rho = {rho:+.3f}")
