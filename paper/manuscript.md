@@ -33,7 +33,7 @@
 # Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization
 
 **Shuji Yamamoto**
-Institute of One, LISIT Co., Ltd., Tokyo, Japan
+Institute of One, LISIT Co., Ltd., Tokyo 150-0044, Japan
 yamamoto@lisit.jp · ORCID 0000-0001-9211-1071
 
 ## Abstract
@@ -123,7 +123,7 @@ for myocardial perfusion SPECT that denoising improved RMSE and SSIM while frequ
 degrading detection performance; Li et al. [5] proposed a framework for mapping the nonlinear
 system and noise response of such algorithms; and task-informed training [6] shows the
 trade-off can be shifted but not escaped. Hallucination in reconstruction has been
-characterised in terms of a task-relevant null space [7]. In CT specifically, Eulig et al.
+characterized in terms of a task-relevant null space [7]. In CT specifically, Eulig et al.
 [8] benchmarked deep low-dose CT denoisers on the downstream detection and diagnosis of
 lesions rather than on fidelity alone, and Nelson et al. [9] found that a network trained on
 adult images changes low-contrast detectability differently on paediatric-sized phantoms. The
@@ -136,11 +136,11 @@ of the observer doing the looking, and how failure patterns distribute relative 
 detectability available in the input.
 
 Task-based evaluation of CT denoising and deep-learning reconstruction is neither new nor
-uniformly negative, and the scope of what follows is set by that. Greffier et al. characterised
+uniformly negative, and the scope of what follows is set by that. Greffier et al. characterized
 two generations of a deep-learning reconstruction against noise power spectrum, task transfer
 function and a detectability index across dose [11,12]; Fan et al. evaluated a deep-CNN
-reconstruction with a channelised Hotelling observer on the ACR phantom [13]; and Tivnan et al.
-optimised a tunable network against low-contrast lesion detectability directly, rather than
+reconstruction with a channelized Hotelling observer on the ACR phantom [13]; and Tivnan et al.
+optimized a tunable network against low-contrast lesion detectability directly, rather than
 against fidelity [14]. These report conditions under which such methods raise detectability, not
 merely fidelity. Toia et al. put the two kinds of observer side by side on one algorithm: dose
 reductions of up to ninety per cent were judged non-inferior by twenty-four human readers,
@@ -154,7 +154,7 @@ A benchmark also answers a different question: it ranks methods against each oth
 analytic ceiling bounds what *any* processing of a given input can attain, so the question
 becomes how much of the information already present survives. This study measures all three on
 one controlled matrix, with an analytic reference that removes the usual ambiguity about whether
-an apparent loss is real or an artefact of the estimator, and with repeated realisations so that
+an apparent loss is real or an artefact of the estimator, and with repeated realizations so that
 effect sizes come with intervals.
 
 ### 1.2 Prespecified hypotheses
@@ -177,9 +177,9 @@ from them alone would be uninformative; and the conversion of the floor into an 
 ### 1.3 Contributions
 
 1. Quantification of fidelity–task divergence across denoisers and imaging conditions, with
-   effect sizes and intervals from repeated independent realisations.
+   effect sizes and intervals from repeated independent realizations.
 2. Quantification of observer-dependent denoising benefits, comparing a prewhitening observer,
-   a channelised Hotelling observer and a non-prewhitening observer on identical images.
+   a channelized Hotelling observer and a non-prewhitening observer on identical images.
 3. Stratification of failure patterns — erasure, excess lesion-like responses, task degradation
    — by an operational information floor.
 4. Leakage-controlled measurement against an analytic ceiling, with a positive control asserted
@@ -220,11 +220,11 @@ Three observers are estimated from images and scored out of fold (Section 2.5):
 1. The *held-out prewhitening linear observer* (PW): the class-mean difference prewhitened by
    the measured NPS. This is the efficient observer of the study, and the one every
    processed-image comparison uses.
-2. A *channelised Hotelling observer* (CHO) on Laguerre–Gauss channels [19], an intermediate
+2. A *channelized Hotelling observer* (CHO) on Laguerre–Gauss channels [19], an intermediate
    observer: tractable because a channel covariance can be estimated where a pixel covariance
    cannot.
 3. A *non-prewhitening observer with a Burgess eye filter* (NPWE) [20], used as a
-   stylised surrogate for limited noise-prewhitening efficiency. No human observer study
+   stylized surrogate for limited noise-prewhitening efficiency. No human observer study
    was performed here, and NPWE is not offered as a validated model of a human reader.
 
 Separately, and only for the unprocessed input, we compute the *analytic ideal linear
@@ -247,7 +247,7 @@ as `mAs_floor ∝ kV^(2p−2)`, which for this `p` is linear in kV.
 
 Dose is taken proportional to mAs; it also rises with kV in reality, and that dependence is
 left out, so every dose comparison in this paper is made at fixed kV. On the kV axis we
-report kV itself and never a dose ratio. This is a normalised model, not a calibration: it
+report kV itself and never a dose ratio. This is a normalized model, not a calibration: it
 carries no measured dose-to-noise relation for any device and no absolute exposure values.
 
 ### 2.3 Denoisers
@@ -277,14 +277,14 @@ stated rather than left implicit, since it is more than a blind method would hav
 for `H → X → Y` is that the processing is conditionally independent of the hypothesis given the
 input: the parameter depends only on the acquisition setting, which is fixed within a condition
 and identical for its signal-present and signal-absent arms. No denoiser receives the class
-label, the lesion location, the noise realisation, or any other trial's pixels, and each image
+label, the lesion location, the noise realization, or any other trial's pixels, and each image
 is processed independently — all asserted in the test suite.
 
-### 2.4 Experimental design and independent realisations
+### 2.4 Experimental design and independent realizations
 
 The matrix has four domains, described in Table 1. An *input condition* is one acquisition
 and phantom setting; an *arm* is one condition evaluated with one processing, including the
-unprocessed one; an *evaluation* is one arm in one realisation. Conditions are not shared
+unprocessed one; an *evaluation* is one arm in one realization. Conditions are not shared
 between domains, so arms need no deduplication: the dose, noise-correlation and lesion domains
 each generate their own conditions, and the atlas domain adds settings on the kV–mAs plane used
 for the floor demonstration, where a single denoiser is applied rather than all three. That is
@@ -292,16 +292,16 @@ why the processed-arm count is [[results:statistics.json:design.processed_arms]]
 three times the [[results:statistics.json:design.input_conditions]] input conditions.
 
 The whole matrix was run over [[results:statistics.json:design.n_seeds]] independent
-realisations. The first is the seed of the earlier single-realisation study, retained so that
+realizations. The first is the seed of the earlier single-realization study, retained so that
 the previous result remains inspectable; the others follow from it by a fixed stride recorded in
 the configuration, so the list is a property of the code rather than of a session.
-Signal-present and signal-absent trials come from one seeded stream per realisation and are
-independent by construction. Every realisation runs the identical matrix, which makes arms
-pairable across realisations, and per-realisation results are written alongside the aggregate.
+Signal-present and signal-absent trials come from one seeded stream per realization and are
+independent by construction. Every realization runs the identical matrix, which makes arms
+pairable across realizations, and per-realization results are written alongside the aggregate.
 We report [[results:statistics.json:design.unique_arms]] unique arms evaluated across
-[[results:statistics.json:design.n_seeds]] independent realisations —
-[[results:statistics.json:design.arm_seed_evaluations]] arm–realisation evaluations — and never
-as a single inflated condition count. The representative realisation used for the example
+[[results:statistics.json:design.n_seeds]] independent realizations —
+[[results:statistics.json:design.arm_seed_evaluations]] arm–realization evaluations — and never
+as a single inflated condition count. The representative realization used for the example
 images is the first seed; Figure 1 shows the signal-present and signal-absent images at one
 setting, for the unprocessed input and each classical denoiser on a common display window.
 
@@ -324,7 +324,7 @@ every trial exactly once while no score comes from a template that saw its own i
 measured NPS is made invertible by filling the DC bin from its neighbours, adding a ridge of
 [[results:dose_sweep.json:config.eval_config.nps_ridge_fraction]] × the mean power, and clamping
 at [[results:dose_sweep.json:config.eval_config.nps_floor_fraction|sci0]] × the peak; these
-steps stabilise the estimate but may reduce its efficiency relative to the unknown optimum. The
+steps stabilize the estimate but may reduce its efficiency relative to the unknown optimum. The
 same scheme estimates NPWE; the CHO uses the split estimator of the underlying package, which is
 also held out.
 
@@ -333,15 +333,15 @@ The ceiling comparison, reported as validation in Section 3.4, tests
 `AUC_PW(g(X)) ≤ AUC_ceiling(X) + m`, with `m = z·SE + 1/(n₁n₀)`,
 
 `z` = `1.96`, `SE` the Hanley–McNeil standard error [22] of the scored AUC, and the second term
-one quantisation step of the Mann–Whitney statistic. The comparison is made at every arm, and it
+one quantization step of the Mann–Whitney statistic. The comparison is made at every arm, and it
 is reported twice: at the armwise margin above, and at a *simultaneous* margin in which `z` is
-widened by Bonferroni to a family-wise level of `0.05` over all arm–realisation comparisons. The
+widened by Bonferroni to a family-wise level of `0.05` over all arm–realization comparisons. The
 claim of interest concerns processing, so the simultaneous statement is made over the processed
 arms; the unprocessed arms are self-comparisons of an input against its own ceiling and are
 reported separately, since an identity map cannot create information and any excess there
 measures the estimator and the finite sample. Alongside both we report the largest excess
-anywhere against the margin at that arm, and we summarise the AUC-saturated arms — those whose
-analytic ceiling AUC lies within ten quantisation steps of 1 — separately, since there the
+anywhere against the margin at that arm, and we summarize the AUC-saturated arms — those whose
+analytic ceiling AUC lies within ten quantization steps of 1 — separately, since there the
 comparison is limited by the resolution of the rank statistic rather than by information.
 
 **Estimator efficiency.** Applied to unprocessed images the estimator must recover most of the
@@ -351,7 +351,7 @@ compares cross-fitting with the single `50/50` split used previously.
 
 ### 2.6 Primary endpoints
 
-For each processed arm, with the unprocessed arm of the same condition and realisation as its
+For each processed arm, with the unprocessed arm of the same condition and realization as its
 reference:
 
 `ΔSSIM = SSIM(processed) − SSIM(input)`, and `Δd'_O = d'_O(processed) − d'_O(input)` for each
@@ -378,14 +378,14 @@ Erasure is contrast recovery below the gauge's threshold, and an excess response
 lesion-like matched-filter rate above the gauge's allowance *and* above the same rate measured
 on the unprocessed input of that condition — in signal-absent trials the object is uniform but
 the acquired image is not, and noise alone produces such responses. Both definitions, and the
-matched-filter normalisation behind them, are restated in Supplementary Methods.
+matched-filter normalization behind them, are restated in Supplementary Methods.
 
 ### 2.7 Statistical analysis
 
-Arms are not independent observations: all arms of a realisation share its noise stream, and the
+Arms are not independent observations: all arms of a realization share its noise stream, and the
 arms of a condition share its images. Intervals therefore come from a cluster bootstrap that
-resamples whole realisations with replacement ([[results:statistics.json:n_boot]] replicates,
-seeded), carrying every arm of a drawn realisation along. Point estimates are the statistic on
+resamples whole realizations with replacement ([[results:statistics.json:n_boot]] replicates,
+seeded), carrying every arm of a drawn realization along. Point estimates are the statistic on
 the full data; intervals are percentile intervals; two-sided bootstrap p-values are reported
 beside them and Holm-adjusted within each family (denoisers within an endpoint, stratum
 contrasts within theirs). Proportions are additionally reported with a Wilson interval as the
@@ -435,7 +435,7 @@ real noise, not detection of pathology.
 [[results:real_liver.json:spec.sites.min_per_case]] is dropped. Signal-present and signal-absent trials are built at
 the same sites from the same background, so the two members of a pair differ in two respects and
 in no others: the lesion, which is present in one and absent in the other, and the noise, which is
-an independent measured realisation drawn for each member from a site other than the one supplying
+an independent measured realization drawn for each member from a site other than the one supplying
 the background. The anatomy is common to the pair and cancels in their difference; the noise does
 not, and that is what the detectability expression below is built on.
 
@@ -464,7 +464,7 @@ The template is formed on training folds and applied to held-out ones. Trials ar
 fold the signal is estimated as the difference of the present and absent means rather than assumed
 known, the noise power spectrum is estimated from the paired differences as above, and the
 template is the inverse transform of the estimated signal spectrum divided by that noise spectrum.
-The division is regularised in three steps, because an estimated spectrum has a zeroed DC bin and
+The division is regularized in three steps, because an estimated spectrum has a zeroed DC bin and
 small high-frequency values that would otherwise dominate the template: the DC bin is replaced by
 the mean of its four neighbours, a ridge of [[results:real_liver.json:spec.observer.nps_ridge_x_mean]] of the spectrum's
 mean is added, and a floor of [[results:real_liver.json:spec.observer.nps_floor_x_max]] of its maximum is applied. Each
@@ -512,9 +512,9 @@ training or in model selection: they are read once, after training has finished.
 same discipline Section 2.5 applies to the observers, for the same reason — a quantity that
 selects a model cannot also be evidence about it.
 
-**What the network is and is not shown.** Training pairs are normalised exactly as inference
-normalises them, by each image's own mean and estimated noise level; a network trained in
-absolute HU and deployed through a normalising wrapper is not the network that was trained. The
+**What the network is and is not shown.** Training pairs are normalized exactly as inference
+normalizes them, by each image's own mean and estimated noise level; a network trained in
+absolute HU and deployed through a normalizing wrapper is not the network that was trained. The
 split is by case: the network sees [[results:real_liver.json:held_out.n_train_cases]] cases and is evaluated on the
 [[results:real_liver.json:held_out.n_test_cases]] it never saw, because slices from one patient are not independent
 and a network tested on another slice of a liver it trained on is being tested on its own
@@ -526,7 +526,7 @@ evaluation.
 fabricate and a null result on fabrication from them alone would be uninformative. At each
 capacity a second network is therefore trained that differs in the objective and in nothing
 else: the same architecture built from the same seed, the same patches, the same epochs, the
-same batch size and the same learning rate, with the generator minimising
+same batch size and the same learning rate, with the generator minimizing
 `mse_weight × MSE + adv_weight × L_adv`, where `L_adv` is the least-squares adversarial term of
 Mao et al. [24] against a small patch critic. The three weights
 (`mse_weight` = [[results:real_liver.json:objective.small.adversarial_config.mse_weight|.2f]],
@@ -571,12 +571,12 @@ Table 1 gives the matrix. The primary analysis comprises
 [[results:statistics.json:design.unique_arms]] unique arms
 ([[results:statistics.json:design.unprocessed_arms]] unprocessed,
 [[results:statistics.json:design.processed_arms]] processed), each evaluated in
-[[results:statistics.json:design.n_seeds]] independent realisations, giving
-[[results:statistics.json:design.arm_seed_evaluations]] arm–realisation evaluations and
+[[results:statistics.json:design.n_seeds]] independent realizations, giving
+[[results:statistics.json:design.arm_seed_evaluations]] arm–realization evaluations and
 [[results:statistics.json:design.scored_image_trials|,]] scored image trials. Endpoints are
 computed on the [[results:statistics.json:n_arm_seed_evaluations]] processed evaluations, each
-paired with the unprocessed arm of its own condition and realisation. Figures 2 and 3 give the
-dose response of the representative realisation, in fidelity and in task `d'` respectively.
+paired with the unprocessed arm of its own condition and realization. Figures 2 and 3 give the
+dose response of the representative realization, in fidelity and in task `d'` respectively.
 
 ### 3.2 Fidelity gains frequently diverge from task performance (Figure 4)
 
@@ -631,7 +631,7 @@ The observer-dependent benefit was `B` =
 [[results:statistics.json:observer_dependence.npwe_improved_pw_did_not.ci_high|.1%]]) of
 evaluations improved the non-prewhitening observer while not improving the prewhitening one.
 Table 2 gives the per-denoiser effects with intervals and Holm-adjusted p-values; Figure 5 plots
-them with realisation-level uncertainty. The benefit also varied with noise correlation length —
+them with realization-level uncertainty. The benefit also varied with noise correlation length —
 the condition that separates an observer that can prewhiten from one that cannot: `B` =
 [[results:statistics.json:observer_dependence.by_correlation["0"].benefit.value|+.2f]] at zero
 correlation against
@@ -640,7 +640,7 @@ longest correlation length studied.
 
 ### 3.4 Performance relative to the data-processing ceiling (Figure 6)
 
-Across [[results:statistics.json:ceiling.n_evaluations]] arm–realisation evaluations the mean
+Across [[results:statistics.json:ceiling.n_evaluations]] arm–realization evaluations the mean
 excess of the cross-fitted prewhitening AUC over the analytic ceiling of its own input was
 [[results:statistics.json:ceiling.mean_excess|.3f]], and the largest was
 [[results:statistics.json:ceiling.max_excess|sci2]].
@@ -652,7 +652,7 @@ family-wise level of `0.05`,
 exceeded the ceiling margin, and the same holds at the unadjusted margin. One exceedance occurred,
 on an *unprocessed* arm, where the processing is the identity and cannot create information: it is
 a degeneracy of the closed-form interval at perfect separation, where the Hanley–McNeil standard
-error is identically zero and the margin collapses to one quantisation step. Excluding the
+error is identically zero and the margin collapses to one quantization step. Excluding the
 [[results:statistics.json:ceiling.n_saturated]] AUC-saturated evaluations, the remaining
 [[results:statistics.json:ceiling.unsaturated.n_evaluations]] gave a largest excess of
 [[results:statistics.json:ceiling.unsaturated.max_excess|sci2]] and
@@ -713,7 +713,7 @@ Contrast erasure did not differ appreciably between strata
 p = [[results:statistics.json:stratum_contrasts.p_holm["erasure_rate: below floor - above floor"]|.2f]]),
 and excess lesion-like responses were absent in every stratum. With these denoisers, at this
 response threshold, the failure mode is erasure and dilution of true contrast rather than
-fabrication of false structure — a result that should not be generalised to generative or learned
+fabrication of false structure — a result that should not be generalized to generative or learned
 methods, whose failure modes may differ. Supplementary Table S3 gives the stratified counts, the
 interval estimates and the gauge's verdict breakdown, which reflects the strata by construction:
 an input that fails the requirement is itself a red rule, so below the floor the informative part
@@ -732,9 +732,9 @@ that the task has a ground truth the acquisition itself cannot supply. The learn
 quarter-dose / full-dose patch pairs from [[results:real_liver.json:held_out.n_train_cases]] cases and evaluated on
 the [[results:real_liver.json:held_out.n_test_cases]] it never saw ([[results:real_liver.json:held_out.n_pairs]] pairs). The split is by
 case, not by slice: slices from one patient are not independent, and a network tested on
-another slice of a liver it trained on is being tested on its own training set. Normalisation at
-training matches normalisation at inference, since a network trained in absolute HU and deployed
-through a normalising wrapper is not the network that was trained. The network never sees a
+another slice of a liver it trained on is being tested on its own training set. Normalization at
+training matches normalization at inference, since a network trained in absolute HU and deployed
+through a normalizing wrapper is not the network that was trained. The network never sees a
 lesion — its targets are full-dose reconstructions of ordinary anatomy, which is what a
 denoiser is actually given — and the lesion exists only in the evaluation.
 
@@ -835,7 +835,7 @@ the noise suggested one, it fires on the majority of images while reading below
 [[results:real_liver.json:fabrication.max_processed|.2f]] for an honest smoother.
 
 Within the operating points examined, and within the reach of a measure blind to structure
-invented from the anatomy alone, optimising a denoiser for appearance produced no detectable
+invented from the anatomy alone, optimizing a denoiser for appearance produced no detectable
 excess of lesion-shaped response. What it produced was more erasure of a real lesion, behind a
 more convincing picture.
 
@@ -878,11 +878,11 @@ operational floor of Section 2.8 into the quantity the decision is actually made
 same held-out pairs and the same prespecified requirement, `d'` =
 [[results:real_liver.json:guidance.requirement|.0f]].
 
-The dose axis is a simulation anchored on a measured noise realisation, and the distinction
+The dose axis is a simulation anchored on a measured noise realization, and the distinction
 matters. Because this collection's low-dose series is a reconstruction of the same projections
-with noise inserted, the difference of the two reconstructions is a measured realisation of the
+with noise inserted, the difference of the two reconstructions is a measured realization of the
 noise that dose reduction costs at one fraction, α, with a real spectrum on real anatomy.
-Scaling it by `k`(β) = √((1/β − 1)/(1/α − 1)) produces a realisation at any other fraction β.
+Scaling it by `k`(β) = √((1/β − 1)/(1/α − 1)) produces a realization at any other fraction β.
 The spectrum and the anatomy are therefore measured; the amplitude at β is modelled. The scaling
 assumes the inserted noise is independent of the noise already present and that its power follows
 `1/β − 1`, and no independent acquisition at β exists to check it, so only the row at β = α rests
@@ -990,12 +990,12 @@ The findings sit on top of that. The first is that reference-based fidelity is a
 of task change: the rank correlation between ΔSSIM and Δ`d'`(PW) was negative, and a large
 fraction of evaluations improved the picture while the task estimate fell. This is not an
 artefact of a badly chosen fidelity metric — SSIM is what much of the literature reports and
-what many learned methods are optimised against — but a consequence of the two quantities
+what many learned methods are optimized against — but a consequence of the two quantities
 measuring different things.
 
 The second is that the effect of denoising is observer-dependent in a systematic, quantifiable
 way. The same processing on the same images improved the non-prewhitening observer while leaving
-the prewhitening observer no better, with the channelised observer in between. That ordering is consistent with differences in prewhitening efficiency, and offers a reading of an apparent paradox in the literature: a denoiser could genuinely raise a reader's performance without information being added, if the reader was not using all of it. The three observers differ in template, channel model and noise handling as well as in prewhitening efficiency, so this is a reading of the ordering rather than a controlled attribution. The corollary is that a reported task
+the prewhitening observer no better, with the channelized observer in between. That ordering is consistent with differences in prewhitening efficiency, and offers a reading of an apparent paradox in the literature: a denoiser could genuinely raise a reader's performance without information being added, if the reader was not using all of it. The three observers differ in template, channel model and noise handling as well as in prewhitening efficiency, so this is a reading of the ordering rather than a controlled attribution. The corollary is that a reported task
 improvement is a statement about the observer as much as about the algorithm, and a study that
 does not say which observer it used has not reported an effect size.
 
@@ -1045,14 +1045,14 @@ criterion `d'` = [[results:dose_sweep.json:config.criteria.d_prime_threshold|.0f
 operational criterion, not a universal information boundary, and every gauge threshold is
 task-specific: clinical deployment would require re-specifying and validating all of them. No
 human observer study was performed, so the non-prewhitening observer stands only as a
-stylised surrogate for limited prewhitening efficiency. The lesion is inserted, not native: what
+stylized surrogate for limited prewhitening efficiency. The lesion is inserted, not native: what
 is measured is detection of a specified low-contrast signal, not of hepatocellular carcinoma,
 haemangioma or any other native lesion, whose contrast, margin and size distributions differ.
 Whether the ordering reported here transfers to those is a question for readers and for clinical
 validation, not one this measurement answers. The classical denoisers are parameterized with the
 true noise level of the acquisition setting, which is more than a blind method would know. The
 learned denoisers do not represent the state of the art. The acquisition model is relative and
-analytic: it locates conditions on an axis, not on a scanner. Ten realisations bound sampling
+analytic: it locates conditions on an axis, not on a scanner. Ten realizations bound sampling
 variability but do not make the matrix exhaustive. Finally, the scope is post-processing of a
 defined input image; reconstruction from projection data is a separate map, subject to its own
 bound, and is not studied here.
@@ -1084,7 +1084,7 @@ public LDCT-and-Projection-data collection (TCIA, `CC BY 4.0`, DOI `10.7937/9npb
 
 **Two packages are needed, and neither reproduces the paper alone.** The controlled arm, the
 endpoints, the statistics and the figures are `denoiq-core`, below. The code that reads the
-images, inserts the lesion, trains the four networks, realises the observer of Section 2.9 and
+images, inserts the lesion, trains the four networks, realizes the observer of Section 2.9 and
 scores it is `ldct-io`, at <https://github.com/Institute-of-One/ldct-io>, MIT licensed,
 [[ldct_io:archive_statement]]. Its entry points are
 `examples/liver_cnn.py` for the held-out comparison, `examples/dose_decision.py` for Section 3.7
@@ -1098,13 +1098,13 @@ repository — source, tests, generated results, figures and this manuscript's b
 [[release:repository]] and is available at review time; the exact version reported here is
 [[release:archive_statement]].
 
-Realisation seeds are the [[results:statistics.json:design.n_seeds]] values recorded in
+Realization seeds are the [[results:statistics.json:design.n_seeds]] values recorded in
 `results/statistics.json`; the bootstrap seed is
 [[results:statistics.json:bootstrap_seed]] with [[results:statistics.json:n_boot]] replicates.
 Five commands regenerate everything:
 
 1. `denoiq_core.experiment.run_primary()` — the matrix, endpoints and statistics.
-2. `denoiq_core.experiment.run_all()` — the representative-realisation artefacts and the atlas.
+2. `denoiq_core.experiment.run_all()` — the representative-realization artefacts and the atlas.
 3. `paper/make_figures.py` — Figs. 1 to 8 and the supplementary figures.
 4. `paper/build_real_liver_results.py` — consolidates the real-data runs into
    `results/real_liver.json`.

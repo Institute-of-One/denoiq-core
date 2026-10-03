@@ -467,7 +467,7 @@ def figure7_redlamp_atlas(path: Path, atlas_payload: dict[str, Any]) -> Path:
         ax.set_ylim(mas.min(), mas.max())
         ax.set_title(
             "Detectability atlas of the unprocessed input, and the operational floor\n"
-            "(normalised relative model — not a scanner calibration)",
+            "(normalized relative model — not a scanner calibration)",
             fontsize=9,
         )
         # Outside the axes. Inside, every corner has a contour or a contour label in it:
@@ -485,14 +485,14 @@ def figure7_redlamp_atlas(path: Path, atlas_payload: dict[str, Any]) -> Path:
 
 
 def figure4_divergence(path: Path, endpoints: dict[str, Any], statistics: dict[str, Any]) -> Path:
-    """ΔSSIM against Δd'(PW) for every arm-realisation evaluation: the first endpoint.
+    """ΔSSIM against Δd'(PW) for every arm-realization evaluation: the first endpoint.
 
-    One point per processed arm per realisation, coloured by denoiser, with the divergent
+    One point per processed arm per realization, coloured by denoiser, with the divergent
     quadrant shaded and the clustered correlation and divergence rate printed on the axes.
-    Realisation structure is shown two ways: the marginal spread of the per-realisation
+    Realization structure is shown two ways: the marginal spread of the per-realization
     divergence rates as a rug on the right, and the cluster-bootstrap interval in the annotation
     — a single scatter of pooled points would otherwise suggest more independent evidence than
-    ten realisations provide.
+    ten realizations provide.
     """
     rows = endpoints["rows"]
     divergence = statistics["divergence"]
@@ -553,8 +553,8 @@ def figure4_divergence(path: Path, endpoints: dict[str, Any], statistics: dict[s
         rug.set_xlim(-0.5, 0.5)
         rug.set_xticks([])
         rug.set_ylim(0.0, 1.0)
-        rug.set_ylabel("divergence rate per realisation", fontsize=8)
-        rug.set_title(f"{len(seeds)} realisations", fontsize=8)
+        rug.set_ylabel("divergence rate per realization", fontsize=8)
+        rug.set_title(f"{len(seeds)} realizations", fontsize=8)
         return _save(fig, path)
 
 
@@ -569,13 +569,13 @@ def figure5_observer_dependence(path: Path, statistics: dict[str, Any]) -> Path:
     The second endpoint, drawn as a forest plot: the same processing on the same images, read
     by observers of different efficiency. The point is the ordering — the efficient observer
     gains least and the inefficient one most — and the intervals are cluster-bootstrap over
-    realisations, so they answer "would another ten realisations say the same".
+    realizations, so they answer "would another ten realizations say the same".
     """
     observers = statistics["observer_dependence"]
     denoisers = sorted(observers["by_denoiser"])
     series = (
         ("delta_d_pw", "prewhitening (PW)", "#1f77b4"),
-        ("delta_d_cho", "channelised Hotelling (CHO)", "#8c564b"),
+        ("delta_d_cho", "channelized Hotelling (CHO)", "#8c564b"),
         ("delta_d_npwe", "non-prewhitening (NPWE)", "#ff7f0e"),
         ("benefit", "benefit $B$ = NPWE $-$ PW", "#2e7d32"),
     )
@@ -610,7 +610,7 @@ def figure5_observer_dependence(path: Path, statistics: dict[str, Any]) -> Path:
         ax.set_xlabel("$\\Delta d'$ (processed $-$ unprocessed input), mean with 95 % CI")
         ax.set_title(
             "Denoising benefit depends on observer efficiency\n"
-            "(cluster bootstrap over realisations)",
+            "(cluster bootstrap over realizations)",
             fontsize=9.5,
         )
         # Below the axes: any in-axes corner sits on top of one of the four series.
@@ -635,7 +635,7 @@ def figure8_floor_strata(path: Path, statistics: dict[str, Any]) -> Path:
 
     Four measures — divergence, erasure, excess lesion-like responses and task degradation —
     against the detectability available in the input. The floor stratifies; it is not claimed to
-    cause. Intervals are cluster-bootstrap over realisations.
+    cause. Intervals are cluster-bootstrap over realizations.
     """
     strata = statistics["floor_strata"]
     order = [name for name in ("above floor", "marginal", "below floor") if name in strata]
@@ -678,7 +678,7 @@ def figure8_floor_strata(path: Path, statistics: dict[str, Any]) -> Path:
         axes[0].set_ylabel("fraction of evaluations")
         fig.suptitle(
             "Failure patterns by the detectability available in the input\n"
-            "(strata of the operational floor; 95 % CI, cluster bootstrap over realisations)",
+            "(strata of the operational floor; 95 % CI, cluster bootstrap over realizations)",
             fontsize=9.5,
         )
         return _save(fig, path)
@@ -800,7 +800,7 @@ def make_all_figures(
 ) -> dict[str, Path]:
     """Draw the manuscript's Figures 1-8 and the supplementary figures into ``paper/figures/``.
 
-    Figures 4, 5 and 8 are the primary-endpoint figures and need the multi-realisation analysis
+    Figures 4, 5 and 8 are the primary-endpoint figures and need the multi-realization analysis
     (``results/endpoints.json`` and ``results/statistics.json``); Figure S1 needs the console
     record and its tiles. Anything whose inputs are absent is skipped, and its key is missing
     from the returned mapping, so the results-only figures are never blocked by an optional

@@ -511,8 +511,8 @@ def table1_data(results: Path) -> tuple[list[list[str]], str]:
         "**Table 1.** The experimental matrix. An *input condition* is one acquisition and "
         "phantom setting; an *arm* is one condition with one processing, including the "
         f"unprocessed one. The {design['unique_arms']} unique arms were each evaluated in "
-        f"{design['n_seeds']} independent realisations, giving "
-        f"{design['arm_seed_evaluations']:,} arm–realisation evaluations and "
+        f"{design['n_seeds']} independent realizations, giving "
+        f"{design['arm_seed_evaluations']:,} arm–realization evaluations and "
         f"{design['scored_image_trials']:,} scored image trials. The three sweeps use "
         f"{design['trials_per_class_main_sweeps']:,} trials per class per arm and the atlas "
         f"settings fewer, so the trial total is summed rather than assumed. Conditions are not "
@@ -571,11 +571,11 @@ def table2_data(results: Path) -> tuple[list[list[str]], str]:
     )
     caption = (
         "**Table 2.** Observer-dependent effects: processed minus unprocessed at the same "
-        "condition and realisation, as mean [95 % CI] from a bootstrap resampling whole "
-        "realisations. Columns are the denoisers. "
-        "PW is the cross-fitted prewhitening observer, CHO the channelised "
+        "condition and realization, as mean [95 % CI] from a bootstrap resampling whole "
+        "realizations. Columns are the denoisers. "
+        "PW is the cross-fitted prewhitening observer, CHO the channelized "
         "Hotelling observer, NPWE the non-prewhitening observer with an eye filter — a "
-        "stylised surrogate for limited prewhitening efficiency, not a human-reader model. "
+        "stylized surrogate for limited prewhitening efficiency, not a human-reader model. "
         "The benefit is B = Δd′(NPWE) − Δd′(PW); p-values are two-sided bootstrap values for "
         "B, Holm-adjusted across the three denoisers. None of these columns is the analytic "
         "ceiling, which is a property of the unprocessed input and is unchanged by processing."
@@ -626,9 +626,9 @@ def table_s2_data(results: Path) -> tuple[list[list[str]], str]:
     ]
     caption = (
         "**Table S2.** Estimator sensitivity on unprocessed images of the dose sweep in the "
-        f"representative realisation (seed {payload['seed']}): the "
+        f"representative realization (seed {payload['seed']}): the "
         f"{payload['n_folds']}-fold cross-fitted estimator used throughout against the single "
-        "50/50 split used in the earlier single-realisation analysis. Recovery is the estimated "
+        "50/50 split used in the earlier single-realization analysis. Recovery is the estimated "
         "d′ as a fraction of the analytic ceiling of the same input. Recovery slightly above "
         "100 % at the highest doses is sampling noise in the d′ estimate, not a breached "
         "bound: the ceiling test is armwise, in AUC, and carries its own margin (Section 3.4)."

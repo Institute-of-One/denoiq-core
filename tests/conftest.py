@@ -20,8 +20,12 @@ BANNED_AFFILIATIONS = (
     "".join(("\u6771\u5317", "\u5927\u5b66")),
 )
 
-#: The one affiliation that may.
-AFFILIATION = "Institute of One, LISIT Co., Ltd., Tokyo, Japan"
+#: The one affiliation that may, in the form Crossref carries on the author's published
+#: record: city before postcode. The postcode belongs in the manuscript from the start --
+#: every journal asks for it at proof otherwise, and this constant previously held the form
+#: without it, so the gate pinned the defect in place while the cover letter used the right
+#: one and nothing compared the two.
+AFFILIATION = "Institute of One, LISIT Co., Ltd., Tokyo 150-0044, Japan"
 
 
 @pytest.fixture(scope="session")

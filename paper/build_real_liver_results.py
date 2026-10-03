@@ -167,7 +167,7 @@ def _guidance(run: dict) -> dict:
     at_nominal = {r["label"]: r for r in rows if r["dose"] == nominal}
     below = [r for r in rows if r["dose"] < raw_crossing and r["label"] != raw_label]
     # The overstatement is only alarming where the task has already failed, so it is
-    # summarised separately above and below the crossing rather than pooled.
+    # summarized separately above and below the crossing rather than pooled.
     worst_below = max(below, key=lambda r: r["apparent_dose"] / r["dose"])
 
     efficiency = {label: row["d_prime"] / row["ceiling"] for label, row in at_nominal.items()}
@@ -358,7 +358,7 @@ def main() -> int:
         # The controlled comparison the adversarial arms exist for. At each capacity the two
         # networks share an architecture, a training split, a patch set, an epoch count, a
         # batch size, a learning rate and a seed; only the objective differs. Anything that
-        # separates them is therefore attributable to optimising appearance rather than
+        # separates them is therefore attributable to optimizing appearance rather than
         # fidelity, and not to capacity, data or training length.
         "objective": {
             capacity: {

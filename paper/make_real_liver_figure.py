@@ -139,9 +139,9 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
     plt.close(fig)
-    # Record what it was drawn from, so a later change to the results makes it demonstrably
-    # stale instead of quietly disagreeing with the text.
-    figure_sources.record(OUT, [RESULTS])
+    # Record what it was drawn from and what drew it, so a later change to either makes it
+    # demonstrably stale instead of quietly disagreeing with the text.
+    figure_sources.record(OUT, results=[RESULTS], code=[Path(__file__)])
 
     print(f"wrote {OUT}")
     print(f"  {len(rows)} methods, ceiling d' = {ceiling:.2f}, Spearman rho = {rho:+.3f}")

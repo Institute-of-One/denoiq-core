@@ -103,6 +103,11 @@ def test_no_numbers_are_typed_into_the_prose():
     for lineno, line in enumerate(text.splitlines(), start=1):
         if EXEMPT_LINE.search(line):
             continue
+        # The author block is an address, not a measurement: its postcode is a typed number
+        # and has to be. Exempted by the affiliation constant rather than by a pattern for
+        # digits-after-a-city, so only the one approved line can carry one.
+        if AFFILIATION in line:
+            continue
         for match in NUMBER.finditer(line):
             offenders.append(f"line {lineno}: {match.group(0)!r} in {line.strip()[:80]!r}")
     assert not offenders, "typed numbers in the manuscript prose:\n  " + "\n  ".join(offenders)
@@ -355,6 +360,14 @@ def test_the_affiliation_policy_holds_in_the_manuscript():
     for forbidden in BANNED_AFFILIATIONS:
         assert forbidden not in text
 
+    # The documents that travel together must carry the same author block. The cover letter
+    # gave "Tokyo 150-0044" and the manuscript "Tokyo", on the morning of the upload, because
+    # each file was checked against its own expectation and nothing compared them.
+    for companion in (PAPER / "supplementary.md", PAPER / "cover_letter.txt"):
+        assert AFFILIATION in companion.read_text(encoding="utf-8"), (
+            f"{companion.name} does not carry the same affiliation as the manuscript"
+        )
+
 
 # --------------------------------------------------------------------------------------
 # terminology: the claims the revision pinned down must stay pinned down
@@ -441,6 +454,31 @@ def test_figure_and_console_labels_name_the_observer_that_was_measured():
                 offenders.append(f"{path.name}: {phrase!r}")
     assert not offenders, "stale observer/floor labels in generated output:\n  " + "\n  ".join(
         offenders
+    )
+
+
+def test_the_spelling_is_the_same_everywhere_the_reader_looks():
+    """One spelling of the -ize suffix, in the body, the figures and the generated tables.
+
+    The title said ``characterization`` and ``optimization`` while the body said
+    ``realisation`` twenty-eight times, Figure 5's legend said ``channelised`` and Table 2's
+    caption said ``stylised``. Nothing detected it, because each file was internally consistent
+    and no gate compared them.
+
+    The check is run by the converter itself rather than by a second pattern written here: a
+    pattern of its own would have to re-derive which words have an -ize form -- ``noise``,
+    ``armwise``, ``revising`` and ``characteristic`` all look like candidates and are not -- and
+    the two lists would drift. Asking the converter whether it still has work to do cannot drift.
+    """
+    convert_spelling = pytest.importorskip("convert_spelling")
+    offenders = []
+    for path in convert_spelling.TARGETS:
+        _, changed = convert_spelling.convert(path.read_text(encoding="utf-8"))
+        for word in sorted(set(changed)):
+            offenders.append(f"{path.name}: {word} ({changed.count(word)}x)")
+    assert not offenders, (
+        "British -ise spellings are back; run `python paper/convert_spelling.py`:\n  "
+        + "\n  ".join(offenders)
     )
 
 

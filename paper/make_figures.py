@@ -16,11 +16,50 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from denoiq_core.figures import make_all_figures
 
 PAPER_DIR = Path(__file__).resolve().parent
+
+sys.path.insert(0, str(PAPER_DIR))
+import figure_sources  # noqa: E402  (path is set just above)
+
+#: What each figure is drawn from, so a change to any of it marks the figure stale. The results
+#: are named here rather than returned by :func:`make_all_figures`, so :func:`record_sources`
+#: checks that this list and that function still agree about which figures exist.
+FIGURE_RESULTS = {
+    "fig1": (),  # drawn from the sweep configuration, not from a results file
+    "fig2": ("dose_sweep.json",),
+    "fig3": ("dose_sweep.json",),
+    "fig4": ("endpoints.json", "statistics.json"),
+    "fig5": ("statistics.json",),
+    "fig6": ("dose_sweep.json", "texture_sweep.json", "signal_sweep.json", "redlamp_demo.json"),
+    "fig7": ("redlamp_atlas.json",),
+    "fig8": ("statistics.json",),
+    "figS1": ("redlamp_console.json",),
+}
+
+#: The code that decides what the figure says. Recording it is what makes an edit to a legend or
+#: an axis label -- a spelling change, say -- show up as a stale figure rather than as a figure
+#: that disagrees with the manuscript in print.
+DRAWING_CODE = PAPER_DIR.parent / "denoiq_core" / "figures.py"
+
+
+def record_sources(written: dict[str, Path], results: Path) -> None:
+    """Record each drawn figure's results and drawing code."""
+    unknown = sorted(set(written) - set(FIGURE_RESULTS) - {"provenance"})
+    if unknown:
+        raise SystemExit(
+            f"make_all_figures now writes {unknown}, which FIGURE_RESULTS does not describe; "
+            "add them there so the staleness check covers them"
+        )
+    for name, path in written.items():
+        if name == "provenance":
+            continue
+        sources = [results / each for each in FIGURE_RESULTS[name]]
+        figure_sources.record(path, results=sources, code=[DRAWING_CODE])
 
 
 def refresh_console(results: Path, figures: Path) -> bool:
@@ -85,6 +124,7 @@ def main(argv: list[str] | None = None) -> int:
         refresh_console(args.results, args.figures)
 
     written = make_all_figures(results=args.results, figures=args.figures)
+    record_sources(written, args.results)
     written["provenance"] = write_provenance(args.figures)
     for name, path in written.items():
         print(f"{name}: {path}")

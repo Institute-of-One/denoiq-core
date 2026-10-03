@@ -10,7 +10,7 @@
 
 **Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization**
 
-Shuji Yamamoto · Institute of One, LISIT Co., Ltd., Tokyo, Japan
+Shuji Yamamoto · Institute of One, LISIT Co., Ltd., Tokyo 150-0044, Japan
 
 ## S1. Supplementary Methods: the gauge, and the two failure measures
 
@@ -45,7 +45,7 @@ contains noise; noise alone therefore produces lesion-like structure, and any me
 "invented" structure must be read against the unprocessed input rather than absolutely.
 
 A matched-filter amplitude map is formed with the known lesion profile, mean-subtracted and
-normalised so that an image containing exactly one true lesion reads `1.0` at that location. The
+normalized so that an image containing exactly one true lesion reads `1.0` at that location. The
 map is evaluated over all positions (a full 2-D correlation in `same` mode with zero padding;
 the lesion is centred and the image is 64 pixels
 across, so boundary effects fall outside the lesion support). For each image the maximum over
@@ -75,8 +75,8 @@ the implementation rather than a sample.
 ### S3.1 Cross-fitting against a single split (Table S2)
 
 Table S2 compares the cross-fitted estimator used throughout this study with the single 50/50
-split used in the earlier single-realisation analysis, at matched conditions of the dose sweep in
-the representative realisation. Recovery is the estimated `d'` as a fraction of the analytic
+split used in the earlier single-realization analysis, at matched conditions of the dose sweep in
+the representative realization. Recovery is the estimated `d'` as a fraction of the analytic
 ceiling of the same input; recovery slightly above `100 %` at the highest doses is sampling noise
 in the `d'` estimate, not a breached bound, since the ceiling test is armwise, in AUC, and carries
 its own margin (Section 3.4).
@@ -89,7 +89,7 @@ described in Section 2.9.
 The convolutional network is a small residual (DnCNN-style) model trained deterministically on
 CPU on synthetic pairs spanning dose, with a checkpoint whose parameter hash is recorded in
 `results/cnn_training.json`. It is blind to the noise level at inference: each image is
-normalised by a noise standard deviation estimated from that image alone. It is evaluated at one
+normalized by a noise standard deviation estimated from that image alone. It is evaluated at one
 prespecified low-dose setting outside the primary matrix and contributes to no primary endpoint.
 
 Figure S1 is the red-lamp console at three settings of the demonstration, with the network as
@@ -167,7 +167,7 @@ largest excess observed the margin was
 An evaluation is treated as saturated when its analytic ceiling AUC exceeds
 `1 − 10/(n_present · n_absent)`, which is the regime in which the closed-form interval degenerates:
 at perfect separation the Hanley–McNeil standard error is identically zero, the margin collapses
-to a single quantisation step, and no widening of `z` recovers it.
+to a single quantization step, and no widening of `z` recovers it.
 180 of
 760 evaluations met that rule and are analysed
 separately for this reason and not because excluding them helps: over the remaining

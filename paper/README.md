@@ -112,10 +112,10 @@ not is a test failure rather than a reviewer's discovery.
 | figure | what it shows |
 |---|---|
 | Fig 1 | signal-present and signal-absent images at one setting, for the unprocessed input and each classical denoiser, on a common display window |
-| Fig 2 | SSIM and PSNR against relative dose in the representative realisation — the fidelity view |
+| Fig 2 | SSIM and PSNR against relative dose in the representative realization — the fidelity view |
 | Fig 3 | task `d'` against relative dose for the three estimated observers, with the analytic ideal-observer ceiling of the unprocessed input |
-| Fig 4 | fidelity–task divergence: ΔSSIM against Δ`d'`(PW), processed minus unprocessed, for every arm–realisation evaluation, with the divergent quadrant shaded and the per-realisation divergence rates beside it |
-| Fig 5 | observer-dependent benefit: Δ`d'` for the prewhitening, channelised Hotelling and non-prewhitening observers, and their difference B, per denoiser with clustered 95 % intervals |
+| Fig 4 | fidelity–task divergence: ΔSSIM against Δ`d'`(PW), processed minus unprocessed, for every arm–realization evaluation, with the divergent quadrant shaded and the per-realization divergence rates beside it |
+| Fig 5 | observer-dependent benefit: Δ`d'` for the prewhitening, channelized Hotelling and non-prewhitening observers, and their difference B, per denoiser with clustered 95 % intervals |
 | Fig 6 | cross-fitted prewhitening AUC after processing against the analytic ceiling of the unprocessed input, with the identity line, and a detail panel over the unsaturated range that marks the arms falling below its floor |
 | Fig 7 | the kV–mAs detectability atlas and the operational floor, the contour where the input's ideal `d'` crosses the prespecified criterion |
 | Fig 8 | failure patterns by floor stratum: divergence, contrast erasure, excess lesion-like responses and mean task degradation, with clustered 95 % intervals |

@@ -15,6 +15,7 @@ from pathlib import Path
 
 import matplotlib
 import pytest
+from conftest import AFFILIATION
 
 REPO = Path(__file__).resolve().parents[1]
 PAPER = REPO / "paper"
@@ -121,7 +122,9 @@ def test_the_submission_setting_carries_no_reviewer_furniture():
     line = build_pdf.correspondence_line(document.authors)
     assert line.startswith("Address all correspondence to ")
     assert "yamamoto@lisit.jp" in line
-    assert "Institute of One, LISIT Co., Ltd., Tokyo, Japan" in " ".join(document.authors)
+    # The constant, not a copy of it: a third spelling of this string lived here and kept
+    # asserting the form without the postcode after the author block had been corrected.
+    assert AFFILIATION in " ".join(document.authors)
     assert "0000-0001-9211-1071" in " ".join(document.authors)
 
 

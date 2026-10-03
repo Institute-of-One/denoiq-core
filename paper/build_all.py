@@ -33,6 +33,12 @@ BUILD = PAPER / "build"
 #: half-imported module behind for the next.
 STEPS: list[tuple[str, list[str]]] = [
     ("consolidate the real-data runs", ["build_real_liver_results.py"]),
+    # Figures 1-8 and S1 were drawn by hand, outside this build, which is how Figure 5 kept
+    # printing "channelised Hotelling (CHO)" in its legend after the body text had been converted
+    # to -ize: the build rebuilt the documents around a figure nothing had redrawn. ``--no-console``
+    # redraws from the existing console record rather than re-measuring it, which needs the [dl]
+    # extra and a checkpoint.
+    ("draw Figures 1-8 and S1", ["make_figures.py", "--no-console"]),
     ("redraw the real-data scatter", ["make_real_liver_figure.py"]),
     ("resolve the manuscript's markers", ["build_manuscript.py"]),
     ("render the review PDF", ["build_pdf.py"]),
