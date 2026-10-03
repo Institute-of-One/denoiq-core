@@ -1,0 +1,26 @@
+Dear Editors,
+
+Please consider the enclosed manuscript, "Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization", as a full length article in Physica Medica.
+
+Denoising is widely held to improve image quality, evidenced by reference-based fidelity metrics, and thereby to permit dose reduction. The second claim does not follow from the first, because processing cannot add task information to the image it is given. The manuscript separates the detectability an input makes available to an ideal observer from the detectability a specified observer actually achieves after processing, and uses that separation to compare the exposure different methods require to meet a prespecified detection criterion. The work therefore sits in the journal's scope for diagnostic radiology and for artificial intelligence in medical physics, and it is written for the reader who has to choose an exposure rather than a figure of merit.
+
+Two arms support it. A controlled synthetic matrix isolates the mechanism across dose, noise correlation and lesion configuration, with three classical denoisers and three observers, each referenced to its own unprocessed arm and to that input's analytic ideal-observer ceiling. A real arm repeats the measurement on twelve Siemens liver cases from LDCT-and-Projection-data, with a synthetic lesion of known size and contrast inserted into real abdominal soft tissue and detection scored by a cross-fitted prewhitening observer on paired trials, so that the anatomy cancels and the noise does not.
+
+Three results seem to us worth a reader's time. Across nine methods on a thousand held-out pairs from four cases no network ever saw, the method with the best PSNR ranked seventh of nine on the detection task, and no arm exceeded the closed-form ceiling of its own input. At each of two capacities a second network was trained that differs from the first in the objective and in nothing else, by a least-squares adversarial term, so that an arm capable of fabricating structure exists rather than being assumed away; none of the processed arms produced more lesion-shaped response in a lesion-free image than the noise itself carries, and the adversarial arm at 1.85 M parameters instead erased more of a real lesion than any other method. Converted into exposure, the unprocessed input met the prespecified criterion down to 0.187 of the routine protocol, and seven of the eight processed arms required more exposure than that to meet the same criterion.
+
+We have tried to be explicit about what the study does not establish. The lesion is inserted rather than native, so what is measured is detection of a specified low-contrast signal and not of hepatocellular carcinoma, haemangioma or any native lesion. No human reader was involved. The dose axis is a simulation anchored on a measured noise realisation, and the manuscript says which part of it is measured and which modelled. The adversarial result is a null from a measure that cancels the anatomy and therefore cannot see structure invented from the anatomy alone, and it is reported as that rather than as an absence of fabrication. The adversarial arms and the exposure conversion were added after the first results and are labelled as analyses rather than as tests of a prespecified hypothesis.
+
+Every number in the manuscript is emitted by executed code into machine-readable files and resolved into the text at build time; the test suite fails if the two disagree, so no value can be typed into the prose. The software is public now, not upon acceptance: denoiq-core at github.com/Institute-of-One/denoiq-core, archived as version 0.2.0 (doi:10.5281/zenodo.23095236), and ldct-io at github.com/Institute-of-One/ldct-io, archived as version 0.2.0 (doi:10.5281/zenodo.23095235). The imaging data is the public LDCT-and-Projection-data collection of The Cancer Imaging Archive (CC BY 4.0, doi:10.7937/9npb-2637); no imaging data is redistributed by either repository.
+
+The manuscript is original, is not under consideration elsewhere, and has not been published in whole or in part. It has no preprint. Generative AI was used in preparing the software and the prose, and is declared in its own section before the reference list in the form the journal specifies; no numerical result came from it, and I am solely accountable for the content.
+
+I confirm that I have no competing interests; the declaration is enclosed as a separate file.
+
+Thank you for considering the work.
+
+Yours sincerely,
+
+Shuji Yamamoto
+Institute of One, LISIT Co., Ltd., Tokyo 150-0044, Japan
+yamamoto@lisit.jp
+ORCID 0000-0001-9211-1071
