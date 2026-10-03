@@ -1,84 +1,84 @@
 {
   "fig10_real_liver.png": {
     "code": {
-      "paper/make_real_liver_figure.py": "d6be48c093822adbaf5f397aeb0298b493a431c415eeb3f1843101022b5676c1"
+      "paper/make_real_liver_figure.py": "42542ecad14d4cc863c35ea47e693c143d36abfbf29fa07ee984f5fa7c0af233"
     },
     "results": {
-      "real_liver.json": "e299f5a253a5bda19e83a7b7c3804ae42b9235b2f66cf4972c5e995d7730652c"
+      "real_liver.json": "b46697ce11ee9536984e3b8254a3e3fff0dacc7b21859beda8f2fb98c6415f55"
     }
   },
   "fig1_pipeline.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {}
   },
   "fig2_fidelity_vs_dose.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {
-      "dose_sweep.json": "2305b3ffd0ab6329e2343bfab1b5b45bc4479e481ee3585ce3b880882f81d342"
+      "dose_sweep.json": "33300913f5c363a70c65986dbc79b97b2fd37b45e8703a4cb32fff795d356d0a"
     }
   },
   "fig3_task_vs_dose.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {
-      "dose_sweep.json": "2305b3ffd0ab6329e2343bfab1b5b45bc4479e481ee3585ce3b880882f81d342"
+      "dose_sweep.json": "33300913f5c363a70c65986dbc79b97b2fd37b45e8703a4cb32fff795d356d0a"
     }
   },
   "fig4_divergence.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {
-      "endpoints.json": "0a7e0721da17aec58fa7724e8819b4138e9614336cf27951fe5ecb02ef2d1e23",
-      "statistics.json": "d1d15d65eb8e5de976b0a4a6f02d2393370437c45dff881f02d22d109d8b3211"
+      "endpoints.json": "f9b2d2301ace4aa67bf2348a3d506f3854604509d60a0b359d10cf1009f0815d",
+      "statistics.json": "91a0de122547839e337f3db5d187907c94905fbea4998f6966958135bc5252f9"
     }
   },
   "fig5_observer_dependence.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {
-      "statistics.json": "d1d15d65eb8e5de976b0a4a6f02d2393370437c45dff881f02d22d109d8b3211"
+      "statistics.json": "91a0de122547839e337f3db5d187907c94905fbea4998f6966958135bc5252f9"
     }
   },
   "fig6_dpi_ceiling.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {
-      "dose_sweep.json": "2305b3ffd0ab6329e2343bfab1b5b45bc4479e481ee3585ce3b880882f81d342",
-      "redlamp_demo.json": "67dbcc1365266062fd9b60df44906feedc2abaa757e0cc40720c6ff7bc835e5e",
-      "signal_sweep.json": "04c1236a8ff43a8446880a93c5a45fcc2c43f096649201174c1d6720027b8743",
-      "texture_sweep.json": "53e0691eaab6e5f144549198352c4bcc8bd78343e9fe2b9e8c19472ec7ebbe23"
+      "dose_sweep.json": "33300913f5c363a70c65986dbc79b97b2fd37b45e8703a4cb32fff795d356d0a",
+      "redlamp_demo.json": "4a60b12bb61f1d7c01e930fc17128ad226987f28c338e600ea74158c9393613b",
+      "signal_sweep.json": "4749caa4bd25eadb82aabf713951fae9749c7ef24a153e5bd9c5abe641d0418e",
+      "texture_sweep.json": "4f537931c769b54b7a22645a33faad6d1de70d75d71bf9f69238db8873716f4c"
     }
   },
   "fig7_redlamp_atlas.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {
-      "redlamp_atlas.json": "ef4b9349d84f2afb58695757e34b0f21165e8aea4ddf5b17012768a1e51a901c"
+      "redlamp_atlas.json": "a4a32eeec729c589a08d8908851b3fd5c9d13e3488a75dd0e8de81f903434e13"
     }
   },
   "fig8_floor_strata.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {
-      "statistics.json": "d1d15d65eb8e5de976b0a4a6f02d2393370437c45dff881f02d22d109d8b3211"
+      "statistics.json": "91a0de122547839e337f3db5d187907c94905fbea4998f6966958135bc5252f9"
     }
   },
   "figS1_redlamp_console.png": {
     "code": {
-      "denoiq_core/figures.py": "3254bf04a367732ab9b4ab2c87687d0c62fbb85f3bcde90f3e53183e995d9bc5"
+      "denoiq_core/figures.py": "e9d64ad46365ef63b66ab5170c19eaec421c9179f4891465b207562d51189734"
     },
     "results": {
-      "redlamp_console.json": "7b642a4241cdef0b08d2af2e99b485c4f96a27a83a6ce7eacb928c7980ad69d2"
+      "redlamp_console.json": "0cc8851865cd0e644d79787110ef370f127ec25b59d37c28d1ef8a60dd934120"
     }
   }
 }

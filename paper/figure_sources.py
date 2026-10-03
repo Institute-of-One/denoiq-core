@@ -33,8 +33,15 @@ RECORD = PAPER / "figures" / "SOURCES.json"
 
 
 def digest(path: Path) -> str:
-    """SHA-256 of a file, as the record stores it."""
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """SHA-256 of a file's content, as the record stores it.
+
+    Line endings are normalised first. This repository has ``core.autocrlf = true`` and no
+    ``.gitattributes``, so it stores LF and checks out CRLF on Windows: hashing the bytes on
+    disk records a digest of the checkout rather than of the content, and every figure then
+    reads as stale on Linux. CI went red exactly that way, on the commit that introduced this
+    check. Every file recorded here is JSON or Python, so this is always safe.
+    """
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def record(figure: Path, results: list[Path] | None = None, code: list[Path] | None = None) -> None:

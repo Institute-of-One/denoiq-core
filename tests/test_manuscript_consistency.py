@@ -273,6 +273,25 @@ def test_a_figure_drawn_from_results_is_not_older_than_them():
     )
 
 
+def test_a_source_digest_does_not_depend_on_the_checkout(tmp_path):
+    """The digest is of the content, not of the line endings the platform checked out.
+
+    ``core.autocrlf = true`` with no ``.gitattributes`` means this repository stores LF and
+    hands Windows CRLF. Hashing the bytes on disk therefore recorded a Windows digest, every
+    figure read as stale on Linux, and CI was red on the commit that added the check while
+    the local run was green.
+    """
+    sys.path.insert(0, str(PAPER))
+    import figure_sources  # noqa: PLC0415
+
+    content = '{\n  "a": 1\n}\n'
+    lf = tmp_path / "lf.json"
+    crlf = tmp_path / "crlf.json"
+    lf.write_bytes(content.encode())
+    crlf.write_bytes(content.replace("\n", "\r\n").encode())
+    assert figure_sources.digest(lf) == figure_sources.digest(crlf)
+
+
 @requires_results
 def test_every_supplementary_reference_points_at_something():
     """A pointer to material that does not exist is worse than no pointer.
