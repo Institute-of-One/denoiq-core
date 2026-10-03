@@ -250,7 +250,8 @@ def render(
         piece
         if _COMMENT.fullmatch(piece)
         else LDCT_IO_MARKER.sub(
-            substitute_ldct_io, RELEASE_MARKER.sub(substitute_release, MARKER.sub(substitute, piece))
+            substitute_ldct_io,
+            RELEASE_MARKER.sub(substitute_release, MARKER.sub(substitute, piece)),
         )
         for piece in pieces
     )
@@ -263,9 +264,9 @@ def render(
     # generated from paper/README.md so they are written in exactly one place. Only
     # the document that has a reference list gets a caption list after it.
     if "## References" in rendered:
-        import build_pdf  # noqa: PLC0415
+        from captions import caption_list_block  # noqa: PLC0415
 
-        captions = build_pdf.caption_list_block(PAPER_DIR / "README.md")
+        captions = caption_list_block(PAPER_DIR / "README.md")
         rendered = rendered.rstrip("\n") + "\n\n" + captions
     return rendered
 

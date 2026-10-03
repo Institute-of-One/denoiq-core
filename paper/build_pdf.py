@@ -51,6 +51,7 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
+from captions import CaptionError, caption_list_block, figure_captions  # noqa: F401
 from reportlab import rl_config
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
@@ -736,48 +737,6 @@ DOCUMENT_TABLES = {
 # --------------------------------------------------------------------------------------
 
 
-def caption_list_block(readme: Path, *, supplementary: bool = False) -> str:
-    """The captions again, as a list after the references.
-
-    Medical Physics asks for captions beneath each figure *and* listed at the end. They
-    are still written once, in ``paper/README.md``; this renders that same list a second
-    time rather than letting anyone maintain two copies.
-    """
-    captions = figure_captions(readme, supplementary=supplementary)
-    prefix = "Figure S" if supplementary else "Figure "
-    lines = ["## Figure captions", ""]
-    # Capitalised the same way the caption beneath the figure is, so the two
-    # renderings of one caption do not differ by a letter.
-    lines += [
-        f"**{prefix}{i}.** {c[0].upper()}{c[1:]}" for i, c in enumerate(captions, 1)
-    ]
-    return "\n\n".join(lines) + "\n"
-
-
-def figure_captions(readme: Path, *, supplementary: bool = False) -> list[str]:
-    """Figure captions, read from the table in ``paper/README.md``.
-
-    Reading them rather than restating them is the same discipline the numbers follow: there
-    is one place a caption is written, so the PDF and the repository documentation cannot
-    describe a figure differently.
-    """
-    text = readme.read_text(encoding="utf-8")
-    pattern = (
-        r"^\|\s*Fig\s*S(\d+)\s*\|\s*(.+?)\s*\|\s*$"
-        if supplementary
-        else (r"^\|\s*Fig\s*(\d+)\s*\|\s*(.+?)\s*\|\s*$")
-    )
-    captions = re.findall(pattern, text, re.M)
-    ordered = [caption for _, caption in sorted(captions, key=lambda pair: int(pair[0]))]
-    expected = len(SUPPLEMENTARY_FIGURE_FILES if supplementary else FIGURE_FILES)
-    if len(ordered) != expected:
-        raise BuildError(
-            f"{readme} lists {len(ordered)} figure captions, expected {expected}: the PDF takes "
-            "its captions from that table"
-        )
-    return ordered
-
-
 def png_size(path: Path) -> tuple[int, int]:
     """Pixel size of a PNG, from its IHDR chunk (no image library needed)."""
     header = path.read_bytes()[:24]
@@ -1243,7 +1202,16 @@ def build_story(
     generators = DOCUMENT_TABLES[document_kind]
     tables = {name: builder(results) for name, builder in generators.items()}
     figure_files = SUPPLEMENTARY_FIGURE_FILES if document_kind == "supplementary" else FIGURE_FILES
-    captions = figure_captions(readme, supplementary=document_kind == "supplementary")
+    # `expected` is what makes a README with no figure table, or one figure short, an error
+    # rather than a document with a caption missing from the end of it.
+    try:
+        captions = figure_captions(
+            readme,
+            supplementary=document_kind == "supplementary",
+            expected=len(figure_files),
+        )
+    except CaptionError as exc:
+        raise BuildError(str(exc)) from exc
     # Keyed by the token the prose cites ("4", "S1"), so a paragraph that names a figure can be
     # matched to it without re-parsing the filename each time.
     figure_entries: dict[str, tuple[str, str]] = {}

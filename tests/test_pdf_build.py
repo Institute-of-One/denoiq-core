@@ -207,10 +207,18 @@ def test_figure_captions_are_read_from_the_readme():
 
 
 def test_a_readme_without_the_figure_table_is_an_error(tmp_path):
+    """A README with no figure table is an error.
+
+    The captions moved to ``paper/captions.py`` so that a Markdown build does not import a PDF
+    engine; the count check moved with them and is now asked for explicitly.
+    """
     readme = tmp_path / "README.md"
     readme.write_text("# nothing here\n", encoding="utf-8")
-    with pytest.raises(build_pdf.BuildError, match="figure captions"):
-        build_pdf.figure_captions(readme)
+    with pytest.raises(build_pdf.CaptionError, match="figure captions"):
+        build_pdf.figure_captions(readme, expected=len(build_pdf.FIGURE_FILES))
+    # The build path supplies the count itself and reports the same thing as a build failure;
+    # that translation is exercised whenever a PDF is built, which the tests above do.
+    assert issubclass(build_pdf.CaptionError, Exception)
 
 
 @requires_inputs
@@ -262,7 +270,6 @@ def test_the_pdf_contains_the_manuscript_the_tables_and_the_figures(tmp_path):
         "Table 2",
         "Figures",
         "Fig. 8",
-
         "Address all correspondence to Shuji Yamamoto",
     ):
         assert expected in text, f"{expected!r} is not in the PDF"

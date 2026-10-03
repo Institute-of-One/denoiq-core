@@ -139,7 +139,10 @@ def main() -> int:
     # the words flags the sentence that makes the claim this check exists to protect. Strip the
     # denials first, then look for the promise.
     without_denials = re.sub(
-        r"\b(?:not|rather than|never)\s+(?:upon|on)\s+(?:acceptance|request)", " ", letter, flags=re.I
+        r"\b(?:not|rather than|never)\s+(?:upon|on)\s+(?:acceptance|request)",
+        " ",
+        letter,
+        flags=re.I,
     )
     claim(
         "it does not promise code upon acceptance",

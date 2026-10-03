@@ -55,8 +55,9 @@ def png_geometry(path: Path) -> tuple[int, int, int | None]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", type=Path, default=PAPER / "build" / "submission")
-    parser.add_argument("--journal", default=build_docx.DEFAULT_JOURNAL,
-                        choices=sorted(build_docx.LINE_NUMBERS))
+    parser.add_argument(
+        "--journal", default=build_docx.DEFAULT_JOURNAL, choices=sorted(build_docx.LINE_NUMBERS)
+    )
     args = parser.parse_args(argv)
 
     out: Path = args.out
@@ -92,8 +93,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {target.name}  <- {source_name}  ({width} px, {dpi} dpi)")
     for number in cited:
         if number > len(build_pdf.FIGURE_FILES):
-            problems.append(f"the manuscript cites Figure {number} and there are only "
-                            f"{len(build_pdf.FIGURE_FILES)} figure files")
+            problems.append(
+                f"the manuscript cites Figure {number} and there are only "
+                f"{len(build_pdf.FIGURE_FILES)} figure files"
+            )
 
     for number, source_name in enumerate(build_pdf.SUPPLEMENTARY_FIGURE_FILES, start=1):
         source = PAPER / "figures" / source_name

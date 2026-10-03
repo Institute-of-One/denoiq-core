@@ -183,9 +183,7 @@ _AUTHOR_BLOCK = re.compile(
 #: name on the first page of the file that goes to the same reviewers.
 _SUPPLEMENT_BYLINE = re.compile(r"^Shuji Yamamoto\s*·[^\n]*\n", re.M)
 
-_AVAILABILITY = re.compile(
-    r"(## Code and Data Availability\n)(.*?)(?=\n## )", re.S
-)
+_AVAILABILITY = re.compile(r"(## Code and Data Availability\n)(.*?)(?=\n## )", re.S)
 _REPOSITORY_URL = re.compile(r"is public at\s+https://github\.com/\S+")
 _ARCHIVE_PHRASE = re.compile(r"archived at Zenodo as version [^.]*\.")
 

@@ -60,6 +60,13 @@ from denoiq_core.evaluate import (
     evaluate_condition,
     fidelity,
 )
+from denoiq_core.guidance import (
+    DoseDecision,
+    achievable_floor,
+    apparent_exposure,
+    decide,
+    exposure_for_requirement,
+)
 from denoiq_core.physics import (
     DEFAULT_MODEL,
     DEFAULT_PHANTOM,
@@ -70,13 +77,6 @@ from denoiq_core.physics import (
     make_trials,
     relative_dose,
     relative_photons,
-)
-from denoiq_core.guidance import (
-    DoseDecision,
-    achievable_floor,
-    apparent_exposure,
-    decide,
-    exposure_for_requirement,
 )
 from denoiq_core.redlamp import (
     Atlas,

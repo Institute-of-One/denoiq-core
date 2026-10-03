@@ -62,7 +62,10 @@ SOFTWARE = {
 #: the full container title and sometimes a short-container-title that is not LTWA; this maps the
 #: ones this paper cites. Anything missing is reported rather than guessed.
 ABBREVIATIONS = {
-    "Philosophical Transactions of the Royal Society of London. Series A, Containing Papers of a Mathematical or Physical Character": "Philos Trans R Soc Lond A",
+    (
+        "Philosophical Transactions of the Royal Society of London. Series A, "
+        "Containing Papers of a Mathematical or Physical Character"
+    ): "Philos Trans R Soc Lond A",
     "IEEE Transactions on Medical Imaging": "IEEE Trans Med Imaging",
     "IEEE Transactions on Image Processing": "IEEE Trans Image Process",
     "Medical Physics": "Med Phys",

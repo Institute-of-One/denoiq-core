@@ -20,7 +20,6 @@ from denoiq_core.guidance import (
     exposure_for_requirement,
 )
 
-
 # --------------------------------------------------------------------------------------
 # exposure_for_requirement
 # --------------------------------------------------------------------------------------
@@ -149,7 +148,7 @@ def test_falling_short_says_raise():
 
 def test_a_flattering_image_is_reported_as_a_factor_and_a_warning():
     d = decide(100.0, 6.0, 5.0, fidelity_gain_db=4.26)
-    assert d.overstatement == pytest.approx(10.0 ** 0.426)
+    assert d.overstatement == pytest.approx(10.0**0.426)
     assert d.claimed_exposure == pytest.approx(100.0 * 10.0**0.426)
     assert any("looks like" in w for w in d.warnings)
 

@@ -1,4 +1,4 @@
-"""Turn the measurements into a protocol decision.
+r"""Turn the measurements into a protocol decision.
 
 Why this module exists
 ----------------------
@@ -209,9 +209,7 @@ class DoseDecision:
             "claimed_exposure": (
                 None if self.claimed_exposure is None else float(self.claimed_exposure)
             ),
-            "overstatement": (
-                None if self.overstatement is None else float(self.overstatement)
-            ),
+            "overstatement": (None if self.overstatement is None else float(self.overstatement)),
             "warnings": list(self.warnings),
         }
 

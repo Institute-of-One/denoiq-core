@@ -165,9 +165,7 @@ def _guidance(run: dict) -> dict:
     # summarised separately above and below the crossing rather than pooled.
     worst_below = max(below, key=lambda r: r["apparent_dose"] / r["dose"])
 
-    efficiency = {
-        label: row["d_prime"] / row["ceiling"] for label, row in at_nominal.items()
-    }
+    efficiency = {label: row["d_prime"] / row["ceiling"] for label, row in at_nominal.items()}
     eta = efficiency[raw_label]
 
     spreads = {k: v["spread_fraction"] for k, v in run["scaling_law_check"].items()}
@@ -293,7 +291,7 @@ def _merged_rows(runs: dict[str, dict]) -> list[dict]:
 
 def main() -> int:
     runs = {preset: _load(f"liver_cnn_{preset}") for preset in LEARNED}
-    small, large = runs["small"], runs["large"]
+    small = runs["small"]
     ceiling_run, dose = _load("liver_ceiling"), _load("dose_axis")
 
     for preset, run in runs.items():
@@ -360,9 +358,7 @@ def main() -> int:
         "objective": {
             capacity: {
                 "mse": next(r for r in rows if r["label"] == LEARNED[capacity]),
-                "adversarial": next(
-                    r for r in rows if r["label"] == LEARNED[f"{capacity}_gan"]
-                ),
+                "adversarial": next(r for r in rows if r["label"] == LEARNED[f"{capacity}_gan"]),
                 "adversarial_config": runs[f"{capacity}_gan"]["adversarial"]["objective"],
                 "epochs": runs[f"{capacity}_gan"]["epochs"],
                 "d_prime_ratio": (
@@ -381,17 +377,11 @@ def main() -> int:
         # anatomy cancelled; the unprocessed row is the noise's own rate, and is the only
         # reference under which the number means anything.
         "fabrication": {
-            "noise_itself": next(r for r in rows if r["label"] == "none")[
-                "added_structure_rate"
-            ],
+            "noise_itself": next(r for r in rows if r["label"] == "none")["added_structure_rate"],
             "by_method": {
-                SLUGS[r["label"]]: r["added_structure_rate"]
-                for r in rows
-                if r["label"] in SLUGS
+                SLUGS[r["label"]]: r["added_structure_rate"] for r in rows if r["label"] in SLUGS
             },
-            "max_processed": max(
-                r["added_structure_rate"] for r in rows if r["label"] != "none"
-            ),
+            "max_processed": max(r["added_structure_rate"] for r in rows if r["label"] != "none"),
             "n_above_the_noise": sum(
                 1
                 for r in rows
@@ -442,9 +432,13 @@ def main() -> int:
     strict = sensitivity["rules"]["low structure"]
     swaps = sum(
         1
+        # strict=True: the two rankings order the same arms, so a length mismatch would mean
+        # one run saw a method the other did not, and counting swaps over the shorter of them
+        # would hide that rather than report it.
         for a, b in zip(
             sensitivity["comparison"]["ranking_as_published"],
             sensitivity["comparison"]["ranking_low_structure"],
+            strict=True,
         )
         if a != b
     )
@@ -464,9 +458,7 @@ def main() -> int:
         "by_method": {
             SLUGS_SENS[r["label"]]: {
                 "published": r["d_prime"],
-                "strict": next(
-                    x["d_prime"] for x in strict["rows"] if x["label"] == r["label"]
-                ),
+                "strict": next(x["d_prime"] for x in strict["rows"] if x["label"] == r["label"]),
             }
             for r in published["rows"]
             if r["label"] in SLUGS_SENS

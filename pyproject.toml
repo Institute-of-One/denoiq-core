@@ -55,8 +55,11 @@ pdf = ["reportlab>=4.0"]
 dev = [
   "pytest>=7.0",
   "pytest-cov>=4.1",
-  "ruff>=0.4",
-  "mypy>=1.8",
+  # Pinned with ==, not >=. A floating ruff installed a version that formatted
+  # differently and turned CI red; the failing lint step then stopped mypy running at
+  # all, so the repository went a month without a type check and nobody saw it.
+  "ruff==0.16.6",
+  "mypy==2.2.0",
   # Figure determinism is tested, so matplotlib is a *test* dependency too and must
   # not be left implicit — a missing matplotlib turns the figure tests red in CI only.
   "matplotlib>=3.7",

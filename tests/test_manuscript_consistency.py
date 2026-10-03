@@ -251,8 +251,11 @@ def test_every_supplementary_reference_points_at_something():
             missing.append(f"Table {label}")
     if "Supplementary Methods" in manuscript:
         assert "Supplementary Methods" in supplement, (
-            "the manuscript points at Supplementary Methods and the supplement has no such part")
-    assert not missing, f"the manuscript points at supplementary material that does not exist: {missing}"
+            "the manuscript points at Supplementary Methods and the supplement has no such part"
+        )
+    assert not missing, (
+        f"the manuscript points at supplementary material that does not exist: {missing}"
+    )
 
 
 def test_the_highlights_fit_the_journal_limits():
@@ -280,9 +283,7 @@ def test_the_title_is_the_same_in_every_place_it_appears():
     submitted to that journal; retitling them would falsify the record rather than update it.
     """
     manuscript = (PAPER / "manuscript.md").read_text(encoding="utf-8")
-    heading = next(
-        line[2:].strip() for line in manuscript.splitlines() if line.startswith("# ")
-    )
+    heading = next(line[2:].strip() for line in manuscript.splitlines() if line.startswith("# "))
     assert heading, "the manuscript has no H1 title"
 
     import json
@@ -295,7 +296,11 @@ def test_the_title_is_the_same_in_every_place_it_appears():
 
     # README and the supplement wrap the title across lines, so compare on collapsed spacing.
     flat = " ".join(heading.split())
-    for name, path in (("README.md", REPO / "README.md"), ("supplementary.md", PAPER / "supplementary.md")):
+    elsewhere = (
+        ("README.md", REPO / "README.md"),
+        ("supplementary.md", PAPER / "supplementary.md"),
+    )
+    for name, path in elsewhere:
         text = " ".join(path.read_text(encoding="utf-8").split())
         assert flat in text, f"{name} does not carry the manuscript's title"
 
@@ -554,7 +559,8 @@ def test_no_placeholder_survives_into_a_submission_draft():
     )
     assert ai_heading in text, "the generative-AI declaration needs the journal's exact heading"
     assert text.index(ai_heading) < text.index("## References"), (
-        "the generative-AI declaration must come before the reference list")
+        "the generative-AI declaration must come before the reference list"
+    )
     ai = text.split(ai_heading, 1)[1].split("## References", 1)[0]
     assert "Generative AI" in ai, "the declaration must name generative AI"
     assert "Claude" in ai, "the declaration must name the tool that was used"
@@ -566,7 +572,8 @@ def test_no_placeholder_survives_into_a_submission_draft():
     # fire, because the capital letters cannot survive the lowering — which is what an injection
     # test caught when the statement was put back into Methods and the check stayed green.
     assert "generative ai" not in methods.lower(), (
-        "the generative-AI statement is a disclosure, not a Methods subsection")
+        "the generative-AI statement is a disclosure, not a Methods subsection"
+    )
 
 
 def test_path_resolution_rules():
