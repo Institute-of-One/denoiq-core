@@ -30,11 +30,20 @@ from pathlib import Path
 PAPER = Path(__file__).resolve().parent
 sys.path.insert(0, str(PAPER))
 import build_docx  # noqa: E402
+import build_manuscript  # noqa: E402
 import build_pdf  # noqa: E402
 
 #: Elsevier's artwork minimum for a halftone: 300 dpi, and 1063 pixels across a single column.
 MINIMUM_DPI = 300
 MINIMUM_WIDTH = 1063
+
+#: Everything this script writes into the output directory. Anything else there is someone's
+#: file, not a build artefact.
+PRODUCED = re.compile(
+    r"^(Manuscript|Supplementary|Structured_Abstract|Cover_Letter|Declaration_of_Interest)\.docx$"
+    r"|^Figure_(\d+|S\d+)\.png$"
+    r"|^Highlights\.txt$"
+)
 
 
 def png_geometry(path: Path) -> tuple[int, int, int | None]:
@@ -62,6 +71,23 @@ def main(argv: list[str] | None = None) -> int:
 
     out: Path = args.out
     if out.exists():
+        # The build owns this directory and clears it, so anything else kept here is destroyed
+        # on the next run. A proof downloaded from the portal was left in it and, being open in
+        # a viewer, could not be deleted either: the build died on a Windows sharing error that
+        # named no cause. Say what is in the way, and refuse rather than delete someone's file.
+        foreign = sorted(
+            path.name for path in out.iterdir() if path.is_file() and not PRODUCED.match(path.name)
+        )
+        if foreign:
+            print("files in paper/build/submission/ that this build does not produce:")
+            for name in foreign:
+                print(f"  {name}")
+            print(
+                "\nThis directory is cleared on every build, so they would be deleted. Move "
+                "them elsewhere -- paper/proofs/ is ignored by git and is a good place for "
+                "anything downloaded from the portal -- and run this again."
+            )
+            return 1
         shutil.rmtree(out)
     out.mkdir(parents=True)
 
@@ -108,6 +134,10 @@ def main(argv: list[str] | None = None) -> int:
     highlights = PAPER / "highlights.md"
     if highlights.exists():
         text = re.sub(r"<!--.*?-->", "", highlights.read_text(encoding="utf-8"), flags=re.S)
+        # The numbers are markers, as in the manuscript, and they resolve here. A hand-typed
+        # one put "ranked fifth of nine" in front of reviewers while every other document in
+        # the submission said 7 of 9.
+        text = build_manuscript.render(text, PAPER.parent / "results")
         bullets = [line[2:].strip() for line in text.splitlines() if line.startswith("- ")]
         (out / "Highlights.txt").write_text(
             "\n".join(f"• {b}" for b in bullets) + "\n", encoding="utf-8"
@@ -116,11 +146,47 @@ def main(argv: list[str] | None = None) -> int:
     else:
         problems.append("paper/highlights.md is missing")
 
+    # The structured abstract, as its own uploaded item. Editorial Manager lists it among the
+    # items required to build the PDF, separately from the manuscript that contains it, so it is
+    # extracted from the built manuscript rather than written again: a second copy of an abstract
+    # is a second thing to keep in step, and this one is already under the 250-word gate.
+    import pypandoc  # noqa: PLC0415
+
+    abstract = manuscript.split("## Abstract", 1)[1].split("\n## ", 1)[0]
+    abstract = re.sub(r"^\*\*Keywords:\*\*.*?(?=\n\n|\Z)", "", abstract, flags=re.S | re.M).strip()
+    missing_parts = [
+        part
+        for part in ("Purpose", "Methods", "Results", "Conclusions")
+        if f"**{part}.**" not in abstract
+    ]
+    if missing_parts:
+        problems.append(f"the abstract is not structured: no {', '.join(missing_parts)} heading")
+    pypandoc.convert_text(
+        abstract, "docx", format="markdown", outputfile=str(out / "Structured_Abstract.docx")
+    )
+    print(f"  Structured_Abstract.docx  ({len(abstract.split())} words, keywords omitted)")
+
+    # The cover letter, as its own uploaded item. This journal takes it as a file, not as the
+    # text box other portals use.
+    letter = PAPER / "cover_letter.txt"
+    if letter.exists():
+        # ``hard_line_breaks`` because the letter is written one paragraph per line with blank
+        # lines between, so every newline in it is deliberate. Without it the signature block --
+        # name, affiliation, e-mail, ORCID on four consecutive lines -- is joined into one run-on
+        # line, which is how it first came out.
+        pypandoc.convert_text(
+            letter.read_text(encoding="utf-8"),
+            "docx",
+            format="markdown+hard_line_breaks",
+            outputfile=str(out / "Cover_Letter.docx"),
+        )
+        print("  Cover_Letter.docx")
+    else:
+        problems.append("paper/cover_letter.txt is missing")
+
     # The competing-interest declaration, as its own Word document for the declarations tool.
     declaration = PAPER / "declaration_of_interest.md"
     if declaration.exists():
-        import pypandoc  # noqa: PLC0415
-
         body = re.sub(r"<!--.*?-->", "", declaration.read_text(encoding="utf-8"), flags=re.S)
         pypandoc.convert_text(
             body, "docx", format="markdown", outputfile=str(out / "Declaration_of_Interest.docx")
@@ -143,8 +209,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {problem}")
         return 1
     print(f"wrote {out}")
-    print("Still to add by hand: the cover letter, and the declarations tool's own form if the")
-    print("portal asks for one in addition to this file.")
+    print("Still to add by hand: the declarations tool's own form, if the portal asks for one")
+    print("in addition to this file.")
     return 0
 
 

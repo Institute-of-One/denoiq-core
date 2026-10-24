@@ -75,7 +75,44 @@ MAPPING = {
     "minimising": "minimizing",
 }
 
-WORD = re.compile(r"\b(" + "|".join(sorted(MAPPING, key=len, reverse=True)) + r")\b")
+#: The rest of the British/American split: -our, -re, -ae, doubled -l-, and the noun "licence".
+#: Applied to the documents only, never to the Python files, because there the same words are
+#: identifiers -- ``self.colour`` on the page-number canvas, a ``centre`` local in the phantom
+#: window -- and renaming an identifier to tidy prose is a different and riskier change.
+#:
+#: ``analyses`` is deliberately absent. It is both the plural of *analysis* and the third person
+#: of *analyse*, and the only occurrence here is the noun ("labelled as analyses"), which is
+#: correct in either dialect.
+BRITISH = {
+    "artefact": "artifact",
+    "artefacts": "artifacts",
+    "Artefact": "Artifact",
+    "analysed": "analyzed",
+    "cancelled": "canceled",
+    "centred": "centered",
+    "colour": "color",
+    "haemangioma": "hemangioma",
+    "haemangiomas": "hemangiomas",
+    "labelled": "labeled",
+    "licence": "license",
+    "modelled": "modeled",
+    "neighbours": "neighbors",
+}
+
+#: Files that are read by a reviewer. The Python files are not.
+DOCUMENTS = {".md", ".txt"}
+
+
+def mapping_for(path: Path) -> dict[str, str]:
+    """The substitutions that apply to one file."""
+    return {**MAPPING, **BRITISH} if path.suffix in DOCUMENTS else dict(MAPPING)
+
+
+def _word_pattern(mapping: dict[str, str]) -> re.Pattern[str]:
+    return re.compile(r"\b(" + "|".join(sorted(mapping, key=len, reverse=True)) + r")\b")
+
+
+WORD = _word_pattern(MAPPING)
 
 #: Files whose prose is the paper's own -- which is not only the manuscript. ``figures.py``
 #: carries axis labels and legend entries that the reader sees inside the figures, and
@@ -87,6 +124,8 @@ TARGETS = [
     ROOT / "paper" / "supplementary.md",
     ROOT / "paper" / "README.md",
     ROOT / "paper" / "cover_letter.txt",
+    ROOT / "paper" / "highlights.md",
+    ROOT / "paper" / "declaration_of_interest.md",
     ROOT / "paper" / "build_pdf.py",
     ROOT / "paper" / "build_real_liver_results.py",
     ROOT / "denoiq_core" / "figures.py",
@@ -98,8 +137,10 @@ KEY = re.compile(r"""(['"])[A-Za-z_][A-Za-z_0-9]*\1\s*:""")
 PLACEHOLDER = re.compile("\x00(\\d+)\x00")
 
 
-def convert(text: str) -> tuple[str, list[str]]:
-    """Return the converted text and the words that changed, protecting the three regions."""
+def convert(text: str, mapping: dict[str, str] | None = None) -> tuple[str, list[str]]:
+    """Return the converted text and the words that changed, protecting the four regions."""
+    mapping = MAPPING if mapping is None else mapping
+    word = WORD if mapping is MAPPING else _word_pattern(mapping)
     protected: list[str] = []
 
     def hide(match: re.Match[str]) -> str:
@@ -117,9 +158,9 @@ def convert(text: str) -> tuple[str, list[str]]:
 
     def replace(match: re.Match[str]) -> str:
         changed.append(match.group(1))
-        return MAPPING[match.group(1)]
+        return mapping[match.group(1)]
 
-    body = WORD.sub(replace, body)
+    body = word.sub(replace, body)
 
     # The masks nest: a marker is usually written inside a code span, as `[[results:...]]`, so the
     # span that gets masked second contains the placeholder of the marker masked first.
@@ -145,12 +186,13 @@ def main(argv: list[str] | None = None) -> int:
 
     total = 0
     for path in TARGETS:
+        mapping = mapping_for(path)
         original = path.read_text(encoding="utf-8")
-        converted, changed = convert(original)
+        converted, changed = convert(original, mapping)
         total += len(changed)
         print(f"{path.relative_to(ROOT)}: {len(changed)} occurrences")
         for word in sorted(set(changed)):
-            print(f"    {changed.count(word):3d}  {word} -> {MAPPING[word]}")
+            print(f"    {changed.count(word):3d}  {word} -> {mapping[word]}")
 
         # Nothing outside the list may have moved. Comparing word by word catches a protected
         # region that was restored in the wrong place as well as an unintended substitution.
@@ -160,13 +202,13 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  ABORT: {path.name} changed its word count", file=sys.stderr)
             return 1
         for old, new in zip(before, after, strict=True):
-            if old != new and MAPPING.get(old) != new:
+            if old != new and mapping.get(old) != new:
                 print(f"  ABORT: {path.name} changed {old!r} to {new!r}", file=sys.stderr)
                 return 1
 
         # Idempotence: the reference converter once read only the spelling it did not write, so it
         # quietly did nothing on a second run. Check rather than assume.
-        again, changed_again = convert(converted)
+        again, changed_again = convert(converted, mapping)
         if changed_again or again != converted:
             print(f"  ABORT: {path.name} is not stable under a second pass", file=sys.stderr)
             return 1

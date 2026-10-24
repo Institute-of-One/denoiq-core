@@ -18,7 +18,7 @@ Shuji Yamamoto is employed by LISIT Co., Ltd., Tokyo, Japan, which received no f
 work and has no commercial interest in any denoising method, reconstruction algorithm or imaging
 system evaluated here. The classical denoisers are published algorithms used through open-source
 implementations; the learned denoisers were trained for this study and are released under the MIT
-licence with the rest of the software. No vendor supplied data, software, funding or review.
+license with the rest of the software. No vendor supplied data, software, funding or review.
 
 This research did not receive any specific grant from funding agencies in the public, commercial,
 or not-for-profit sectors.

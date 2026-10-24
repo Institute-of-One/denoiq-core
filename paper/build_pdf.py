@@ -571,7 +571,7 @@ def table2_data(results: Path) -> tuple[list[list[str]], str]:
     )
     caption = (
         "**Table 2.** Observer-dependent effects: processed minus unprocessed at the same "
-        "condition and realization, as mean [95 % CI] from a bootstrap resampling whole "
+        "condition and realization, as mean [95% CI] from a bootstrap resampling whole "
         "realizations. Columns are the denoisers. "
         "PW is the cross-fitted prewhitening observer, CHO the channelized "
         "Hotelling observer, NPWE the non-prewhitening observer with an eye filter — a "
@@ -604,7 +604,7 @@ def table_s1_data(results: Path) -> tuple[list[list[str]], str]:
         "form on the unprocessed input. Both columns are analytic and neither is estimated "
         "from image samples, so the residual is numerical rather than statistical. Largest "
         f"relative error: {scientific(payload['max_relative_error'], 1)}, against a criterion "
-        "of 1 % fixed in advance."
+        "of 1% fixed in advance."
     )
     return [header, *body], caption
 
@@ -630,7 +630,7 @@ def table_s2_data(results: Path) -> tuple[list[list[str]], str]:
         f"{payload['n_folds']}-fold cross-fitted estimator used throughout against the single "
         "50/50 split used in the earlier single-realization analysis. Recovery is the estimated "
         "d′ as a fraction of the analytic ceiling of the same input. Recovery slightly above "
-        "100 % at the highest doses is sampling noise in the d′ estimate, not a breached "
+        "100% at the highest doses is sampling noise in the d′ estimate, not a breached "
         "bound: the ceiling test is armwise, in AUC, and carries its own margin (Section 3.4)."
     )
     return [header, *body], caption
@@ -669,7 +669,7 @@ def table_s3_data(results: Path) -> tuple[list[list[str]], str]:
             ]
         )
     caption = (
-        "**Table S3.** Failure patterns by floor stratum, as rate or mean [95 % CI] from the "
+        "**Table S3.** Failure patterns by floor stratum, as rate or mean [95% CI] from the "
         "clustered bootstrap. The columns are the divergence rate, the contrast-erasure rate, "
         "the excess lesion-like response rate (excess resp.), the mean task degradation "
         "(task degr.), the observer-dependent benefit and the gauge verdict counts. "
@@ -713,7 +713,7 @@ def table_s4_data(results: Path) -> tuple[list[list[str]], str]:
     caption = (
         "**Table S4.** Fidelity–task divergence per denoiser: the Spearman correlation between "
         "ΔSSIM and Δd′(PW), the fraction of divergent evaluations (ΔSSIM > 0 with Δd′(PW) < 0), "
-        "and the mean changes, each as value [95 % CI] from the clustered bootstrap. p-values "
+        "and the mean changes, each as value [95% CI] from the clustered bootstrap. p-values "
         "are two-sided bootstrap values for the correlation, Holm-adjusted across "
         "denoisers. Columns are the denoisers."
     )

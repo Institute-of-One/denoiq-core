@@ -53,3 +53,9 @@ paper/build/*.docx
 paper/cover_letter_medphys.txt
 paper/susy_medphys_fields.txt
 paper/build/title_page.md
+
+# Proofs downloaded from a submission portal. They are the journal's rendering of a manuscript
+# under review, they carry its submission ID, and they belong to the editorial correspondence
+# rather than to the public repository. Kept out of paper/build/submission/, which the build
+# clears on every run.
+paper/proofs/

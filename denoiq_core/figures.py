@@ -607,7 +607,7 @@ def figure5_observer_dependence(path: Path, statistics: dict[str, Any]) -> Path:
         ax.set_yticklabels(denoisers)
         ax.set_ylim(-0.6, len(denoisers) - 0.4)
         ax.invert_yaxis()
-        ax.set_xlabel("$\\Delta d'$ (processed $-$ unprocessed input), mean with 95 % CI")
+        ax.set_xlabel("$\\Delta d'$ (processed $-$ unprocessed input), mean with 95% CI")
         ax.set_title(
             "Denoising benefit depends on observer efficiency\n"
             "(cluster bootstrap over realizations)",
@@ -678,7 +678,7 @@ def figure8_floor_strata(path: Path, statistics: dict[str, Any]) -> Path:
         axes[0].set_ylabel("fraction of evaluations")
         fig.suptitle(
             "Failure patterns by the detectability available in the input\n"
-            "(strata of the operational floor; 95 % CI, cluster bootstrap over realizations)",
+            "(strata of the operational floor; 95% CI, cluster bootstrap over realizations)",
             fontsize=9.5,
         )
         return _save(fig, path)
