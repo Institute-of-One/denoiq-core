@@ -1399,6 +1399,14 @@ def build_pdf(
     # and its tables and methods are cited by their own labels — so it is excluded by default.
     if line_numbers is None:
         line_numbers = submission and style == "jmi" and document_kind == "manuscript"
+        # ...and then the journal decides. The line above is SPIE's convention, which is how
+        # an IOP submission came to carry its own numbering beside the portal's; the switch
+        # lives in paper/target_journal.py so that one journal's rule is not every journal's.
+        import target_journal  # noqa: PLC0415
+
+        line_numbers = target_journal.line_numbers(default=line_numbers) and (
+            document_kind == "manuscript"
+        )
     numbering = LineNumbering(font=serif) if line_numbers else None
     document = parse_manuscript(text)
     if not document.title:

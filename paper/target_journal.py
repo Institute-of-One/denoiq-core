@@ -69,6 +69,32 @@ LIMITS: dict[str, int | None] = {
 NOTES = "AI Horizons: Research Paper, unlimited length, format-free, no APC 2026-2031"
 
 
+#: Whether the submission PDF should carry its own line numbers.
+#:
+#: This was a style decision in build_pdf: on for --submission in "jmi" style, which is SPIE
+#: Journal of Medical Imaging's convention and nobody else's. PMB-122419 was submitted to an IOP
+#: journal through ScholarOne with the manuscript's own numbering, and the proof the portal built
+#: carried two columns of line numbers, because ScholarOne numbers what it renders. One journal's
+#: rule asserted for all of them is the same defect the word limit had.
+#:
+#: AI Horizons is IOP, on the same ScholarOne family (mc04.manuscriptcentral.com/aih-eit), and
+#: asks for no particular format. The portal is therefore expected to number its own proof, so
+#: the uploaded PDF does not. That is an inference from PMB rather than a published rule, so the
+#: proof PDF is read at submission before anything is sent.
+LINE_NUMBERS: dict[str, bool] = {
+    "SPIE Journal of Medical Imaging": True,
+    "Medical Physics": True,  # returns a submission that has none, before review
+    "Physica Medica": False,
+    "Physics in Medicine & Biology": False,
+    "AI Horizons": False,
+}
+
+
 def word_limit() -> int | None:
     """The body word limit for the declared target, or None while none is declared."""
     return None if NAME is None else LIMITS[NAME]
+
+
+def line_numbers(default: bool) -> bool:
+    """Whether to number the lines, for the declared target; ``default`` while none is."""
+    return default if NAME is None else LINE_NUMBERS.get(NAME, default)
