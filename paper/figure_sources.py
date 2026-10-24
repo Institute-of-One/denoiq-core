@@ -25,11 +25,48 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 PAPER = Path(__file__).resolve().parent
 REPO = PAPER.parent
 RECORD = PAPER / "figures" / "SOURCES.json"
+
+#: Repositories other than this one that draw a figure in this paper, by the name used as the
+#: prefix of a recorded key. Figure 9 is drawn by ldct-io, which the manuscript cites by DOI,
+#: and it was the one figure nothing here watched: it had no entry at all, so neither its data
+#: nor its drawing code was checked, and it reached a journal 12.3 in wide with a result
+#: sentence painted into it. A figure drawn elsewhere still has to be watched from here.
+COMPANION_REPOS = {
+    "ldct-io": Path(os.environ.get("LDCT_IO_REPO") or r"D:\DevGit\ldct-io"),
+}
+
+
+def _key(source: Path) -> str:
+    """How a code file is keyed: relative to this repository, or ``<companion>:<path>``."""
+    source = source.resolve()
+    try:
+        return source.relative_to(REPO).as_posix()
+    except ValueError:
+        pass
+    for name, root in COMPANION_REPOS.items():
+        try:
+            return f"{name}:{source.relative_to(root.resolve()).as_posix()}"
+        except (ValueError, OSError):
+            continue
+    raise ValueError(
+        f"{source} is in neither this repository nor a companion listed in COMPANION_REPOS; "
+        "add it there rather than recording a path that only exists on one machine"
+    )
+
+
+def _resolve(key: str) -> Path | None:
+    """The file a recorded key names, or None when its companion is not on this machine."""
+    if ":" not in key:
+        return REPO / key
+    name, _, relative = key.partition(":")
+    root = COMPANION_REPOS.get(name)
+    return None if root is None or not root.exists() else root / relative
 
 
 def digest(path: Path) -> str:
@@ -56,8 +93,7 @@ def record(figure: Path, results: list[Path] | None = None, code: list[Path] | N
             source.name: digest(source) for source in sorted(results or [], key=lambda p: p.name)
         },
         "code": {
-            source.resolve().relative_to(REPO).as_posix(): digest(source)
-            for source in sorted(code or [], key=lambda p: p.name)
+            _key(source): digest(source) for source in sorted(code or [], key=lambda p: p.name)
         },
     }
     RECORD.parent.mkdir(parents=True, exist_ok=True)
@@ -84,7 +120,12 @@ def stale(results: Path) -> list[str]:
                     "the figure and the numbers in the text disagree"
                 )
         for name, recorded in sources.get("code", {}).items():
-            path = REPO / name
+            path = _resolve(name)
+            if path is None:
+                # The companion repository is not on this machine. Say so rather than passing
+                # in silence: the figure is unchecked here, and CI elsewhere is not the place
+                # this gets noticed. unchecked() is what the gate reports as a warning.
+                continue
             if not path.exists():
                 problems.append(f"{figure} was drawn by {name}, which is missing")
             elif digest(path) != recorded:
@@ -93,3 +134,23 @@ def stale(results: Path) -> list[str]:
                     "text disagree about a label"
                 )
     return problems
+
+
+def unchecked() -> list[str]:
+    """Recorded generators that live in a companion repository absent from this machine.
+
+    The gate reports these as warnings. A figure drawn elsewhere is still this paper's figure,
+    and "nothing complained" has to be distinguishable from "nothing looked".
+    """
+    if not RECORD.exists():
+        return []
+    entries = json.loads(RECORD.read_text(encoding="utf-8"))
+    out: list[str] = []
+    for figure, sources in entries.items():
+        for name in sources.get("code", {}):
+            if ":" in name and _resolve(name) is None:
+                out.append(
+                    f"{figure} is drawn by {name}, whose repository is not on this machine, "
+                    "so it was not checked against what drew it"
+                )
+    return out

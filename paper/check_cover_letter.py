@@ -118,6 +118,21 @@ def main() -> int:
         f"the adversarial arm at 1.85 M parameters ({parameters})",
         "1.85 M parameters" in letter and 1_800_000 < parameters < 1_900_000,
     )
+    # Added 2026-10-22 with the AI Horizons letter, which leads on the exposure conversion.
+    # Two numbers went into the letter that nothing here read, which is the exact way a
+    # retracted figure once survived two revision rounds in a letter: a claim is checked
+    # because someone adds it to this list, and a claim that is not in this list is not
+    # checked by anything at all.
+    overstated = resolve(liver, "guidance.overstatement.at_nominal_max")
+    claim(
+        f"PSNR implies {overstated:.2f}x the exposure delivered",
+        f"{overstated:.2f} times" in letter,
+    )
+    below = resolve(liver, "guidance.overstatement.worst_below_crossing")
+    claim(
+        f"and {below:.1f}x where the task had already failed",
+        f"{below:.1f} times" in letter,
+    )
 
     print("\nidentifiers:")
     for label, doi in (("denoiq-core", release["version_doi"]), ("ldct-io", ldct["version_doi"])):

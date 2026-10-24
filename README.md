@@ -1,6 +1,6 @@
 # denoiq-core
 
-**Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization.**
+**An information-theoretic exposure criterion for AI-denoised low-dose CT: from required detectability to delivered dose, and to an AI denoiser's dose claim.**
 
 The code and results behind the study of that name: a simulation study of when denoising helps
 a detection task, when it hurts one, and how both depend on who is looking.

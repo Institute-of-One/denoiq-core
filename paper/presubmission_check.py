@@ -47,6 +47,30 @@ MIN_SCALE = 0.70
 #: and stranded the caption overleaf. Width was checked; height was not.
 MAX_PRINTED_INCHES = 7.5
 
+#: How a figure citation is parsed. Ported from ct_dosemc_core/paper/presubmission_check.py
+#: after this file failed a correct manuscript: the prose says "Figures 2 and 3 give the dose
+#: response", and a per-figure search for "Figure 3" cannot see the 3 in that list, so figure 3
+#: was reported as never named. Matching one number per citation is the same defect seen from
+#: the other side -- it also lets a figure be first named out of order without anything noticing.
+#: A citation names every number in its list, and a range names the figures between its ends.
+_NUMBER = r"\d+\s*(?:\(\s*[a-z]\s*\)|[a-z](?![a-z]))?"
+#: What continues a citation. A comma is deliberately absent: see _COMMA_LIST.
+_JOIN = r"(?:&|and|or|to|through|vs\.?|/|-|–|—)"
+_PANEL_ONLY = r"(?:\(\s*[a-z]\s*\)|[a-z](?![a-z]))"
+_NUMBER_LIST = rf"(?:{_NUMBER})(?:\s*{_JOIN}\s*(?:{_NUMBER}|{_PANEL_ONLY}))*"
+#: The trailing boundary keeps a filename out of it: "fig3_task_vs_dose.png" is a file this
+#: repository names in prose, not a citation.
+_FIGURE_CITATION = re.compile(rf"\b(?:figs?|figures?)\.?\s*({_NUMBER_LIST})(?!\w|\.\w)", re.I)
+#: Supplementary figures carry an S. They are cited one at a time here, and a list of them
+#: would need the same treatment as the numeric case; there is one, and this says so rather
+#: than pretending to handle a list it has never seen.
+_SUPPLEMENTARY_CITATION = re.compile(r"\b(?:figs?|figures?)\.?\s*S(\d+)\b", re.I)
+#: A citation continued by a comma -- "figures 1, 6" -- which this file refuses to parse and
+#: therefore refuses to accept, because nothing in the text says whether the 6 is a figure or
+#: a count. What keeps "In figure 1, 38 of 40 trials pass" out of it is that 38 is not one of
+#: this paper's figures: only a number that is one is refused.
+_COMMA_LIST = re.compile(rf"\b(?:figs?|figures?)\.?\s*{_NUMBER_LIST}\s*,\s*(\d+)", re.I)
+
 errors: list[str] = []
 warnings: list[str] = []
 
@@ -190,7 +214,94 @@ def check_tables(src: str) -> None:
         fail(f"Table {n} is referred to but has no caption")
 
 
+# ------------------------------------------------------- the journal this is built for
+def check_target_journal(built: str) -> None:
+    """Refuse to call a manuscript ready while nobody has said where it is going.
+
+    The word limit used to be one number in the test suite with Physica Medica's name in a
+    comment. That journal rejected the manuscript before review, and the rule outlived the
+    submission it belonged to. The target now lives in paper/target_journal.py: the test suite
+    skips the limit while it is unset, and this refuses, because this script is what runs in
+    the minutes before a file is uploaded.
+    """
+    sys.path.insert(0, str(PAPER))
+    import target_journal  # noqa: PLC0415
+
+    if target_journal.NAME is None:
+        fail(
+            "no target journal is declared in paper/target_journal.py, so no word limit, "
+            "abstract form or reference style can be checked against the journal that will "
+            "receive this; choose the venue and record it there"
+        )
+        return
+    limit = target_journal.word_limit()
+    words = len(built.split())
+    if limit is not None and words > limit * 1.3:
+        fail(
+            f"the built manuscript is about {words} words against {target_journal.NAME}'s "
+            f"{limit} word body limit; run the test suite for the counted figure"
+        )
+
+
 # ---------------------------------------------------------------- figures
+def _numbers_cited(citation: str) -> list[int]:
+    """Every figure a citation names, expanding ``4-6`` to 4, 5, 6.
+
+    Panel letters are dropped: "1(a)" and "1b" are both figure 1. The split is built from
+    :data:`_JOIN`, the same fragment the citation pattern is built from, so a joiner can only
+    be added to both at once.
+    """
+    citation = re.sub(r"\(\s*[a-z]\s*\)|(?<=\d)\s*[a-z]\b", "", citation, flags=re.I)
+    parts = re.split(rf"\s*({_JOIN})\s*", citation, flags=re.I)
+    numbers = [int(parts[0])]
+    for separator, value in zip((p.lower() for p in parts[1::2]), parts[2::2], strict=True):
+        if not value.strip().isdigit():
+            continue  # a bare panel letter: "1a-c" is still figure 1
+        number = int(value)
+        if separator in {"to", "through", "-", "–", "—"} and number > numbers[-1]:
+            numbers.extend(range(numbers[-1] + 1, number + 1))
+        else:
+            numbers.append(number)
+    return numbers
+
+
+#: Where the body stops. Everything from here on describes the paper rather than arguing it.
+_BACK_MATTER = (
+    "## Disclosures",
+    "## Code and Data Availability",
+    "## Acknowledgments",
+    "## Declaration of generative AI",
+    "## References",
+    "## Figure captions",
+)
+
+
+def _body(src: str) -> str:
+    """The manuscript up to its back matter.
+
+    A figure has to be pointed at where it is argued from. Code and Data Availability says
+    "`paper/make_figures.py` - Figs. 1 to 8", which names figure 3 without telling a reader
+    anything about it, and a citation parser that reads ranges counts it. Widening the parser
+    without narrowing where it reads turned this check from wrong-and-failing into
+    wrong-and-passing, which is worse.
+    """
+    cuts = [src.index(h) for h in _BACK_MATTER if h in src]
+    return src[: min(cuts)] if cuts else src
+
+
+def _figures_cited(prose: str) -> set[str]:
+    """The figure tokens the prose names, as they appear in a file name: "3", "S1".
+
+    HTML comments are stripped first. They survive into the built manuscript, so an editorial
+    note reading "redraw figure 9" would otherwise count as a citation of figure 9.
+    """
+    prose = re.sub(r"<!--.*?-->", " ", prose, flags=re.S)
+    cited = {f"S{match.group(1)}" for match in _SUPPLEMENTARY_CITATION.finditer(prose)}
+    for match in _FIGURE_CITATION.finditer(prose):
+        cited.update(str(number) for number in _numbers_cited(match.group(1)))
+    return cited
+
+
 def check_figures(src: str) -> None:
     sys.path.insert(0, str(PAPER))
     import build_pdf  # noqa: PLC0415
@@ -212,10 +323,19 @@ def check_figures(src: str) -> None:
 
     # Supplementary figures are named in supplementary.md, not in the manuscript.
     supp = PAPER / "supplementary.md"
-    prose = src + (supp.read_text(encoding="utf-8") if supp.exists() else "")
+    prose = _body(src) + (supp.read_text(encoding="utf-8") if supp.exists() else "")
+    tokens = {re.match(r"fig(S?\d+)_", name).group(1) for name in registered}
+    cited = _figures_cited(prose)
+    for comma in _COMMA_LIST.finditer(prose):
+        if comma.group(1) in tokens:
+            fail(
+                f"a figure citation is continued by a comma at {comma.group(0)!r}; nothing in "
+                "the text says whether the number after it is a figure or a count, so write "
+                "the citation out"
+            )
     for name in registered:
         token = re.match(r"fig(S?\d+)_", name).group(1)
-        if not re.search(rf"\bFig(?:ure)?s?\.?\s*{token}\b", prose):
+        if token not in cited:
             fail(f"{name} is registered but the prose never names Figure {token}")
 
     for p in sorted(FIGURES.glob("fig*.png")):
@@ -359,6 +479,7 @@ def main() -> int:
     check_front_matter(src, built)
     check_references(src)
     check_tables(src)
+    check_target_journal(built)
     check_figures(src)
     check_built(built)
     check_submission_format()

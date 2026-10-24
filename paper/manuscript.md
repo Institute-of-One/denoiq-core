@@ -30,7 +30,7 @@
   release DOI in `paper/release.json` has been minted.
 -->
 
-# Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization
+# An information-theoretic exposure criterion for AI-denoised low-dose CT: from required detectability to delivered dose, and to an AI denoiser's dose claim
 
 **Shuji Yamamoto**
 Institute of One, LISIT Co., Ltd., Tokyo 150-0044, Japan
@@ -38,41 +38,56 @@ yamamoto@lisit.jp · ORCID 0000-0001-9211-1071
 
 ## Abstract
 
-**Background.** Denoising improves reference-based fidelity metrics and is widely held thereby to
-permit dose reduction. That does not follow: processing cannot add task information.
+**Background.** Denoising improves fidelity metrics and is widely held thereby to permit dose
+reduction. It does not follow: a denoiser sees only the image it is given, so hypothesis, input
+and processed image form a Markov chain, and no test on the processed image dominates the
+likelihood-ratio test on the input. The bound says nothing about what a given observer recovers,
+or about exposure.
 
-**Purpose.** To characterize task detectability limits in denoised CT by separating the
-detectability an input offers an ideal observer from that a specified observer achieves, and
-thereby compare the exposure each method needs.
+**Purpose.** To convert a stated detection requirement into the exposure a low-dose CT protocol
+needs, by separating the detectability an input offers an ideal observer from the detectability a
+specified observer achieves, and to use that conversion to test the dose claim made for a
+denoiser.
 
-**Methods.** Signal- and background-known-exactly detection of a low-contrast disk on phantoms
-with three classical denoisers and three observers, and on
-[[results:real_liver.json:all_cases.n_cases]] liver cases from LDCT-and-Projection-data with a
-synthetic lesion in abdominal soft tissue. Each arm is referenced to its unprocessed input and its
-analytic ceiling [1,2]. Residual CNNs trained on
-[[results:real_liver.json:held_out.n_train_cases]] cases were evaluated on
-[[results:real_liver.json:held_out.n_test_cases]] never-seen cases, at two capacities, each paired with a
-counterpart differing only in an adversarial objective. Exposure was compared on a dose simulation
-rescaling the collection's measured noise, against `d'` ≥
-[[results:real_liver.json:guidance.requirement|.0f]].
+**Methods.** Signal- and background-known-exactly detection of a low-contrast disk: on phantoms,
+with three classical denoisers and three observers; and on
+[[results:real_liver.json:all_cases.n_cases]] liver cases from LDCT-and-Projection-data, with a
+synthetic lesion in abdominal soft tissue and residual CNNs trained on
+[[results:real_liver.json:held_out.n_train_cases]] cases, evaluated on
+[[results:real_liver.json:held_out.n_test_cases]] never-seen cases at two capacities, each paired
+with an adversarial counterpart. Every arm is referenced to its unprocessed input and its
+analytic ceiling [1,2], and exposure compared against `d'` ≥
+[[results:real_liver.json:guidance.requirement|.0f]] on a dose simulation rescaling the
+collection's measured noise.
 
-**Results.** [[results:statistics.json:divergence.divergence_rate.value|.1%]] of evaluations
-improved fidelity while detectability fell; denoising helped the inefficient observer more
-([[results:statistics.json:observer_dependence.overall.benefit.value|+.2f]]). On real data PSNR
-ranked [[results:real_liver.json:held_out.n_methods]] methods against `d'` at ρ
-[[results:real_liver.json:held_out.spearman_psnr_vs_d_prime.rho|+.2f]], the best-PSNR method ranking
-[[results:real_liver.json:held_out.psnr_winner_task_rank]] of
-[[results:real_liver.json:held_out.n_methods]] on the task, and
-[[results:real_liver.json:all_exceedances]] arms exceeded the ceiling. The adversarial arms showed
-no detected increase in lesion-shaped response. Unprocessed images met the criterion to
-[[results:real_liver.json:guidance.crossing.unprocessed|.3f]] of routine exposure;
+**Results.** The unprocessed input met the requirement down to
+[[results:real_liver.json:guidance.crossing.unprocessed|.3f]] of the routine protocol, so the
+acquisition already supplied the exposure the task needed;
 [[results:real_liver.json:guidance.processing_penalty.n_needing_more_dose]] of
-[[results:real_liver.json:guidance.processing_penalty.n_processed]] processed arms needed more.
+[[results:real_liver.json:guidance.processing_penalty.n_processed]] processed arms needed more
+than that, the best differing from doing nothing by
+[[results:real_liver.json:guidance.processing_penalty.best_percent|+.0f]]%. Exposure read off a
+fidelity metric disagreed: the exposure PSNR implied reached
+[[results:real_liver.json:guidance.overstatement.at_nominal_max|.2f]]× the one delivered, and
+[[results:real_liver.json:guidance.overstatement.worst_below_crossing|.1f]]× where `d'` had
+already fallen to
+[[results:real_liver.json:guidance.overstatement.worst_below_crossing_d_prime|.2f]]. An
+ideal-observer floor supplied
+[[results:real_liver.json:guidance.efficiency.ideal_floor_fraction_of_required|.0%]] of the
+exposure required. In the controlled experiments
+[[results:statistics.json:divergence.divergence_rate.value|.1%]] of evaluations improved fidelity
+while detectability fell, denoising helped the inefficient observer more
+([[results:statistics.json:observer_dependence.overall.benefit.value|+.2f]]), PSNR ranked
+[[results:real_liver.json:held_out.n_methods]] methods against `d'` at ρ
+[[results:real_liver.json:held_out.spearman_psnr_vs_d_prime.rho|+.2f]], and
+[[results:real_liver.json:all_exceedances]] arms exceeded the ceiling. The adversarial arms showed
+no detected increase in lesion-shaped response.
 
-**Conclusions.** Separating the input's ceiling from achieved detectability allows exposure
-requirements to be compared against a defined criterion. Fidelity gains alone did not establish
-task preservation. Clinical use requires scanner-specific calibration and human-reader
-validation.
+**Conclusions.** A detection requirement converts into an exposure, which is what a protocol is
+written in. Set the dose from the crossing on the unprocessed input, where the margin was here;
+do not take an exposure implied by a fidelity metric, which overstated it; and do not use an
+ideal-observer floor as an operating point, which is not reachable. Clinical use requires
+scanner-specific calibration and human-reader validation.
 
 **Keywords:** low-dose CT; image denoising; deep learning; task-based image quality;
 model observer; detectability; fidelity–task divergence.
@@ -154,7 +169,7 @@ A benchmark also answers a different question: it ranks methods against each oth
 analytic ceiling bounds what *any* processing of a given input can attain, so the question
 becomes how much of the information already present survives. This study measures all three on
 one controlled matrix, with an analytic reference that removes the usual ambiguity about whether
-an apparent loss is real or an artefact of the estimator, and with repeated realizations so that
+an apparent loss is real or an artifact of the estimator, and with repeated realizations so that
 effect sizes come with intervals.
 
 ### 1.2 Prespecified hypotheses
@@ -176,19 +191,23 @@ from them alone would be uninformative; and the conversion of the floor into an 
 
 ### 1.3 Contributions
 
-1. Quantification of fidelity–task divergence across denoisers and imaging conditions, with
+1. A conversion from a stated detection requirement to the exposure a protocol needs, measured
+   on the unprocessed input and on each processed arm, together with the two corrections a site
+   has to apply to use it: the exposure implied by a fidelity metric is not the exposure
+   delivered, and an ideal-observer floor is not an operating point.
+2. Quantification of fidelity–task divergence across denoisers and imaging conditions, with
    effect sizes and intervals from repeated independent realizations.
-2. Quantification of observer-dependent denoising benefits, comparing a prewhitening observer,
+3. Quantification of observer-dependent denoising benefits, comparing a prewhitening observer,
    a channelized Hotelling observer and a non-prewhitening observer on identical images.
-3. Stratification of failure patterns — erasure, excess lesion-like responses, task degradation
+4. Stratification of failure patterns — erasure, excess lesion-like responses, task degradation
    — by an operational information floor.
-4. Leakage-controlled measurement against an analytic ceiling, with a positive control asserted
+5. Leakage-controlled measurement against an analytic ceiling, with a positive control asserted
    to fail when the class label is made available to the processing.
-5. Confirmation of the divergence and of the ceiling on real low-dose CT — twelve liver cases,
+6. Confirmation of the divergence and of the ceiling on real low-dose CT — twelve liver cases,
    a case-disjoint held-out split, and a learned denoiser at two configurations spanning
    [[results:real_liver.json:capacity.parameter_ratio|.0f]]× in parameters — showing that the same divergence was also
    observed with synthetic lesions inserted into real low-dose CT backgrounds.
-6. An open, deterministic implementation in which every reported number is regenerated from
+7. An open, deterministic implementation in which every reported number is regenerated from
    machine-readable outputs.
 
 ## 2. Methods
@@ -208,7 +227,7 @@ nothing estimated. Geometry: [[results:dose_sweep.json:config.phantom.size]] ×
 [[results:dose_sweep.json:config.phantom.radius_mm]] mm except where the lesion sweep varies it,
 [[results:statistics.json:design.trials_per_class_main_sweeps|,]] trials per class per arm in the three sweeps and fewer at the atlas settings.
 
-**What "input" and "unprocessed" denote.** This study concerns post-processing of a defined
+*What "input" and "unprocessed" denote.* This study concerns post-processing of a defined
 input image. The unprocessed images are synthetic images formed directly from the acquisition
 model — not detector projection data, and not the output of a reconstruction. We make no claim
 about information gained or lost in reconstruction, which is a separate map with its own bound.
@@ -270,7 +289,7 @@ with the mean restored so that the filter is shift-invariant; non-local means is
 `[[results:real_liver.json:spec.implementation.nlm_arguments]]`. Library versions are recorded
 with the provenance of every run.
 
-**Where the noise level comes from, and why it does not break the bound.** For total variation
+*Where the noise level comes from, and why it does not break the bound.* For total variation
 and non-local means the noise standard deviation used to set the parameter is the *true*
 simulation value for that acquisition setting: a setting-informed (oracle) parameterization,
 stated rather than left implicit, since it is more than a blind method would have. What matters
@@ -321,7 +340,7 @@ inside a central [[results:dose_sweep.json:config.eval_config.roi_size]] ×
 `Ŵ = Ŝ/NPS` is formed, and the held-out fold is scored with it. Pooling the out-of-fold scores
 gives `d'` from the pooled-variance separation and AUC from the Mann–Whitney statistic, using
 every trial exactly once while no score comes from a template that saw its own image. The
-measured NPS is made invertible by filling the DC bin from its neighbours, adding a ridge of
+measured NPS is made invertible by filling the DC bin from its neighbors, adding a ridge of
 [[results:dose_sweep.json:config.eval_config.nps_ridge_fraction]] × the mean power, and clamping
 at [[results:dose_sweep.json:config.eval_config.nps_floor_fraction|sci0]] × the peak; these
 steps stabilize the estimate but may reduce its efficiency relative to the unknown optimum. The
@@ -344,7 +363,7 @@ anywhere against the margin at that arm, and we summarize the AUC-saturated arms
 analytic ceiling AUC lies within ten quantization steps of 1 — separately, since there the
 comparison is limited by the resolution of the rank statistic rather than by information.
 
-**Estimator efficiency.** Applied to unprocessed images the estimator must recover most of the
+*Estimator efficiency.* Applied to unprocessed images the estimator must recover most of the
 analytic ceiling; otherwise the comparison would be satisfied for statistical rather than
 informational reasons. We report the distribution of that recovery ratio, and Section 3.8
 compares cross-fitting with the single `50/50` split used previously.
@@ -357,17 +376,17 @@ reference:
 `ΔSSIM = SSIM(processed) − SSIM(input)`, and `Δd'_O = d'_O(processed) − d'_O(input)` for each
 observer `O` in {PW, CHO, NPWE}.
 
-**Endpoint 1 — fidelity–task divergence.** The Spearman correlation between ΔSSIM and Δ`d'`(PW)
+*Endpoint 1 — fidelity–task divergence.* The Spearman correlation between ΔSSIM and Δ`d'`(PW)
 across evaluations, and the *divergence rate*: the fraction of evaluations with ΔSSIM > 0 and
 Δ`d'`(PW) < 0. Both are reported overall, per denoiser, and stratified by floor stratum. An
 individual arm is called *divergent*; the phenomenon is *fidelity–task divergence*.
 
-**Endpoint 2 — observer-dependent benefit.** `B = Δd'(NPWE) − Δd'(PW)`, the extent to which
+*Endpoint 2 — observer-dependent benefit.* `B = Δd'(NPWE) − Δd'(PW)`, the extent to which
 processing helped the inefficient observer more than the efficient one, reported per denoiser
 with intervals, together with the fraction of evaluations that improved NPWE while not improving
 PW, and the observer ordering with CHO in between.
 
-**Endpoint 3 — floor-stratified failure patterns.** Each input condition is assigned a stratum
+*Endpoint 3 — floor-stratified failure patterns.* Each input condition is assigned a stratum
 by its analytic ceiling: *above floor*, *marginal* (within the gauge's marginal factor of the
 requirement) and *below floor*. Strata are compared on divergence rate, contrast erasure rate,
 excess lesion-like response rate, observer-dependent benefit, task degradation and verdict
@@ -408,13 +427,13 @@ Supplementary Methods, and verdict counts per stratum are reported in Section 3.
 
 ### 2.9 The real low-dose CT arm
 
-**Images.** Twelve Siemens liver cases from LDCT-and-Projection-data, using the vendor
+*Images.* Twelve Siemens liver cases from LDCT-and-Projection-data, using the vendor
 reconstructions of both the routine-dose and the simulated quarter-dose acquisition. Nothing is
 re-reconstructed. The quarter-dose noise field is taken as the difference between the two
 reconstructions of the same anatomy, so the noise carried into every trial is the acquisition's
 own and not a model of it.
 
-**Lesion insertion.** A patient scan has no ground truth: the lesions in it were found by a
+*Lesion insertion.* A patient scan has no ground truth: the lesions in it were found by a
 reader, at a contrast nobody measured. A synthetic lesion of known size and amplitude is
 therefore inserted into real abdominal soft tissue, which keeps the background that makes the task
 hard and supplies the truth that makes it measurable. The lesion is a disk of
@@ -426,7 +445,7 @@ implicit: an inserted lesion does not carry the reconstruction's own response to
 that contrast, so the arm measures detection of a known additive signal in real anatomy and
 real noise, not detection of pathology.
 
-**Where lesions are placed.** Candidate sites are regions of interest of
+*Where lesions are placed.* Candidate sites are regions of interest of
 [[results:real_liver.json:spec.lesion.roi_px]] pixels whose mean lies between [[results:real_liver.json:spec.sites.hu_range_low|.0f]] and
 [[results:real_liver.json:spec.sites.hu_range_high|.0f]] HU and whose standard deviation is below
 [[results:real_liver.json:spec.sites.max_sd_hu|.0f]] HU, drawn from the
@@ -449,7 +468,7 @@ not bias `d'`, since the background is common to the pair and the noise spectrum
 differences, but the denoisers are non-linear, so a ranking measured on structured tissue need not
 hold on parenchyma. Section 3.6.2 tightens the rule and reports what changes.
 
-**The observer, on anatomical background.** A prewhitening matched filter needs the noise
+*The observer, on anatomical background.* A prewhitening matched filter needs the noise
 power spectrum of the images it scores. On a uniform phantom that spectrum is the noise; on
 abdominal anatomy an image-by-image estimate would be dominated by the anatomy, which is not noise and
 does not repeat between trials. The paired construction of the preceding paragraph is what makes
@@ -466,13 +485,13 @@ known, the noise power spectrum is estimated from the paired differences as abov
 template is the inverse transform of the estimated signal spectrum divided by that noise spectrum.
 The division is regularized in three steps, because an estimated spectrum has a zeroed DC bin and
 small high-frequency values that would otherwise dominate the template: the DC bin is replaced by
-the mean of its four neighbours, a ridge of [[results:real_liver.json:spec.observer.nps_ridge_x_mean]] of the spectrum's
+the mean of its four neighbors, a ridge of [[results:real_liver.json:spec.observer.nps_ridge_x_mean]] of the spectrum's
 mean is added, and a floor of [[results:real_liver.json:spec.observer.nps_floor_x_max]] of its maximum is applied. Each
 held-out trial is then scored by the inner product of its image with the template. A template that
 had seen the trial it scores would report the fit rather than the detectability, which is why the
 folds are held out.
 
-**Detectability.** The two members of a pair share a background, so the per-trial difference of
+*Detectability.* The two members of a pair share a background, so the per-trial difference of
 their scores removes it and carries two independent noise draws. Its variance is twice that of a
 single image, and the detectability of one image is therefore
 
@@ -483,13 +502,13 @@ with Δ the per-trial difference of the present and absent scores. Omitting the 
 same quantity is computed for the unprocessed quarter-dose images and for every denoised arm, from
 the same trials, so the comparison across arms is paired throughout.
 
-**Denoisers.** The classical arms use the implementations of Section 2.3, parameterized in
+*Denoisers.* The classical arms use the implementations of Section 2.3, parameterized in
 physical units for this data: Gaussian filters of [[results:real_liver.json:spec.arms.gaussian_small_mm|.2f]] mm and
 [[results:real_liver.json:spec.arms.gaussian_large_mm|.2f]] mm, total variation at
 [[results:real_liver.json:spec.arms.tv_weight_x_noise|.0f]]× and non-local means at
 [[results:real_liver.json:spec.arms.nlm_h_x_noise|.1f]]× the measured noise standard deviation.
 
-**Network.** A residual convolutional denoiser in the DnCNN formulation:
+*Network.* A residual convolutional denoiser in the DnCNN formulation:
 [[results:real_liver.json:spec.cnn.formulation]]. Two configurations are evaluated — the smaller with
 [[results:real_liver.json:spec.cnn.small.depth]] layers of [[results:real_liver.json:spec.cnn.small.width]] channels and
 [[results:real_liver.json:spec.cnn.small.kernel]]×[[results:real_liver.json:spec.cnn.small.kernel]] kernels
@@ -512,7 +531,7 @@ training or in model selection: they are read once, after training has finished.
 same discipline Section 2.5 applies to the observers, for the same reason — a quantity that
 selects a model cannot also be evidence about it.
 
-**What the network is and is not shown.** Training pairs are normalized exactly as inference
+*What the network is and is not shown.* Training pairs are normalized exactly as inference
 normalizes them, by each image's own mean and estimated noise level; a network trained in
 absolute HU and deployed through a normalizing wrapper is not the network that was trained. The
 split is by case: the network sees [[results:real_liver.json:held_out.n_train_cases]] cases and is evaluated on the
@@ -522,7 +541,7 @@ training set. The network never sees a lesion — its targets are routine-dose r
 ordinary anatomy, which is what a denoiser is actually given — so the lesion exists only in the
 evaluation.
 
-**The adversarial arm.** Every denoiser above regresses towards the mean, so none of them can
+*The adversarial arm.* Every denoiser above regresses towards the mean, so none of them can
 fabricate and a null result on fabrication from them alone would be uninformative. At each
 capacity a second network is therefore trained that differs in the objective and in nothing
 else: the same architecture built from the same seed, the same patches, the same epochs, the
@@ -548,7 +567,7 @@ data-processing inequality bounds it exactly as it bounds a Gaussian filter. A g
 sampled from a latent would not be covered by that argument, which is why this one does not; a
 test scores the same image twice and requires the same output.
 
-**Fabrication, with the anatomy cancelled.** The prespecified criterion of Section 2.8 counts
+*Fabrication, with the anatomy canceled.* The prespecified criterion of Section 2.8 counts
 lesion-shaped matched-filter responses in signal-absent images. On a uniform phantom every such
 response was put there by the noise or by the processing. On real anatomy it is not: abdominal
 soft tissue carries disc-like structure at around twice this lesion's contrast, so the rate is already near
@@ -581,7 +600,7 @@ dose response of the representative realization, in fidelity and in task `d'` re
 ### 3.2 Fidelity gains frequently diverge from task performance (Figure 4)
 
 Across all processed evaluations, ΔSSIM and Δ`d'`(PW) were correlated at Spearman ρ =
-[[results:statistics.json:divergence.spearman_delta_ssim_delta_d_pw.value|.2f]] (`95 %` CI
+[[results:statistics.json:divergence.spearman_delta_ssim_delta_d_pw.value|.2f]] (`95%` CI
 [[results:statistics.json:divergence.spearman_delta_ssim_delta_d_pw.ci_low|.2f]] to
 [[results:statistics.json:divergence.spearman_delta_ssim_delta_d_pw.ci_high|.2f]]). Mean ΔSSIM
 was [[results:statistics.json:divergence.mean_delta_ssim.value|+.3f]]
@@ -593,7 +612,7 @@ was [[results:statistics.json:divergence.mean_delta_ssim.value|+.3f]]
 average, the task estimate did not.
 
 [[results:statistics.json:divergence.divergence_rate.value|.1%]] of evaluations were divergent —
-fidelity up, task estimate down — with a clustered `95 %` interval of
+fidelity up, task estimate down — with a clustered `95%` interval of
 [[results:statistics.json:divergence.divergence_rate.ci_low|.1%]] to
 [[results:statistics.json:divergence.divergence_rate.ci_high|.1%]]. The rate differed by
 denoiser:
@@ -640,7 +659,8 @@ longest correlation length studied.
 
 ### 3.4 Performance relative to the data-processing ceiling (Figure 6)
 
-Across [[results:statistics.json:ceiling.n_evaluations]] arm–realization evaluations the mean
+Across [[results:statistics.json:ceiling.n_evaluations]] arm–realization evaluations (Figure 6)
+the mean
 excess of the cross-fitted prewhitening AUC over the analytic ceiling of its own input was
 [[results:statistics.json:ceiling.mean_excess|.3f]], and the largest was
 [[results:statistics.json:ceiling.max_excess|sci2]].
@@ -673,7 +693,7 @@ stratified comparison.
 
 The third hypothesis was supported in one respect and refuted in another.
 
-**Supported: plausible output without preserved detectability.** Below the floor, processing
+*Supported: plausible output without preserved detectability.* Below the floor, processing
 raised SSIM by [[results:statistics.json:floor_strata["below floor"].mean_delta_ssim.value|+.3f]]
 on average while Δ`d'`(PW) was
 [[results:statistics.json:divergence.by_stratum["below floor"].mean_delta_d_pw.value|+.3f]], and
@@ -683,7 +703,7 @@ on average while Δ`d'`(PW) was
 evaluations were divergent: visually improved output coexisted, throughout that stratum, with an
 input that did not meet the requirement and a processed estimate that fell further below it.
 
-**Refuted: failures do not concentrate below the floor.** The divergent fraction was *higher*
+*Refuted: failures do not concentrate below the floor.* The divergent fraction was *higher*
 above the floor —
 [[results:statistics.json:floor_strata["above floor"].divergence_rate.value|.1%]] against
 [[results:statistics.json:floor_strata["below floor"].divergence_rate.value|.1%]], a difference
@@ -717,7 +737,7 @@ fabrication of false structure — a result that should not be generalized to ge
 methods, whose failure modes may differ. Supplementary Table S3 gives the stratified counts, the
 interval estimates and the gauge's verdict breakdown, which reflects the strata by construction:
 an input that fails the requirement is itself a red rule, so below the floor the informative part
-is the reason attached rather than the colour.
+is the reason attached rather than the color.
 
 ### 3.6 The same question on real low-dose CT
 
@@ -725,25 +745,22 @@ The controlled matrix isolates mechanisms by fixing everything. The obvious ques
 conclusion drawn from it is whether the conclusion survives an acquisition nobody controlled, so
 the same measurement was repeated on real data with no change to the framework.
 
-**Data and design.** Twelve Siemens liver cases from LDCT-and-Projection-data (The Cancer Imaging
-Archive, `CC BY 4.0`), vendor reconstructions of both the routine and the simulated quarter-dose
-acquisition. A lesion of known size and contrast is inserted into real abdominal soft tissue, so
-that the task has a ground truth the acquisition itself cannot supply. The learned denoiser is trained on
+*Data and design.* Twelve Siemens liver cases from LDCT-and-Projection-data (The Cancer Imaging
+Archive, `CC BY 4.0`), with a lesion of known size and contrast inserted into real abdominal soft
+tissue so that the task has a ground truth the acquisition itself cannot supply. The learned
+denoiser is trained on
 quarter-dose / full-dose patch pairs from [[results:real_liver.json:held_out.n_train_cases]] cases and evaluated on
-the [[results:real_liver.json:held_out.n_test_cases]] it never saw ([[results:real_liver.json:held_out.n_pairs]] pairs). The split is by
-case, not by slice: slices from one patient are not independent, and a network tested on
-another slice of a liver it trained on is being tested on its own training set. Normalization at
-training matches normalization at inference, since a network trained in absolute HU and deployed
-through a normalizing wrapper is not the network that was trained. The network never sees a
-lesion — its targets are full-dose reconstructions of ordinary anatomy, which is what a
-denoiser is actually given — and the lesion exists only in the evaluation.
+the [[results:real_liver.json:held_out.n_test_cases]] it never saw ([[results:real_liver.json:held_out.n_pairs]] pairs), split by
+case rather than by slice. Section 2.9 gives the insertion, the normalization and the split in
+full. The network never sees a lesion — its targets are ordinary full-dose anatomy — and the
+lesion exists only in the evaluation.
 
-**Result.** Figure 9 draws one held-out site, lesion present and absent, unprocessed and after
+*Result.* Figure 9 draws one held-out site, lesion present and absent, unprocessed and after
 four denoisers: the panels grow cleaner from left to right as the detectability above them falls.
 Figure 10 and Table 3 give the held-out comparison against the closed-form ceiling
 `d'` = [[results:real_liver.json:held_out.ceiling|.2f]]:
 
-**Table 3.** The [[results:real_liver.json:held_out.n_methods]] arms on the held-out real low-dose CT split, ordered by task detectability. `d'` is against the closed-form ceiling of the unprocessed input; PSNR is against the full-dose reconstruction. *Added* is the rate of lesion-shaped structure the method put into a lesion-free image with the anatomy cancelled, and is read against the unprocessed row, which is the rate the noise itself carries; *recovery* is the fraction of a real lesion's contrast that survives. The four networks share an architecture and a training split; within each capacity the two differ only in the objective, so that pair is controlled. Across capacities they are not: the larger differs in parameters, training patches per case and epochs at once. The exposure each arm needs to meet the prespecified requirement is given in Section 3.7.
+**Table 3.** The [[results:real_liver.json:held_out.n_methods]] arms on the held-out real low-dose CT split, ordered by task detectability. `d'` is against the closed-form ceiling of the unprocessed input; PSNR is against the full-dose reconstruction. *Added* is the rate of lesion-shaped structure the method put into a lesion-free image with the anatomy canceled, and is read against the unprocessed row, which is the rate the noise itself carries; *recovery* is the fraction of a real lesion's contrast that survives. The four networks share an architecture and a training split; within each capacity the two differ only in the objective, so that pair is controlled. Across capacities they are not: the larger differs in parameters, training patches per case and epochs at once. The exposure each arm needs to meet the prespecified requirement is given in Section 3.7.
 
 | method | `d'` | of ceiling | PSNR (dB) | added | recovery |
 |---|---|---|---|---|---|
@@ -775,7 +792,7 @@ selected close to the worst available option for detection.
 [[results:real_liver.json:held_out.n_methods]] arms on the held-out split, and [[results:real_liver.json:all_exceedances]] across every
 real-data arm in this study — the held-out split, the [[results:real_liver.json:all_cases.n_cases]]-case run, and
 both operating points of Section 3.6.1. The bound the controlled matrix was built to test is not
-an artefact of the controlled matrix.
+an artifact of the controlled matrix.
 
 *A larger network, trained longer on more data, does not reverse the ordering.* The large network has
 [[results:real_liver.json:capacity.parameter_ratio|.0f]] times the parameters of the small one
@@ -796,8 +813,9 @@ configuration of all four networks and the best validation loss each reached.
 Repeating the measurement at a second and very different acquisition — chest at
 [[results:real_liver.json:operating_points.chest.dose|.0%]] dose, with
 [[results:real_liver.json:operating_points.noise_ratio_chest_over_liver|.1f]] times the liver's noise and
-a ceiling of [[results:real_liver.json:operating_points.chest.ceiling|.2f]] against
-[[results:real_liver.json:operating_points.liver.ceiling|.2f]] — produced
+a ceiling of [[results:real_liver.json:operating_points.chest.ceiling|.2f]] against the liver's
+[[results:real_liver.json:operating_points.liver.ceiling|.2f]] at
+[[results:real_liver.json:operating_points.liver.dose|.0%]] dose — produced
 [[results:real_liver.json:operating_points.chest.n_exceeding_ceiling]] exceedances of its own ceiling,
 so the bound holds where the task is nearly impossible as well as where it is comfortable.
 
@@ -818,7 +836,7 @@ image and of nothing else — no latent, no class label, no lesion location — 
 holds and the data-processing inequality bounds it as it bounds a Gaussian filter.
 
 The measure did not detect fabrication. Counting lesion-shaped structure that processing put into a lesion-free
-image, with the anatomy cancelled by passing the lesion-free, noise-free background through the
+image, with the anatomy canceled by passing the lesion-free, noise-free background through the
 same method and subtracting,
 [[results:real_liver.json:fabrication.n_above_the_noise]] of
 [[results:real_liver.json:fabrication.n_processed]] processed arms exceeded the rate the noise itself
@@ -864,12 +882,14 @@ fifth of [[results:real_liver.json:site_sensitivity.n_methods]] on the task unde
 both the best-performing arm exceeds the unprocessed input by a margin this design does not
 resolve. The conclusions of Sections 3.6 and 3.7 do not depend on the admission rule.
 
-One thing does change, and no mechanism is offered for it: every arm's efficiency falls on the
-low-structure sites, the unprocessed input from
+One thing does change, and no mechanism is offered for it: on the low-structure sites every arm's
+`d'` falls — the unprocessed input from
 [[results:real_liver.json:site_sensitivity.by_method.unprocessed.published|.2f]] to
-[[results:real_liver.json:site_sensitivity.by_method.unprocessed.strict|.2f]]. A less structured
-background yields a *lower* fraction of the available detectability, which these data record
-without explaining.
+[[results:real_liver.json:site_sensitivity.by_method.unprocessed.strict|.2f]] — while the ceiling
+falls only from [[results:real_liver.json:site_sensitivity.ceiling|.2f]] to
+[[results:real_liver.json:site_sensitivity.ceiling_strict|.2f]], so a less structured background
+yields a *lower* fraction of the available detectability. These data record that without
+explaining it.
 
 ### 3.7 The floor, converted into an exposure
 
@@ -883,24 +903,24 @@ matters. Because this collection's low-dose series is a reconstruction of the sa
 with noise inserted, the difference of the two reconstructions is a measured realization of the
 noise that dose reduction costs at one fraction, α, with a real spectrum on real anatomy.
 Scaling it by `k`(β) = √((1/β − 1)/(1/α − 1)) produces a realization at any other fraction β.
-The spectrum and the anatomy are therefore measured; the amplitude at β is modelled. The scaling
+The spectrum and the anatomy are therefore measured; the amplitude at β is modeled. The scaling
 assumes the inserted noise is independent of the noise already present and that its power follows
 `1/β − 1`, and no independent acquisition at β exists to check it, so only the row at β = α rests
 on an observed amplitude. The trials are built once at α and recombined linearly, which is exact
 given the scaling.
 
-**Where the task is lost.** The unprocessed input meets the requirement down to
+*Where the task is lost.* The unprocessed input meets the requirement down to
 [[results:real_liver.json:guidance.crossing.unprocessed|.3f]] of the routine protocol. Of the
 [[results:real_liver.json:guidance.processing_penalty.n_processed]] processed arms,
 [[results:real_liver.json:guidance.processing_penalty.n_needing_more_dose]] need *more* exposure than that
 to meet the same requirement — up to
-[[results:real_liver.json:guidance.processing_penalty.worst_percent|+.0f]] % for
+[[results:real_liver.json:guidance.processing_penalty.worst_percent|+.0f]]% for
 `[[results:real_liver.json:guidance.crossing.worst_processed_label]]` — and the best of them differs from
-doing nothing by [[results:real_liver.json:guidance.processing_penalty.best_percent|+.0f]] %, which is
+doing nothing by [[results:real_liver.json:guidance.processing_penalty.best_percent|+.0f]]%, which is
 within what this design resolves. No arm measured here extended the exposure floor by an amount
 this study can distinguish from none.
 
-**What the picture claims.** A gain of Δ dB in PSNR is the fidelity of an exposure with
+*What the picture claims.* A gain of Δ dB in PSNR is the fidelity of an exposure with
 `10^(Δ/10)` times less noise power, so every processed image implies an exposure. At the nominal
 fraction the implied exposure reaches
 [[results:real_liver.json:guidance.overstatement.at_nominal_max|.2f]]× the one actually delivered
@@ -913,14 +933,14 @@ delivering `d'` = [[results:real_liver.json:guidance.overstatement.worst_below_c
 the [[results:real_liver.json:guidance.requirement|.0f]] required. The flattery is greatest where the task
 has already failed.
 
-**What an ideal-observer floor omits.** A floor computed from an ideal observer is not reachable.
+*What an ideal-observer floor omits.* A floor computed from an ideal observer is not reachable.
 The achieved fraction of the ceiling on the unprocessed input at the nominal exposure is
 [[results:real_liver.json:guidance.efficiency.unprocessed_at_nominal|.3f]], and exposure enters as a square root; on this axis the ceiling crosses the requirement at
 [[results:real_liver.json:guidance.efficiency.ideal_observer_floor|.3f]] of the routine protocol while the
 unprocessed input crosses it at
 [[results:real_liver.json:guidance.efficiency.reachable_floor_measured|.3f]] — a factor
 [[results:real_liver.json:guidance.efficiency.floor_ratio|.2f]], or
-[[results:real_liver.json:guidance.efficiency.floor_ratio_percent|.0f]] % more exposure than an
+[[results:real_liver.json:guidance.efficiency.floor_ratio_percent|.0f]]% more exposure than an
 ideal-observer calculation would ask for. With the requirement as the denominator rather than the
 ideal floor, the same fact reads: an ideal-observer calculation supplies
 [[results:real_liver.json:guidance.efficiency.ideal_floor_fraction_of_required|.0%]] of the exposure the
@@ -928,14 +948,14 @@ task needs. The two percentages describe one fact and are not interchangeable.
 
 Holding the efficiency constant and solving for the crossing gives
 [[results:real_liver.json:guidance.efficiency.reachable_floor_constant_efficiency|.3f]], within
-[[results:real_liver.json:guidance.efficiency.constant_efficiency_agreement_percent|.1f]] % of the
+[[results:real_liver.json:guidance.efficiency.constant_efficiency_agreement_percent|.1f]]% of the
 measured one, which is the evidence for the conversion. It is local, because efficiency varies
 along the dose axis, and it is specific to this axis: a site working in the total noise of its own
 images uses `d'` ∝ √`D`, under which the same efficiency implies
 [[results:real_liver.json:guidance.efficiency.sqrt_law_floor_factor|.2f]] instead. The convention
 has to travel with the number.
 
-**How far the scaling law may be carried.** `d'` ∝ 1/`k`(β) holds exactly for the ceiling, whose
+*How far the scaling law may be carried.* `d'` ∝ 1/`k`(β) holds exactly for the ceiling, whose
 template is the noise's own: over the [[results:real_liver.json:guidance.scaling_law.dose_range_fold|.0f]]-fold
 range measured, `d'`·`k` varies by [[results:real_liver.json:guidance.scaling_law.ceiling_spread|.1%]]. It holds
 for no achievable observer: the same quantity varies by up to
@@ -951,7 +971,7 @@ are not a clinical recommendation.
 
 ### 3.8 Sensitivity and implementation validation
 
-**Estimator efficiency.** On unprocessed images the cross-fitted estimator recovered a median
+*Estimator efficiency.* On unprocessed images the cross-fitted estimator recovered a median
 [[results:statistics.json:ceiling.estimator_recovery.median|.0%]] of the analytic ceiling `d'`
 (interquartile range [[results:statistics.json:ceiling.estimator_recovery.q1|.0%]] to
 [[results:statistics.json:ceiling.estimator_recovery.q3|.0%]]), with a minimum of
@@ -962,24 +982,23 @@ is estimated from is weakest, and the estimator rather than the bound is the lim
 Supplementary Table S2 compares the cross-fitted estimator with a single `50/50` split at matched
 conditions; cross-fitting recovers more of the ceiling at every dose.
 
-**Closed form.** In white noise the analytic observer must satisfy `d' = ‖s‖₂/σ`. Over the
+*Closed form.* In white noise the analytic observer must satisfy `d' = ‖s‖₂/σ`. Over the
 combinations of noise level and lesion radius in Supplementary Table S1 the maximum relative
-deviation was [[results:closed_form.json:max_relative_error|sci2]], against a criterion of 1 %
+deviation was [[results:closed_form.json:max_relative_error|sci2]], against a criterion of 1%
 fixed in advance.
 
-**Leakage positive control.** A processor handed the class label — adding signal to the
+*Leakage positive control.* A processor handed the class label — adding signal to the
 signal-present stack only — is detected by the ceiling comparison as an exceedance beyond the
 margin. That control is asserted in the test suite, and it is what gives the negative result of
 Section 3.4 its content.
 
 ## 4. Discussion
 
-The contribution of this work is a framework that separates two quantities usually reported as
-one: the detectability an input makes available to an ideal observer, and the detectability a
-specified observer actually achieves after processing. Holding them apart is what turns a
-statement about image quality into a statement about an exposure, because the requirement a task
-imposes can then be placed on the second quantity rather than the first, and the exposure that
-meets it compared across processing methods.
+This work separates two quantities usually reported as one: the detectability an input makes
+available to an ideal observer, and the detectability a specified observer achieves after
+processing. Holding them apart is what turns a statement about image quality into a statement
+about an exposure, because the task's requirement can then be placed on the second quantity and
+the exposure that meets it compared across methods.
 
 The ceiling itself is a theorem, so the agreement reported in Section 3.4 establishes not the
 theorem but that the measurement chain is consistent with it, which is a precondition for
@@ -989,7 +1008,7 @@ sensitivity to see a violation.
 The findings sit on top of that. The first is that reference-based fidelity is a poor predictor
 of task change: the rank correlation between ΔSSIM and Δ`d'`(PW) was negative, and a large
 fraction of evaluations improved the picture while the task estimate fell. This is not an
-artefact of a badly chosen fidelity metric — SSIM is what much of the literature reports and
+artifact of a badly chosen fidelity metric — SSIM is what much of the literature reports and
 what many learned methods are optimized against — but a consequence of the two quantities
 measuring different things.
 
@@ -1014,21 +1033,14 @@ these denoisers did not invent structure anywhere in the matrix.
 
 The floor should therefore be read for what it is: a boundary of *attainable required
 performance*, derived from the input and the requirement alone. It says that no processing of an
-input below it can bring the requirement back into reach. It does not predict which denoiser will
-erase contrast, or where lesion-like responses will appear — those are properties of the
-processing, not of the boundary, and in this matrix they were not stratified by it. Reading the
-floor as a predictor of denoiser-specific failure modes would over-claim; reading it as a limit on
-what any processing can deliver is what the bound supports.
+input below it can bring the requirement back into reach. It does not predict which denoiser
+will erase contrast or where lesion-like responses will appear — those are properties of the
+processing, and in this matrix they were not stratified by it.
 
-The clinical relevance of this framework lies in linking image processing to a specified
-diagnostic task and performance requirement. For radiologists, it motivates assessing whether
-improved image appearance preserves the features needed for the intended decision. For
-radiographers and medical physicists, it provides a basis for jointly evaluating acquisition
-exposure and post-processing against task-specific performance criteria. The intended patient
-benefit is to avoid unnecessary exposure while retaining information needed for diagnosis. These
-are translational objectives, not outcomes demonstrated here: the present study evaluated model
-observers and synthetic lesions, including lesions inserted into real CT backgrounds. Clinical
-application requires scanner-specific calibration, representative diagnostic tasks, and
+What a department does with this is in Section 5, in the exposure the conversion returns rather
+than in a statement of relevance. What that conversion rests on is stated with it: model
+observers and synthetic lesions, including lesions inserted into real CT backgrounds, so
+clinical application requires scanner-specific calibration, representative diagnostic tasks and
 validation with human readers.
 
 The gauge is an auditable rule-based translation of the measured quantities, not a clinically
@@ -1047,7 +1059,7 @@ task-specific: clinical deployment would require re-specifying and validating al
 human observer study was performed, so the non-prewhitening observer stands only as a
 stylized surrogate for limited prewhitening efficiency. The lesion is inserted, not native: what
 is measured is detection of a specified low-contrast signal, not of hepatocellular carcinoma,
-haemangioma or any other native lesion, whose contrast, margin and size distributions differ.
+hemangioma or any other native lesion, whose contrast, margin and size distributions differ.
 Whether the ordering reported here transfers to those is a question for readers and for clinical
 validation, not one this measurement answers. The classical denoisers are parameterized with the
 true noise level of the acquisition setting, which is more than a blind method would know. The
@@ -1059,15 +1071,39 @@ bound, and is not studied here.
 
 ## 5. Conclusion
 
-This study characterizes task detectability limits in denoised CT by separating the input's
-ideal-observer ceiling from the performance achieved by specified observers. Controlled
-experiments and synthetic-lesion evaluations on real CT backgrounds showed observer-dependent
-denoising effects and divergence between fidelity and detectability. Within the evaluated dose
-simulation, task thresholds provided a basis for comparing exposure requirements across
-processing methods. These findings support evaluating acquisition and post-processing jointly
-against a defined detection requirement. Translation to clinical dose optimization requires
-scanner-specific calibration and human-reader validation, with the ultimate aim of preserving
-diagnostic information while avoiding unnecessary patient exposure.
+Exposure for a detection task can be set from the task. Separating the detectability an input
+offers an ideal observer from the detectability a specified observer achieves turns a stated
+requirement into a dose, and a dose is the quantity a protocol is written in. On
+[[results:real_liver.json:all_cases.n_cases]] liver cases with the requirement `d'` =
+[[results:real_liver.json:guidance.requirement|.0f]], that conversion put the crossing for the
+unprocessed input at [[results:real_liver.json:guidance.crossing.unprocessed|.3f]] of the routine
+protocol.
+
+Three things follow for a site writing a protocol. Measure the crossing on the unprocessed
+input: it is what the acquisition supplies, and
+[[results:real_liver.json:guidance.processing_penalty.n_needing_more_dose]] of
+[[results:real_liver.json:guidance.processing_penalty.n_processed]] processed arms moved it the
+wrong way. Do not read an exposure off a fidelity metric: the exposure PSNR implied reached
+[[results:real_liver.json:guidance.overstatement.at_nominal_max|.2f]]× the one delivered, and
+[[results:real_liver.json:guidance.overstatement.worst_below_crossing|.1f]]× where the task had
+already failed. Do not take an ideal-observer floor as the operating point: it is not reachable,
+and here it supplied
+[[results:real_liver.json:guidance.efficiency.ideal_floor_fraction_of_required|.0%]] of the
+exposure the requirement needed, so a protocol set from it would need
+[[results:real_liver.json:guidance.efficiency.floor_ratio_percent|.0f]]% more than it provides;
+Section 3.7 states why those two percentages are not interchangeable.
+
+<!-- scope-of-claim -->
+What this establishes and what it does not. The conversion is demonstrated for one detection task
+— a signal- and background-known-exactly low-contrast disk — scored by model observers on
+[[results:real_liver.json:all_cases.n_cases]] liver cases from one public collection, over the
+denoisers evaluated here, on a dose axis whose spectrum and anatomy are measured and whose
+amplitude away from the nominal fraction is modeled. It is not a statement about denoising in
+general, about other tasks or lesion types, or about human readers, and no arm measured here is
+excluded from improving on the acquisition by a margin this design was too small to resolve.
+Translation to clinical dose optimization requires scanner-specific calibration and human-reader
+validation, with the ultimate aim of preserving diagnostic information while avoiding unnecessary
+patient exposure.
 
 ## Disclosures
 
@@ -1082,7 +1118,7 @@ additional ethical approval.
 The controlled arm is generated analytically from documented seeds. The real-data arm uses the
 public LDCT-and-Projection-data collection (TCIA, `CC BY 4.0`, DOI `10.7937/9npb-2637`).
 
-**Two packages are needed, and neither reproduces the paper alone.** The controlled arm, the
+*Two packages are needed, and neither reproduces the paper alone.* The controlled arm, the
 endpoints, the statistics and the figures are `denoiq-core`, below. The code that reads the
 images, inserts the lesion, trains the four networks, realizes the observer of Section 2.9 and
 scores it is `ldct-io`, at <https://github.com/Institute-of-One/ldct-io>, MIT licensed,
@@ -1104,7 +1140,7 @@ Realization seeds are the [[results:statistics.json:design.n_seeds]] values reco
 Five commands regenerate everything:
 
 1. `denoiq_core.experiment.run_primary()` — the matrix, endpoints and statistics.
-2. `denoiq_core.experiment.run_all()` — the representative-realization artefacts and the atlas.
+2. `denoiq_core.experiment.run_all()` — the representative-realization artifacts and the atlas.
 3. `paper/make_figures.py` — Figs. 1 to 8 and the supplementary figures.
 4. `paper/build_real_liver_results.py` — consolidates the real-data runs into
    `results/real_liver.json`.

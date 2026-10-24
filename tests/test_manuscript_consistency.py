@@ -218,10 +218,23 @@ def test_the_manuscript_fits_the_journal_word_limits():
     """
     if not BUILT.exists():
         pytest.skip("paper/build/manuscript.md has not been built yet")
+    sys.path.insert(0, str(PAPER))
+    import target_journal  # noqa: PLC0415
+
+    limit = target_journal.word_limit()
     body_words, abstract_words = _counted_body(BUILT.read_text(encoding="utf-8"))
-    assert body_words <= WORD_LIMIT, (
-        f"the body is {body_words} words against a {WORD_LIMIT} limit "
-        f"({body_words - WORD_LIMIT} over); cut it or obtain the Editor-in-Chief's permission"
+    if limit is None:
+        # The venue is not chosen. Enforcing the last one's rule is how this suite came to
+        # police Physica Medica's limit on a manuscript Physica Medica had already rejected.
+        # paper/presubmission_check.py refuses to pass while the target is unset, so nothing
+        # is uploaded without an answer; here the count is reported and not judged.
+        pytest.skip(
+            f"no target journal is declared in paper/target_journal.py; the body is "
+            f"{body_words} words and the abstract {abstract_words}"
+        )
+    assert body_words <= limit, (
+        f"the body is {body_words} words against {target_journal.NAME}'s {limit} limit "
+        f"({body_words - limit} over); cut it or obtain the Editor-in-Chief's permission"
     )
     assert abstract_words <= ABSTRACT_LIMIT, (
         f"the abstract is {abstract_words} words against a {ABSTRACT_LIMIT} limit "
@@ -292,6 +305,141 @@ def test_a_source_digest_does_not_depend_on_the_checkout(tmp_path):
     assert figure_sources.digest(lf) == figure_sources.digest(crlf)
 
 
+def test_a_figure_drawn_by_a_companion_repository_is_still_watched(tmp_path, monkeypatch):
+    """Figure 9 is drawn by ldct-io, and for two submissions nothing here watched it.
+
+    It had no entry in the record at all, because ``record`` could only key a path inside this
+    repository. So neither the results it was drawn from nor the code that drew it was checked,
+    and it reached a journal 12.3 in wide, with a result sentence painted into the image. The
+    fix is only worth having if it fails when the companion's generator changes, and if a
+    machine without that companion says so instead of passing in silence -- both asserted here.
+    """
+    sys.path.insert(0, str(PAPER))
+    import figure_sources  # noqa: PLC0415
+
+    companion = tmp_path / "ldct-io"
+    (companion / "examples").mkdir(parents=True)
+    generator = companion / "examples" / "draw.py"
+    generator.write_text("# the version the figure was drawn by\n", encoding="utf-8")
+    results = tmp_path / "results"
+    results.mkdir()
+    data = results / "real_liver.json"
+    data.write_text('{"a": 1}\n', encoding="utf-8")
+
+    monkeypatch.setattr(figure_sources, "RECORD", tmp_path / "SOURCES.json")
+    monkeypatch.setattr(figure_sources, "COMPANION_REPOS", {"ldct-io": companion})
+    figure_sources.record(tmp_path / "fig9.png", results=[data], code=[generator])
+
+    assert figure_sources.stale(results) == []
+    assert figure_sources.unchecked() == []
+
+    generator.write_text("# edited after the figure was drawn\n", encoding="utf-8")
+    assert any("drawn by an older" in problem for problem in figure_sources.stale(results)), (
+        "a changed companion generator left the record green"
+    )
+
+    monkeypatch.setattr(figure_sources, "COMPANION_REPOS", {"ldct-io": tmp_path / "absent"})
+    assert figure_sources.stale(results) == []
+    assert any("not on this machine" in note for note in figure_sources.unchecked()), (
+        "an unverifiable figure passed without saying it was never looked at"
+    )
+
+
+#: A quantity written out rather than resolved from a results file: a digit, or a number or
+#: ordinal spelled in words.
+TYPED_QUANTITY = re.compile(
+    r"\d+(?:\.\d+)?"
+    r"|\b(?:one|two|three|four|five|six|seven|eight|nine|ten"
+    r"|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\b",
+    re.I,
+)
+
+#: The only things that may be bold. Everything else is emphasis in running text.
+BOLD_ALLOWED = (
+    re.compile(r"^(Background|Purpose|Methods|Results|Conclusions|Keywords)[.:]$"),
+    re.compile(r"^(Figure|Table) S?\d+\.$"),
+    re.compile(r"^[A-Z][A-Za-z ]{2,40}:$"),  # declaration and availability labels
+    re.compile(r"^Shuji Yamamoto$"),
+    re.compile(r"^Mathematical characterization"),  # the supplement's title line
+)
+
+
+def _bold_runs(text: str) -> list[str]:
+    body, _, _references = text.partition("## References")
+    return [
+        run.strip()
+        for run in re.findall(r"\*\*(.+?)\*\*", body)
+        if not any(pattern.match(run.strip()) for pattern in BOLD_ALLOWED)
+    ]
+
+
+def test_no_paragraph_opens_with_a_bold_sentence():
+    """Bold is for the abstract headings, the Figure/Table label and the declaration labels.
+
+    I write bold lead-ins as signposting and he has objected to it every time. On IORN-011
+    there were 28 in the manuscript and one in the supplement by the time he found them in
+    the portal's proof; a gate was written there and the note said to copy it into the next
+    paper rather than rely on me remembering. It was not copied, and this manuscript reached
+    the same proof stage with 28 and one.
+
+    The signposting itself is fine -- this manuscript already does it in italic, as in
+    ``*Fidelity carries no usable information about the ranking.*`` -- so the fix is the
+    markup, not the sentence.
+    """
+    offenders = []
+    for name, path in (("manuscript", BUILT), ("supplement", PAPER / "build" / "supplementary.md")):
+        if not path.exists():
+            continue
+        for run in _bold_runs(path.read_text(encoding="utf-8")):
+            offenders.append(f"{name}: **{run[:70]}**")
+    assert not offenders, (
+        "bold used for emphasis in running text; make it italic or make it a heading:\n  "
+        + "\n  ".join(offenders)
+    )
+
+
+def test_every_figure_is_cited_in_a_paragraph_and_not_only_in_a_heading():
+    """A figure named only in a section heading never gets placed in the body.
+
+    The builder puts a figure after the first *paragraph* that cites it. Figure 6 was cited
+    only by ``### 3.4 ... (Figure 6)``, so no paragraph claimed it, and the image and its
+    caption fell through to the Figure captions list at the back of the submitted PDF --
+    thirteen pages after the section that discusses it, leaving half of that page blank.
+    Nothing failed: the figure existed, its caption existed, and the caption list was correct.
+
+    Citing a figure in the running text is what a journal expects in any case; this gate
+    makes the layout consequence of not doing it visible at build time.
+    """
+    built = BUILT.read_text(encoding="utf-8")
+    body, _, _captions = built.partition("## Figure captions")
+    figures = sorted({int(n) for n in re.findall(r"^\*\*Figure (\d+)\.\*\*", built, re.M)})
+    assert figures, "no figure captions found in the built manuscript"
+
+    uncited = []
+    for number in figures:
+        cited = False
+        for line in body.splitlines():
+            if line.startswith("#") or line.startswith("**Figure "):
+                continue  # a heading is not a placement site, and a caption is not a citation
+            # "Figures 7-8" and "Figures 2 and 3" each cite both of their members.
+            for group in re.findall(r"Figures?\s+([0-9SsA-Za-z,\s–-]*\d)", line):
+                members = [int(n) for n in re.findall(r"\d+", group)]
+                if re.search(r"\d\s*[–-]\s*\d", group) and len(members) == 2:
+                    members = list(range(members[0], members[1] + 1))
+                if number in members:
+                    cited = True
+                    break
+            if cited:
+                break
+        if not cited:
+            uncited.append(number)
+
+    assert not uncited, (
+        f"these figures are never cited in a paragraph, so the build cannot place them in the "
+        f"body and they end up in the caption list at the back: {uncited}"
+    )
+
+
 @requires_results
 def test_every_supplementary_reference_points_at_something():
     """A pointer to material that does not exist is worse than no pointer.
@@ -321,17 +469,50 @@ def test_every_supplementary_reference_points_at_something():
     )
 
 
+@requires_results
 def test_the_highlights_fit_the_journal_limits():
-    """A bullet one character over is caught by an editorial office, not by an author."""
+    """A bullet one character over is caught by an editorial office, not by an author.
+
+    Measured after the markers resolve, because what the limit applies to is the rendered
+    bullet, and because a marker is longer than the number it becomes.
+    """
     path = PAPER / "highlights.md"
     if not path.exists():
         pytest.skip("paper/highlights.md has not been written yet")
     text = re.sub(r"<!--.*?-->", "", path.read_text(encoding="utf-8"), flags=re.S)
+    text = build_manuscript.render(text, RESULTS)
     bullets = [line[2:].strip() for line in text.splitlines() if line.startswith("- ")]
     low, high = HIGHLIGHT_RANGE
     assert low <= len(bullets) <= high, f"{len(bullets)} highlights, {low} to {high} allowed"
     too_long = [(len(b), b) for b in bullets if len(b) > HIGHLIGHT_LIMIT]
     assert not too_long, f"highlights over {HIGHLIGHT_LIMIT} characters: {too_long}"
+
+
+@requires_results
+def test_no_number_is_typed_into_a_highlight():
+    """The highlights carry no hand-typed number, for the reason the manuscript carries none.
+
+    This file said the best-PSNR denoiser "ranked fifth of nine" while the abstract, Section
+    3.6 and the cover letter all said 7 of 9 -- fifth is the value under the stricter
+    admission rule of Section 3.6.2. The manuscript could not have held that error, because
+    its numbers are markers and this suite rebuilds and compares them. The highlights were
+    outside that rule, and they are the first thing a reviewer reads.
+    """
+    path = PAPER / "highlights.md"
+    if not path.exists():
+        pytest.skip("paper/highlights.md has not been written yet")
+    text = re.sub(r"<!--.*?-->", "", path.read_text(encoding="utf-8"), flags=re.S)
+    offenders = []
+    for line in text.splitlines():
+        if not line.startswith("- "):
+            continue
+        stripped = re.sub(r"\[\[results:[^\]]*\]\]", "", line)
+        for match in TYPED_QUANTITY.finditer(stripped):
+            offenders.append(f"{match.group(0)!r} in {line.strip()[:70]!r}")
+    assert not offenders, (
+        "a highlight states a quantity that no results file supplies; use a marker:\n  "
+        + "\n  ".join(offenders)
+    )
 
 
 def test_the_title_is_the_same_in_every_place_it_appears():
@@ -492,7 +673,8 @@ def test_the_spelling_is_the_same_everywhere_the_reader_looks():
     convert_spelling = pytest.importorskip("convert_spelling")
     offenders = []
     for path in convert_spelling.TARGETS:
-        _, changed = convert_spelling.convert(path.read_text(encoding="utf-8"))
+        mapping = convert_spelling.mapping_for(path)
+        _, changed = convert_spelling.convert(path.read_text(encoding="utf-8"), mapping)
         for word in sorted(set(changed)):
             offenders.append(f"{path.name}: {word} ({changed.count(word)}x)")
     assert not offenders, (

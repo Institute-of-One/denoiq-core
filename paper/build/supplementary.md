@@ -8,7 +8,7 @@
 
 # Supplementary material
 
-**Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization**
+*An information-theoretic exposure criterion for AI-denoised low-dose CT: from required detectability to delivered dose, and to an AI denoiser's dose claim*
 
 Shuji Yamamoto · Institute of One, LISIT Co., Ltd., Tokyo 150-0044, Japan
 
@@ -47,7 +47,7 @@ contains noise; noise alone therefore produces lesion-like structure, and any me
 A matched-filter amplitude map is formed with the known lesion profile, mean-subtracted and
 normalized so that an image containing exactly one true lesion reads `1.0` at that location. The
 map is evaluated over all positions (a full 2-D correlation in `same` mode with zero padding;
-the lesion is centred and the image is 64 pixels
+the lesion is centered and the image is 64 pixels
 across, so boundary effects fall outside the lesion support). For each image the maximum over
 positions is taken, and the *lesion-like response rate* is the fraction of signal-absent images
 whose maximum reaches 0.5 of a true lesion's
@@ -77,7 +77,7 @@ the implementation rather than a sample.
 Table S2 compares the cross-fitted estimator used throughout this study with the single 50/50
 split used in the earlier single-realization analysis, at matched conditions of the dose sweep in
 the representative realization. Recovery is the estimated `d'` as a fraction of the analytic
-ceiling of the same input; recovery slightly above `100 %` at the highest doses is sampling noise
+ceiling of the same input; recovery slightly above `100%` at the highest doses is sampling noise
 in the `d'` estimate, not a breached bound, since the ceiling test is armwise, in AUC, and carries
 its own margin (Section 3.4).
 
@@ -169,13 +169,13 @@ An evaluation is treated as saturated when its analytic ceiling AUC exceeds
 at perfect separation the Hanley–McNeil standard error is identically zero, the margin collapses
 to a single quantization step, and no widening of `z` recovers it.
 180 of
-760 evaluations met that rule and are analysed
+760 evaluations met that rule and are analyzed
 separately for this reason and not because excluding them helps: over the remaining
 580 the largest excess was
 1.64×10⁻⁴ and the mean
 -0.040.
 
-The single exceedance occurred on an **unprocessed** arm, where the processing is the identity and
+The single exceedance occurred on an *unprocessed* arm, where the processing is the identity and
 cannot create information, so what it measures is the estimator and the finite sample rather than
 a violated bound. Its analytic ceiling AUC is
 0.9999933, the estimator achieved

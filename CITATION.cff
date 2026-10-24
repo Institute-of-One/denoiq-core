@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "Mathematical characterization of task detectability limits in AI-denoised CT: implications for task-based dose optimization"
+title: "An information-theoretic exposure criterion for AI-denoised low-dose CT: from required detectability to delivered dose, and to an AI denoiser's dose claim"
 message: "If you use this software, please cite it as below."
 type: software
 authors:
@@ -33,8 +33,8 @@ keywords:
   - medical imaging
   - reproducible research
 license: MIT
-version: 0.2.0
-date-released: "2026-10-02"
+version: 0.2.1
+date-released: "2026-10-24"
 # The concept DOI resolves to the latest version; the manuscript cites the *version* DOI of
 # the release it was built from, which is recorded in paper/release.json.
 identifiers:
